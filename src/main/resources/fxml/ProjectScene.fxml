@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import java.lang.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<!-- Used to be prefHeight=900, prefWidth=1200 -->
+<AnchorPane id="AnchorPane" prefHeight="600.0" prefWidth="1000.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.ggvaidya.scinames.project.ProjectSceneController">
+   <children>
+      <TableView fx:id="timepointTable" layoutY="14.0" prefHeight="688.0" prefWidth="900.0" AnchorPane.bottomAnchor="30.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="32.0">
+        <columns>
+          <TableColumn prefWidth="112.0" text="Checklist Name" />
+          <TableColumn prefWidth="74.0" text="Year" />
+            <TableColumn prefWidth="117.0" text="Species Counts" />
+            <TableColumn prefWidth="103.0" text="Action Counts" />
+            <TableColumn prefWidth="122.0" text="Type" />
+        </columns>
+      </TableView>
+      <Label layoutX="3.0" layoutY="7.0" text="Current Project:" AnchorPane.topAnchor="7.0" />
+      <TextField fx:id="projectName" layoutX="112.0" layoutY="2.0" onAction="#projectNameChanged" prefHeight="27.0" prefWidth="637.0" AnchorPane.leftAnchor="107.0" AnchorPane.rightAnchor="156.0" AnchorPane.topAnchor="2.0" />
+      <Button layoutX="386.0" layoutY="2.0" mnemonicParsing="false" onAction="#loadProject" text="Load" AnchorPane.rightAnchor="52.0" AnchorPane.topAnchor="2.0" />
+      <Button layoutX="437.0" layoutY="2.0" mnemonicParsing="false" onAction="#saveProject" text="Save" AnchorPane.rightAnchor="2.0" AnchorPane.topAnchor="2.0" />
+      <Button layoutX="1.0" layoutY="722.0" mnemonicParsing="false" onAction="#addDataset" text="Add dataset" AnchorPane.bottomAnchor="1.0" AnchorPane.leftAnchor="1.0" />
+      <Button layoutX="96.0" layoutY="642.0" mnemonicParsing="false" onAction="#removeDataset" text="Remove dataset" AnchorPane.bottomAnchor="1.0" AnchorPane.leftAnchor="96.0" />
+      <Button layoutX="323.0" layoutY="872.0" mnemonicParsing="false" onAction="#displayLumpsAndSplits" text="Lumps and Splits" AnchorPane.bottomAnchor="1.0" AnchorPane.leftAnchor="323.0" />
+      <Button layoutX="842.0" layoutY="642.0" mnemonicParsing="false" onAction="#displayFilters" text="Filters" AnchorPane.bottomAnchor="1.0" AnchorPane.rightAnchor="2.0" />
+      <Button layoutX="675.0" layoutY="872.0" mnemonicParsing="false" onAction="#displayTimepointSimilarity" text="Similarity metrics" AnchorPane.bottomAnchor="1.0" AnchorPane.leftAnchor="675.0" />
+      <ProgressBar fx:id="progressBar" layoutX="7.0" layoutY="4.0" prefHeight="33.0" prefWidth="900.0" visible="false" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
+      <Button layoutX="746.0" layoutY="2.0" mnemonicParsing="false" onAction="#clearExistingProject" text="Clear" AnchorPane.rightAnchor="103.0" AnchorPane.topAnchor="2.0" />
+      <Button layoutX="215.0" layoutY="642.0" mnemonicParsing="false" onAction="#displayProjectTabularView" text="Project counts" AnchorPane.bottomAnchor="1.0" AnchorPane.leftAnchor="215.0" />
+      <Button layoutX="448.0" layoutY="872.0" mnemonicParsing="false" onAction="#displaySearch" text="Search" AnchorPane.bottomAnchor="1.0" AnchorPane.leftAnchor="448.0" />
+      <Button layoutX="800.0" layoutY="872.0" mnemonicParsing="false" onAction="#displayValidationSuite" text="Validation Suite" AnchorPane.bottomAnchor="1.0" AnchorPane.leftAnchor="800.0" />
+      <Button layoutX="565.0" layoutY="872.0" mnemonicParsing="false" onAction="#reconcileData" text="Reconcile data" AnchorPane.bottomAnchor="1.0" AnchorPane.leftAnchor="565.0" />
+      <Button layoutX="509.0" layoutY="872.0" mnemonicParsing="false" onAction="#displayTaxonConcepts" text="TCs" />
+   </children>
+</AnchorPane>
