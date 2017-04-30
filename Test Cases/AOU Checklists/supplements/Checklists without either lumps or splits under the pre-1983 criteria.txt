@@ -1,0 +1,29 @@
+Checklists without either lumps or splits under the pre-1983 criteria
+
+ - 1886 
+	- first checklist, nothing to lump or split!
+ - 1894 
+	- additions and deletions, but no evidence of lumps and splits.
+ - 1899 
+	- additions and deletions, but no evidence of lumps and splits.
+ - 1909 
+	- lots of higher taxonomic changes, but no evidence of lumps and splits.
+ - 1912 
+	- some additions and deletions, no evidence of lumps and splits.
+ - 1920 
+	- lots of genus and species renames, but no evidence of lumps and splits.
+ - 1953 
+	- not many changes, mostly involving subspecies.
+	- one set of changes may be a lump, but it's not clear, so I'm going with Avibase that treats it as a rename.
+ - 1957 
+	- major release, so we're relying on AOU information here.
+ - 1982 
+	- aou_5_34 -- list of recognised species, so no information on changes
+ - 1983 
+	- there are lumps and splits here, so probably caused by the pre-1982 filtering
+ - 1991 
+	- there are lumps and splits here, so probably caused by the pre-1982 filtering
+ - 1998 
+	- there are lumps and splits here, so probably caused by the pre-1982 filtering	
+ - 2009
+	- there are lumps and splits here, so probably caused by the pre-1982 filtering

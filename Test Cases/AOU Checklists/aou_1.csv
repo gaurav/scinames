@@ -1,0 +1,952 @@
+id, scientificName
+1, Aechmophorus occidentalis
+2, Colymbus holboellii
+3, Colymbus auritus
+4, Colymbus nigricollis californicus
+5, Colymbus dominicus
+6, Podilymbus podiceps
+7, Urinator imber
+8, Urinator adamsii
+9, Urinator arcticus
+10, Urinator pacificus
+11, Urinator lumme
+12, Lunda cirrhata
+13, Fratercula arctica
+13a, Fratercula arctica glacialis
+14, Fratercula corniculata
+15, Cerorhinca monocerata
+16, Ptychoramphus aleuticus
+17, Cyclorrhynchus psittaculus
+18, Simorhynchus cristatellus
+19, Simorhynchus pygmaeus
+20, Simorhynchus pusillus
+21, Synthliboramphus antiquus
+22, Synthliboramphus wumizusume
+23, Brachyramphus marmoratus
+24, Brachyramphus kittlitzii
+25, Brachyramphus hypoleucus
+26, Brachyramphus craveri
+27, Cepphus grylle
+28, Cepphus mandtii
+29, Cepphus columba
+30, Uria troile
+30a, Uria troile californica
+31, Uria lomvia
+31a, Uria lomvia arra
+32, Alca torda
+33, Plautus impennis
+34, Alle alle
+35, Megalestris skua
+36, Stercorarius pomarinus
+37, Stercorarius parasiticus
+38, Stercorarius longicaudus
+39, Gavia alba
+40, Rissa tridactyla
+40a, Rissa tridactyla pollicaris
+41, Rissa brevirostris
+42, Larus glaucus
+43, Larus leucopterus
+44, Larus glaucescens
+45, Larus kumlieni
+46, Larus nelsoni
+47, Larus marinus
+48, Larus schistisagus
+49, Larus occidentalis
+[50], Larus affinis
+51, Larus argentatus
+51a, Larus argentatus smithsonianus
+52, Larus cachinnans
+53, Larus californicus
+54, Larus delawarensis
+55, Larus brachyrhynchus
+[56], Larus canus
+57, Larus heermanni
+58, Larus atricilla
+59, Larus franklinii
+60, Larus philadelphia
+61, Rhodostethia rosea
+62, Xema sabinii
+63, Gelochelidon nilotica
+64, Sterna tschegrava
+65, Sterna maxima
+66, Sterna elegans
+67, Sterna sandvicensis acuflavida
+[68], Sterna trudeaui
+69, Sterna forsteri
+70, Sterna hirundo
+71, Sterna paradisaea
+72, Sterna dougalli
+73, Sterna aleutica
+74, Sterna antillarum
+75, Sterna fuliginosa
+[76], Sterna anaethetus
+77, Hydrochelidon nigra surinamensis
+[78], Hydrochelidon leucoptera
+79, Anous stolidus
+80, Rynchops nigra
+81, Diomedea nigripes
+82, Diomedea albatrus
+[83], Thalassogeron culminatus
+84, Phoebetria fuliginosa
+[85], Ossifraga gigantea
+86, Fulmarus glacialis
+86a, Fulmarus glacialis minor
+86b, Fulmarus glacialis glupischa
+86c, Fulmarus glacialis rodgersii
+87, Fulmarus glacialoides
+88, Puffinus borealis
+89, Puffinus major
+[90], Puffinus puffinus
+91, Puffinus creatopus
+92, Puffinus auduboni
+93, Puffinus gavia
+94, Puffinus stricklandi
+95, Puffinus griseus
+96, Puffinus tenuirostris
+[97], Puffinus cinereus
+[98], Aestrelata hasitata
+[99], Aesterlata gularis
+100, Aestrelata fisheri
+[101], Bulweria bulweri
+[102], Daption capensis
+103, Halocyptena microsoma
+104, Procellaria pelagica
+105, Oceanodroma furcata
+106, Oceanodroma leucorhoa
+107, Oceanodroma melania
+108, Oceanodroma homochroa
+109, Oceanites oceanicus
+[110], Cymodroma grallaria
+[111], Pelagodroma marina
+112, Phaethon flavirostris
+113, Phaethon aethereus
+[114], Sula cyanops
+115, Sula sula
+[116], Sula piscator
+117, Sula bassana
+118, Anhinga anhinga
+119, Phalacrocorax carbo
+120, Phalacrocorax dilophus
+120a, Phalacrocorax dilophus floridanus
+120b, Phalacrocorax dilophus cincinatus
+120c, Phalacrocorax dilophus albociliatus
+121, Phalacrocorax mexicanus
+122, Phalacrocorax penicillatus
+123, Phalacrocorax pelagicus
+123a, Phalacrocorax pelagicus robustus
+123b, Phalacrocorax pelagicus resplendens
+124, Phalacrocorax urile
+125, Pelecanus erythrorhynchos
+126, Pelecanus fuscus
+127, Pelecanus californicus
+128, Fregata aquila
+129, Merganser americanus
+130, Merganser serrator
+131, Lophodytes cucullatus
+132, Anas boschas
+133, Anas obscura
+134, Anas fulvigula
+135, Anas strepera
+136, Anas penelope
+137, Anas americana
+[138], Anas crecca
+139, Anas carolinensis
+140, Anas discors
+141, Anas cyanoptera
+142, Spatula clypeata
+143, Dafila acuta
+144, Aix sponsa
+[145], Netta rufina
+146, Aythya americana
+147, Aythya vallisneria
+148, Aythya marila nearctica
+149, Aythya affinis
+150, Aythya collaris
+151, Glaucionetta clangula americana
+152, Glaucionetta islandica
+153, Charitonetta albeola
+154, Clangula hymealis
+155, Histrionicus histrionicus
+156, Camptolaimus labradorius
+157, Eniconetta stelleri
+158, Arctonetta fischeri
+159, Somateria mollissima
+160, Somateria dresseri
+161, Somateria v-nigra
+162, Somateria spectabilis
+163, Oidemia americana
+[164], Oidemia fusca
+165, Oidemia deglandi
+166, Oidemia perspicillata
+167, Erismatura rubida
+[168], Nomonyx dominicus
+169, Chen hyperborea
+169a, Chen hyperborea nivalis
+170, Chen rossii
+[171], Anser albifrons
+171a, Anser albifrons gambeli
+172, Branta canadensis
+172a, Branta canadensis hutchinsii
+172b, Branta canadensis occidentalis
+172c, Branta canadensis minima
+173, Branta bernicla
+174, Branta nigricans
+[175], Branta leucopsis
+176, Philacte canagica
+177, Dendrocygna autumnalis
+178, Dendrocygna fulva
+[179], Olor cygnus
+180, Olor columbianus
+181, Olor buccinator
+182, Phoenicopterus ruber
+183, Ajaja ajaja
+184, Guara alba
+[185], Guara rubra
+186, Plegadis autumnalis
+187, Plegadis guarauna
+188, Tantalus loculator
+[189], Mycteria americana
+190, Botaurus lentiginosus
+191, Botaurus exilis
+192, Ardea occidentalis
+193, Ardea wardi
+194, Ardea herodias
+[195], Ardea cinerea
+196, Ardea egretta
+197, Ardea candidissima
+198, Ardea rufa
+199, Ardea tricolor ruficollis
+200, Ardea coerulea
+201, Ardea virescens
+202, Nycticorax nycticorax naevius
+203, Nycticorax violaceus
+204, Grus americana
+205, Grus canadensis
+206, Grus mexicana
+207, Aramus gigateus
+208, Rallus elegans
+209, Rallus beldingi
+210, Rallus obsoletus
+211, Rallus longirostris crepitans
+211a, Rallus longirostris saturatus
+212, Rallus virginianus
+[213], Porzana porzana
+214, Porzana carolina
+215, Porzana noveboracensis
+216, Porzana jamaicensis
+216a, Porzana jamaicensis coturniculus
+[217], Crex crex
+218, Ionornis martinica
+219, Gallinula galeata
+[220], Fulica atra
+221, Fulica americana
+222, Crymophilus fulicarius
+223, Phalaropus lobatus
+224, Phalaropus tricolor
+225, Recurvirostra americana
+226, Himantopus mexicanus
+[227], Scolopax rusticola
+228, Philohela minor
+[229], Gallinago gallinago
+230, Gallinago delicata
+231, Macrorhamphus griseus
+232, Macrorhamphus scolopaceus
+233, Micropalama himantopus
+234, Tringa canutus
+235, Tringa maritima
+236, Tringa couesi
+237, Tringa ptilocnemis
+238, Tringa acuminata
+239, Tringa maculata
+240, Tringa fuscicollis
+241, Tringa bairdii
+242, Tringa minutilla
+[243], Tringa alpina
+243a, Tringa alpina pacifica
+244, Tringa ferruginea
+[245], Eurynorhynchus pygmaeus
+246, Ereunetes pusillus
+247, Ereunetes occidentalis
+248, Calidris arenaria
+249, Limosa fedoa
+250, Limosa lapponica baueri
+251, Limosa haemastica
+[252], Limosa limosa
+[253], Totanus nebularius
+254, Totanus melanoleucus
+255, Totanus flavipes
+256, Totanus solitarius
+[257], Totanus ochropus
+258, Symphemia semipalmata
+259, Heteractitis incanus
+[260], Pavoncella pugnax
+261, Bartramia longicauda
+262, Tryngites subruficollis
+263, Actitis macularia
+264, Numenius longirostris
+265, Numenius hudsonicus
+266, Numenius borealis
+[267], Numenius phaeopus
+[268], Numenius tahitiensis
+[269], Vanellus vanellus
+270, Charadrius squatarola
+[271], Charadrius apricarius
+272, Charadrius dominicus
+272a, Charadrius dominicus fulvus
+273, Aegialitis vocifera
+274, Aegialitis semipalmata
+275, Aegialitis hiaticula
+[276], Aegialitis dubia
+277, Aegialitis meloda
+277a, Aegialitis meloda circumcincta
+278, Aegialitis nivosa
+[279], Aegialitis mongola
+280, Aegialitis wilsonia
+281, Aegialitis montana
+282, Aphriza virgata
+283, Arenaria interpres
+284, Arenaria melanocephala
+[285], Haematopus ostralegus
+286, Haematopus palliatus
+287, Haematopus bachmani
+[288], Jacana gymnostoma
+289, Colinus virginianus
+289a, Colinus virginianus floridanus
+289b, Colinus virginianus texanus
+290, Colinus graysoni
+291, Colinus ridgwayi
+292, Oreortyx pictus
+292a, Oreortyx pictus plumiferus
+293, Callipepla squamata
+293a, Callipepla squamata castanogastris
+294, Callipepla californica
+294a, Callipepla californica vallicola
+295, Callipepla gambeli
+296, Cyrtonyx montezumae
+297, Dendragapus obscurus
+297a, Dendragapus obscurus fuliginosus
+297b, Dendragapus obscurus richardsonii
+298, Dendragapus canadensis
+299, Dendragapus franklinii
+300, Bonasa umbellus
+300a, Bonasa umbellus togata
+300b, Bonasa umbellus umbelloides
+300c, Bonasa umbellus sabini
+301, Lagopus lagopus
+301a, Lagopus lagopus alleni
+302, Lagopus rupestris
+302a, Lagopus rupestris reinhardti
+302b, Lagopus rupestris nelsoni
+302c, Lagopus rupestris atkhensis
+303, Lagopus welchi
+304, Lagopus leucurus
+305, Tympanuchus americanus
+306, Tympanuchus cupido
+307, Tympanuchus pallidicinctus
+308, Pediocaetes phasianellus
+308a, Pediocaetes phasianellus columbianus
+308b, Pediocaetes phasianellus campestris
+309, Centrocercus urophasianus
+310, Meleagris gallopavo
+310a, Meleagris gallopavo mexicana
+311, Ortalis vetula maccalli
+312, Columba fasciata
+313, Columba flavirostris
+314, Columba leucocephala
+315, Ectopistes migratorius
+316, Zenaidura macroura
+317, Zenaida zenaida
+318, Engyptila albifrons
+319, Melopelia leucoptera
+320, Columbigallina passerina
+321, Scardafella inca
+[322], Geotrygon martinica
+[323], Starnoenas cyanocephala
+324, Pseudogryphus californianus
+325, Cathartes aura
+326, Catharista atrata
+327, Elanoides forficatus
+328, Elanus leucurus
+329, Ictinia mississippiensis
+330, Rostrhamus sociabilis
+331, Circus hudsonius
+332, Accipiter velox
+333, Accipiter cooperi
+334, Accipiter atricapillus
+334a, Accipiter atricapillus striatulus
+335, Parabuteo unicinctus harrisi
+[336], Buteo buteo
+337, Buteo borealis
+337a, Buteo borealis kriderii
+337b, Buteo borealis calurus
+337c, Buteo borealis lucasanus
+338, Buteo harlani
+339, Buteo lineatus
+339a, Buteo lineatus alleni
+339b, Buteo lineatus elegans
+340, Buteo abbreviatus
+341, Buteo albicaudatus
+342, Buteo swainsoni
+343, Buteo latissimus
+[344], Buteo brachyurus
+345, Urubitinga anthracina
+346, Asturina plagiata
+[347], Archibuteo lagopus
+347a, Archibuteo lagopus sancti-johannis
+348, Archibuteo ferrugineus
+349, Aquila chrysaetos
+[350], Thrasaetus harpyia
+[351], Haliaeetus albicilla
+352, Haliaeetus leucocephalus
+353, Falco islandus
+354, Falco rusticolus
+354a, Falco rusticolus gyrfalco
+354b, Falco rusticolus obsoletus
+355, Falco mexicanus
+356, Falco peregrinus anatum
+356a, Falco peregrinus pealei
+357, Falco columbarius
+357a, Falco columbarius suckleyi
+358, Falco richardsonii
+359, Falco fusco-coerulescens
+360, Falco sparverius
+[361], Falco sparverioides
+362, Polyborus cheriway
+363, Polyborus lutosus
+364, Pandion haliaetus carolinensis
+365, Strix pratincola
+366, Asio wilsonianus
+367, Asio accipitrinus
+368, Syrnium nebulosum
+368a, Syrnium nebulosum alleni
+369, Syrnium occidentale
+370, Ulula cinerea
+[370a], Ulula cinerea lapponica
+371, Nyctala tengmalmi richardsoni
+372, Nyctala acadica
+373, Megascops asio
+373a, Megascops asio floridanus
+373b, Megascops asio mccallii
+373c, Megascops asio bendirei
+373d, Megascops asio kennicottii
+373e, Megascops asio maxwelliae
+373f, Megascops asio trichopsis
+374, Megascops flammeolus
+375, Bubo virginianus
+375a, Bubo virginianus subarcticus
+375b, Bubo virginianus arcticus
+375c, Bubo virginianus saturatus
+376, Nyctea nyctea
+[377], Surnia ulula
+377a, Surnia ulula caparoch
+378, Speotyto cunicularia hypogaea
+378a, Speotyto cunicularia floridana
+379, Glaucidium gnoma
+380, Glaucidium phalaenoides
+381, Micrathene whitneyi
+382, Conurus carolinensis
+[383], Crotophaga ani
+384, Crotophaga sulcirostris
+385, Geococcyx californianus
+386, Coccyzus minor
+387, Coccyzus americanus
+388, Coccyzus erythrophthalamus
+[389], Trogon ambiguus
+390, Ceryle alcyon
+391, Ceryle cabanisi
+392, Campephilus principalis
+393, Dryobates villosus
+393a, Dryobates villosus leucomelas
+393b, Dryobates villosus audubonii
+393c, Dryobates villosus harrisii
+394, Dryobates pubescens
+394a, Dryobates pubescens gairdnerii
+395, Dryobates borealis
+396, Dryobates scalaris
+396a, Dryobates scalaris lucasanus
+397, Dryobates nuttallii
+398, Dryobates stricklandi
+399, Xenopicus albolarvatus
+400, Picoides arcticus
+401, Picoides americanus
+401a, Picoides americanus alascensis
+401b, Picoides americanus dorsalis
+402, Sphyrapicus varius
+402a, Sphyrapicus varius nuchalis
+403, Sphyrapicus ruber
+404, Sphyrapicus thyroideus
+405, Ceophloeus pileatus
+406, Melanerpes erythrocephalus
+407, Melanerpes formicivorus bairdi
+407a, Melanerpes formicivorus angustifrons
+408, Melanerpes torquatus
+409, Melanerpes carolinus
+410, Melanerpes aurifrons
+411, Melanerpes uropygialis
+412, Colaptes auratus
+413, Colaptes cafer
+413a, Colaptes cafer saturatior
+414, Colaptes chrysoides
+415, Colaptes rufipileus
+416, Antrostomus carolinensis
+417, Antrostomus vociferus
+417a, Antrostomus vociferus arizonae
+418, Phalaenoptilus nuttalli
+419, Nyctidromus albicollis
+420, Chordeiles virginianus
+420a, Chordeiles virginianus henryi
+[420b], Chordeiles virginianus minor
+421, Chordeiles texensis
+422, Cypseloides niger
+423, Chaetura pelagica
+424, Chaetura vauxii
+425, Micropus melanoleucus
+426, Eugenes fulgens
+427, Coeligena clemenciae
+428, Trochilus colubris
+429, Trochilus alexandri
+430, Trochilus costae
+431, Trochilus anna
+432, Trochilus platycercus
+433, Trochilus rufus
+434, Trochilus alleni
+435, Trochilus heloisa
+436, Trochilus calliope
+437, Trochilus lucifer
+438, Amazilia fuscicaudata
+439, Amazilia cerviniventris
+440, Basilinna xantusi
+441, Iache latirostris
+[442], Milvulus tyrannus
+443, Milvulus forficatus
+444, Tyrannus tyrannus
+445, Tyrannus dominicensis
+446, Tyrannus melancholicus couchii
+447, Tyrannus verticalis
+448, Tyrannus vociferans
+449, Pitangus derbianus
+[450], Myiozetetes texensis
+451, Myiodynastes luteiventris
+452, Myiarchus crinitus
+453, Myiarchus mexicanus
+453a, Myiarchus mexicanus magister
+454, Myiarchus cinerascens
+[455], Myiarchus lawrenceii
+455a, Myiarchus lawrencei olivascens
+456, Sayornis phoebe
+457, Sayornis saya
+458, Sayornis nigricans
+459, Contopus borealis
+460, Contopus pertinax
+461, Contopus virens
+462, Contopus richardsonii
+463, Empidonax flaviventris
+464, Empidonax difficilis
+465, Empidonax acadicus
+466, Empidonax pusillus
+466a, Empidonax pusillus traillii
+467, Empidonax minimus
+468, Empidonax hammondi
+469, Empidonax obscurus
+[470], Empidonax fulvifrons
+470a, Empidonax fulvifrons pygmaeus
+471, Pyrocephalus rubineus mexicanus
+472, Ornithion imberbe
+472a, Ornithion imberbe ridgwayi
+[473], Alauda arvensis
+474, Otocoris alpestris
+474a, Otocoris alpestris leucolaema
+474b, Otocoris alpestris praticola
+474c, Otocoris alpestris arenicola
+474d, Otocoris alpestris giraudi
+474e, Otocoris alpestris chrysolaema
+474f, Otocoris alpestris rubea
+474g, Otocoris alpestris strigata
+475, Pica pica hudsonica
+476, Pica nuttalli
+477, Cyanocitta cristata
+477a, Cyanocitta cristata florincola
+478, Cyanocitta stelleri
+478a, Cyanocitta stelleri frontalis
+478b, Cyanocitta stelleri macrolopha
+479, Aphelocoma floridana
+480, Aphelocoma woodhousei
+481, Aphelocoma californica
+482, Aphelocoma sieberii arizonae
+483, Xanthoura luxuosa
+484, Perisoreus canadensis
+484a, Perisoreus canadensis capitalis
+484b, Perisoreus canadensis fumifrons
+484c, Perisoreus canadensis nigricapillus
+485, Perisoreus obscurus
+486, Corvus corax sinuatus
+487, Corvus cryptoleucus
+488, Corvus americanus
+488a, Corvus americanus floridanus
+489, Corvus caurinus
+490, Corvus ossifragus
+491, Picicorvus columbianus
+492, Cyanocephalus cyanocephalus
+[493], Sturnus vulgaris
+494, Dolichonyx oryzivorus
+494a, Dolichonyx oryzivorus albinucha
+495, Molothrus ater
+495a, Molothrus ater obscurus
+496, Molothrus aeneus
+497, Xanthocephalus xanthocephalus
+498, Agelaius phoeniceus
+499, Agelaius gubernator
+500, Agelaius tricolor
+501, Sturnella magna
+501a, Sturnella magna mexicana
+501b, Sturnella magna neglecta
+[502], Icterus icterus
+503, Icterus audubonii
+504, Icterus parisorum
+505, Icterus cucullatus
+505a, Icterus cucullatus nelsoni
+506, Icterus spurius
+507, Icterus galbula
+508, Icterus bullocki
+509, Scolecophagus carolinus
+510, Scolecophagus cyanocephalus
+511, Quiscalus quiscula
+511a, Quiscalus quiscula aglaeus
+511b, Quiscalus quiscula aeneus
+512, Quiscalus macrourus
+513, Quiscalus major
+514, Coccothraustes vespertina
+515, Pinicola enucleator
+[516], Pyrrhula cassini
+517, Carpodacus purpureus
+517a, Carpodacus purpureus californicus
+518, Carpodacus cassini
+519, Carpodacus frontalis
+519a, Carpodacus frontalis rhodocolpus
+520, Carpodacus amplus
+521, Loxia curvirostra minor
+521a, Loxia curvirostra stricklandi
+522, Loxia leucoptera
+523, Leucosticte griseonucha
+524, Leucosticte tephrocotis
+524a, Leucosticte tephrocotis littoralis
+525, Leucosticte atrata
+526, Leucosticte australis
+527, Acanthis hornemannii
+527a, Acanthis hornemannii exilipes
+528, Acanthis linaria
+528a, Acanthis linaria holboellii
+528b, Acanthis linaria rostrata
+529, Spinus tristis
+530, Spinus psaltria
+530a, Spinus psaltria arizonae
+530b, Spinus psaltria mexicanus
+531, Spinus lawrencei
+[532], Spinus notatus
+533, Spinus pinus
+534, Plectrophenax nivalis
+535, Plectrophenax hyperboreus
+536, Calcarius lapponicus
+537, Calcarius pictus
+538, Calcarius ornatus
+539, Rhynchophanes mccownii
+540, Poocaetes gramineus
+540a, Poocaetes gramineus confinis
+541, Ammodramus princeps
+542, Ammodramus sandwichensis
+542a, Ammodramus sandwichensis savanna
+542b, Ammodramus sandwichensis alaudinus
+542c, Ammodramus sandwichensis bryanti
+543, Ammodramus beldingi
+544, Ammodramus rostratus
+544a, Ammodramus rostratus guttatus
+545, Ammodramus bairdii
+546, Ammodramus savannarum passerinus
+546a, Ammodramus savannarum perpallidus
+547, Ammodramus henslowii
+548, Ammodramus leconteii
+549, Ammodramus caudacutus
+549a, Ammodramus caudacutus nelsoni
+550, Ammodramus maritimus
+551, Ammodramus nigrescens
+552, Chondestes grammacus
+552a, Chondestes grammacus strigatus
+553, Zonotrichia querula
+554, Zonotrichia leucophrys
+555, Zonotrichia intermedia
+556, Zonotrichia gambeli
+557, Zonotrichia coronata
+558, Zonotrichia albicollis
+559, Spizella monticola
+559a, Spizella monticola ochracea
+560, Spizella socialis
+560a, Spizella socialis arizonae
+561, Spizella pallida
+562, Spizella breweri
+563, Spizella pusilla
+564, Spizella wortheni
+565, Spizella atrigularis
+566, Junco aikeni
+567, Junco hyemalis
+567a, Junco hyemalis oregonus
+568, Junco annectens
+569, Junco caniceps
+570, Junco cinereus palliatus
+570a, Junco cinereus dorsalis
+571, Junco bairdi
+572, Junco insularis
+573, Amphispiza bilineata
+574, Amphispiza belli
+574a, Amphispiza belli nevadensis
+575, Peucaea aestivalis
+575a, Peucaea aestivalis bachmanii
+576, Peucaea arizonae
+577, Peucaea mexicana
+578, Peucaea cassini
+579, Peucaea carpalis
+580, Peucaea ruficeps
+580a, Peucaea ruficeps boucardi
+580b, Peucaea ruficeps eremoeca
+581, Melospiza fasciata
+581a, Melospiza fasciata fallax
+581b, Melospiza fasciata montana
+581c, Melospiza fasciata heermanni
+581d, Melospiza fasciata samuelis
+581e, Melospiza fasciata guttata
+581f, Melospiza fasciata rufina
+582, Melospiza cinerea
+583, Melospiza lincolni
+584, Melospiza georgiana
+585, Passerella iliaca
+585a, Passerella iliaca unalaschcensis
+585b, Passerella iliaca megarhyncha
+585c, Passerella iliaca schistacea
+586, Embernagra rufivirgata
+587, Pipilo erythrophthalmus
+587a, Pipilo erythrophthalmus alleni
+588, Pipilo maculatus arcticus
+588a, Pipilo maculatus megalonyx
+588b, Pipilo maculatus oregonus
+589, Pipilo consobrinus
+590, Pipilo chlorurus
+591, Pipilo fuscus mesoleucus
+591a, Pipilo fuscus albigula
+591b, Pipilo fuscus crissalis
+592, Pipilo aberti
+593, Cardinalis cardinalis
+593a, Cardinalis cardinalis superbus
+593b, Cardinalis cardinalis igneus
+594, Pyrrhuloxia sinuata
+595, Habia ludoviciana
+596, Habia melanocephala
+597, Guiraca caerulea
+598, Passerina cyanea
+599, Passerina amoena
+600, Passerina versicolor
+601, Passerina ciris
+602, Sporophila morelleti
+603, Euetheia bicolor
+604, Spiza americana
+605, Calamospiza melanocorys
+606, Euphonia elegantissima
+607, Piranga ludoviciana
+608, Piranga erythromelas
+609, Piranga hepatica
+610, Piranga rubra
+610a, Piranga rubra cooperi
+611, Progne subis
+612, Petrochelidon lunifrons
+613, Chelidon erythrogaster
+614, Tachycineta bicolor
+615, Tachycineta thalassina
+616, Clivicola riparia
+617, Stelgidopteryx serripennis
+618, Ampelis garrulus
+619, Ampelis cedrorum
+620, Phainopepla nitens
+621, Lanius borealis
+622, Lanius ludovicianus
+622a, Lanius ludovicianus excubitorides
+[623], Vireo altiloquus barbatulus
+624, Vireo olivaceus
+625, Vireo flavoviridis
+626, Vireo philadelphicus
+627, Vireo gilvus
+628, Vireo flavifrons
+629, Vireo solitarius
+629a, Vireo solitarius cassinii
+629b, Vireo solitarius plumbeus
+630, Vireo atricapillus
+631, Vireo noveboracensis
+632, Vireo huttoni
+632a, Vireo huttoni stephensi
+633, Vireo bellii
+633a, Vireo bellii pusillus
+634, Vireo vicinior
+635, Certhiola bahamensis
+636, Mniotilta varia
+637, Protonotaria citrea
+638, Helinaia swainsonii
+639, Helmitherus vermivorus
+640, Helminthophila bachmani
+641, Helminthophila pinus
+642, Helminthophila chrysoptera
+643, Helminthophila luciae
+644, Helminthophila virginiae
+645, Helminthophila ruficapilla
+645a, Helminthophila ruficapilla gutturalis
+646, Helminthophila celata
+646a, Helminthophila celata lutescens
+647, Helminthophila peregrina
+648, Compsothlypis americana
+649, Compsothlypis nigrilora
+650, Dendroica tigrina
+651, Dendroica olivacea
+652, Dendroica aestiva
+653, Dendroica bryanti castaneiceps
+654, Dendroica caerulescens
+655, Dendroica coronata
+656, Dendroica auduboni
+657, Dendroica maculosa
+658, Dendroica caerulea
+659, Dendroica pensylvanica
+660, Dendroica castanea
+661, Dendroica striata
+662, Dendroica blackburniae
+663, Dendroica dominica
+663a, Dendroica dominica albilora
+664, Dendroica graciae
+665, Dendroica nigrescens
+666, Dendroica chrysoparia
+667, Dendroica virens
+668, Dendroica townsendi
+669, Dendroica occidentalis
+670, Dendroica kirtlandi
+671, Dendroica vigorsii
+672, Dendroica palmarum
+672a, Dendroica palmarum hypochrysea
+673, Dendroica discolor
+674, Seiurus aurocapillus
+675, Seiurus noveboracensis
+675a, Seiurus noveboracensis notabilis
+676, Seiurus motacilla
+677, Geothlypis formosa
+678, Geothlypis agilis
+679, Geothlypis philadelphia
+680, Geothlypis macgillivrayi
+681, Geothlypis trichas
+681a, Geothlypis trichas occidentalis
+682, Geothlypis beldingi
+683, Icteria virens
+683a, Icteria virens longicauda
+684, Sylvania mitrata
+685, Sylvania pusilla
+685a, Sylvania pusilla pileolata
+686, Sylvania canadensis
+687, Setophaga ruticilla
+688, Setophaga picta
+[689], Setophaga miniata
+690, Cardellina rubrifrons
+[691], Ergaticus ruber
+[692], Basileuterus culicivorus
+[693], Basileuterus belli
+[694], Motacilla alba
+[695], Motacilla ocularis
+696, Budytes flavus leucostriatus
+697, Anthus pensilvanicus
+[698], Anthus pratensis
+[699], Anthus cervinus
+700, Anthus spragueii
+701, Cinclus mexicanus
+702, Oroscoptes montanus
+703, Mimus polyglottos
+704, Galeoscoptes carolinensis
+705, Harporhynchus rufus
+706, Harporhynchus longirostris
+707, Harporhynchus curvirostris
+707a, Harporhynchus curvirostris palmeri
+708, Harporhynchus bendirei
+709, Harporhynchus cinereus
+710, Harporhynchus redivivus
+711, Harporhynchus lecontei
+712, Harporhynchus crissalis
+713, Campylorhynchus brunneicapillus
+714, Campylorhynchus affinis
+715, Salpinctes obsoletus
+716, Salpinctes guadeloupensis
+[717], Catherpes mexicanus
+717a, Cartherpes mexicanus conspersus
+718, Throthorus ludovicianus
+718a, Thryothorus ludovicianus miamensis
+719, Thryothorus bewickii
+719a, Thryothorus bewickii spilurus
+719b, Thryothorus bewickii bairdi
+720, Thryothorus brevicaudus
+721, Troglodytes aedon
+721a, Troglodytes aedon parkmanii
+722, Troglodytes hiemalis
+722a, Troglodytes hiemalis pacificus
+723, Troglodytes alascensis
+724, Cistothorus stellaris
+725, Cistothorus palustris
+726, Certhia familiaris americana
+726a, Certhia familiaris mexicana
+727, Sitta carolinensis
+727a, Sitta carolinensis aculeata
+728, Sitta canadensis
+729, Sitta pusilla
+730, Sitta pygmaea
+731, Parus bicolor
+732, Parus atricristatus
+733, Parus inornatus
+733a, Parus inornatus griseus
+733b, Parus inornatus cineraceus
+734, Parus wollweberi
+735, Parus atricapillus
+735a, Parus atricapillus septentrionalis
+735b, Parus atricapillus occidentalis
+736, Parus carolinensis
+[737], Parus meridionalis
+738, Parus gambeli
+739, Parus cinctus obtectus
+740, Parus hudsonicus
+741, Parus rufescens
+741a, Parus rufescens neglectus
+742, Chamaea fasciata
+742a, Chamaea fasciata henshawi
+743, Psaltriparus minimus
+743a, Psaltriparus minimus californicus
+743b, Psaltriparus minimus grindae
+744, Psaltriparus plumbeus
+[745], Psaltriparus melanotis
+746, Auriparus flaviceps
+747, Phyllopseustes borealis
+748, Regulus satrapa
+748a, Regulus satrapa olivaceus
+749, Regulus calendula
+750, Regulus obscurus
+751, Polioptila caerulea
+752, Polioptila plumbea
+753, Polioptila californica
+754, Myadestes townsendii
+755, Turdus mustelinus
+756, Turdus fuscescens
+756a, Turdus fuscescens salicicolus
+757, Turdus aliciae
+757a, Turdus aliciae bicknelli
+758, Turdus ustulatus
+758a, Turdus ustulatus swainsonii
+759, Turdus aonalaschkae
+759a, Turdus aonalaschkae auduboni
+759b, Turdus aonalaschkae pallasii
+[760], Turdus iliacus
+761, Merula migratoria
+761a, Merula migratoria propinqua
+762, Merula confinis
+763, Hesperocichla naevia
+[764], Cyanecula suecica
+765, Saxicola oenanthe
+766, Sialia sialis
+766a, Sialia sialis azurea
+767, Sialia mexicana
+768, Sialia arctica
