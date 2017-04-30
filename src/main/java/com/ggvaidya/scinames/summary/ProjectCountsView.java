@@ -108,7 +108,7 @@ public final class ProjectCountsView {
 			cols.add(
 				createTableColumnForDataset(
 					"count_" + chType.getType(), 
-					ds -> String.valueOf(ds.getChanges(projectView.getProject(), chType).count())
+					ds -> String.valueOf(ds.getChanges(projectView.getProject()).filter(ch -> ch.getType().equals(chType)).count())
 				)
 			)
 		);

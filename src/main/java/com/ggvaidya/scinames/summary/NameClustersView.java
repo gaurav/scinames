@@ -108,7 +108,7 @@ public final class NameClustersView {
 			colChangesByType.setCellValueFactory((TableColumn.CellDataFeatures<NameCluster, String> features) -> {
 				NameCluster cluster = features.getValue();
 				long numberOfChanges = projectView.getProject().getDatasets().stream()
-					.flatMap(t -> t.getAllChanges(type))
+					.flatMap(t -> t.getChanges(projectView.getProject()).filter(ch -> ch.getType().equals(type)))
 					.filter(c -> cluster.containsAny(c.getAllNames()))
 					.count();
 				return new ReadOnlyStringWrapper(String.valueOf(numberOfChanges));

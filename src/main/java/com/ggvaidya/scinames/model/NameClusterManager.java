@@ -22,6 +22,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javafx.collections.FXCollections;
@@ -48,6 +49,8 @@ import javafx.collections.ObservableSet;
  * @author Gaurav Vaidya <gaurav@ggvaidya.com>
  */
 public class NameClusterManager {
+	private static final Logger LOGGER = Logger.getLogger(NameClusterManager.class.getSimpleName());
+	
 	private final ObservableMap<Name, NameCluster> clustersByName = FXCollections.observableMap(new HashMap<>());
 	private final ObservableSet<NameCluster> clusters = FXCollections.observableSet(new HashSet<>());
 	
@@ -79,7 +82,7 @@ public class NameClusterManager {
 		Set<Name> names = newCluster.getNames();
 		
 		if(!names.stream().anyMatch(n -> clustersByName.keySet().contains(n))) {
-			// System.err.println("New cluster " + newCluster + " has no overlap with existing clusters.");
+			LOGGER.finest("New cluster " + newCluster + " has no overlap with existing clusters.");
 			newCluster.getNames().forEach(n -> clustersByName.put(n, newCluster));
 			clusters.add(newCluster);
 			return;
@@ -91,7 +94,7 @@ public class NameClusterManager {
 
 		// For each matching cluster, combine it with the cluster we have now.
 		matchingClusters.forEach(cluster -> {
-			// System.err.println("New cluster " + newCluster + " overlaps with existing cluster " + cluster + ", merging.");
+			LOGGER.finest("New cluster " + newCluster + " overlaps with existing cluster " + cluster + ", merging.");
 			
 			cluster.getNames().forEach(n -> clustersByName.remove(n));
 			clusters.remove(cluster);

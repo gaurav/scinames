@@ -16,18 +16,11 @@
  */
 package com.ggvaidya.scinames.model;
 
-import com.ggvaidya.scinames.model.filters.ChangeFilterFactory;
-import com.ggvaidya.scinames.model.filters.ChangeFilter;
-import com.ggvaidya.scinames.model.io.ProjectXMLReader;
-import com.ggvaidya.scinames.model.rowextractors.NameExtractor;
-import com.ggvaidya.scinames.model.rowextractors.NameExtractorFactory;
-import com.ggvaidya.scinames.util.ModificationTimeProperty;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Deque;
@@ -44,6 +37,31 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
+
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.stream.XMLEventReader;
+import javax.xml.stream.XMLInputFactory;
+import javax.xml.stream.XMLStreamException;
+import javax.xml.transform.OutputKeys;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerConfigurationException;
+import javax.xml.transform.TransformerException;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
+
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+
+import com.ggvaidya.scinames.model.filters.ChangeFilter;
+import com.ggvaidya.scinames.model.filters.ChangeFilterFactory;
+import com.ggvaidya.scinames.model.io.ProjectXMLReader;
+import com.ggvaidya.scinames.model.rowextractors.NameExtractor;
+import com.ggvaidya.scinames.model.rowextractors.NameExtractorFactory;
+import com.ggvaidya.scinames.util.ModificationTimeProperty;
+
 import javafx.beans.property.ListProperty;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleListProperty;
@@ -55,15 +73,6 @@ import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 import javafx.collections.ObservableMap;
 import javafx.collections.ObservableSet;
-import javax.xml.parsers.*;
-import javax.xml.stream.XMLEventReader;
-import javax.xml.stream.XMLInputFactory;
-import javax.xml.stream.XMLStreamException;
-import javax.xml.transform.*;
-import javax.xml.transform.dom.*;
-import javax.xml.transform.stream.*;
-import org.w3c.dom.*;
-import org.xml.sax.SAXException;
 
 /**
  * A "project", consisting of a series of Timepoints (Checklists and 
@@ -155,20 +164,8 @@ public class Project {
 		return recognizedNamesCache.get(d);
 	}
 	
-	public Stream<Change> getAllChanges() {
-		return datasets.stream().flatMap(t -> t.getAllChanges());
-	}
-	
-	public Stream<Change> getAllChanges(Change.Type type) {
-		return datasets.stream().flatMap(t -> t.getAllChanges(type));
-	}
-	
 	public Stream<Change> getChanges() {
-		return datasets.stream().flatMap(t -> t.getAllChanges()).filter(changeFilterProperty.get());
-	}
-
-	public Stream<Change> getChanges(Change.Type type) {
-		return datasets.stream().flatMap(t -> t.getAllChanges(type)).filter(changeFilterProperty.get());
+		return datasets.stream().flatMap(t -> t.getChanges(this));
 	}
 	
 	public ObjectProperty<ChangeFilter> changeFilterProperty() {
@@ -279,7 +276,7 @@ public class Project {
 		t.getReferencedNames().forEach(n -> nameClusterManager.addCluster(new NameCluster(t, n)));
 		
 		// Track renames separately.
-		t.getAllChanges(Change.RENAME).forEach(c ->
+		t.getChanges(this).filter(ch -> ch.getType().equals(Change.RENAME)).forEach(c ->
 			c.getFrom().forEach(from ->
 				c.getTo().forEach(
 					to -> nameClusterManager.addCluster(new Synonymy(from, to, t))
@@ -293,12 +290,12 @@ public class Project {
 			n.asBinomial().ifPresent(binomialName -> binomialNames.add(binomialName));
 			
 			if(!timepointsByName.containsKey(n))
-				timepointsByName.put(n, new ArrayList());
+				timepointsByName.put(n, new ArrayList<Dataset>());
 			
 			timepointsByName.get(n).add(t);
 		});
 		
-		Set<Change.Type> newChangeTypes = t.getAllChanges().map(c -> c.getType()).collect(Collectors.toSet());
+		Set<Change.Type> newChangeTypes = t.getChanges(this).map(c -> c.getType()).collect(Collectors.toSet());
 		changeTypes.addAll(newChangeTypes);
 		
 		// Finally, changes in the new dataset should change this database.

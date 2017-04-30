@@ -406,17 +406,9 @@ public class Dataset implements Citable, Comparable {
 	public Stream<Change> getAllChanges() {
 		return Stream.concat(explicitChanges.stream(), implicitChanges.stream());
 	}
-
-	public Stream<Change> getAllChanges(Change.Type type) {
-		return getAllChanges().filter(ch -> ch.getType().equals(type));
-	}
 	
 	public Stream<Change> getChanges(Project project) {
 		return getAllChanges().filter(project.getChangeFilter());
-	}
-	
-	public Stream<Change> getChanges(Project project, Change.Type type) {
-		return getAllChanges().filter(ch -> ch.getType().equals(type)).filter(project.getChangeFilter());
 	}
 
 	@Override

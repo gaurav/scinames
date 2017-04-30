@@ -5,6 +5,7 @@
  */
 package com.ggvaidya.scinames.ui;
 
+import com.ggvaidya.scinames.model.Change;
 import com.ggvaidya.scinames.model.Dataset;
 import com.ggvaidya.scinames.model.DatasetColumn;
 import com.ggvaidya.scinames.model.DatasetRow;
@@ -12,6 +13,7 @@ import com.ggvaidya.scinames.model.Name;
 import com.ggvaidya.scinames.model.NameCluster;
 import com.ggvaidya.scinames.model.Project;
 import com.ggvaidya.scinames.model.TaxonConcept;
+import com.ggvaidya.scinames.project.ProjectView;
 import com.ggvaidya.scinames.util.SimplifiedDate;
 import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.Table;
@@ -225,7 +227,10 @@ public class DataReconciliatorController implements Initializable {
 			existingColNames.add("is_ongoing");
 		} else {
 			existingColNames.add("taxon_concept_count");
-			existingColNames.add("taxon_concepts");	
+			existingColNames.add("taxon_concepts");
+			existingColNames.add("trajectory");
+			existingColNames.add("trajectory_without_renames");
+			existingColNames.add("trajectory_lumps_splits");
 		}
 		
 		existingColNames.add("first_added_dataset");
@@ -288,6 +293,37 @@ public class DataReconciliatorController implements Initializable {
 			if(!foundInSorted.isEmpty()) {
 				precalc.put(cluster, "first_added_dataset", getOneElementSet(foundInSorted.get(0).getCitation()));
 				precalc.put(cluster, "first_added_year", getOneElementSet(foundInSorted.get(0).getDate().getYearAsString()));
+			}
+			
+			// For name clusters we can also figure out trajectories!
+			if(!flag_nameClustersAreTaxonConcepts) {
+				List<String> trajectorySteps = cluster.getFoundInSorted().stream().map(
+					dataset -> {
+						String changes = dataset.getChanges(project)
+							.filter(ch -> cluster.containsAny(ch.getAllNames()))
+							.map(ch -> ch.getType().toString())
+							.collect(Collectors.joining("|"));
+						if(!changes.isEmpty()) return changes;
+						
+						// This can happen when a change is referenced without an explicit addition.
+						if(cluster.containsAny(dataset.getReferencedNames().collect(Collectors.toList())))
+							return "referenced";
+						else
+							return "missing";
+					}
+				).collect(Collectors.toList());
+				
+				precalc.put(cluster, "trajectory", getOneElementSet(
+					String.join(" -> ", trajectorySteps)
+				));
+				
+				precalc.put(cluster, "trajectory_without_renames", getOneElementSet(
+					trajectorySteps.stream().filter(ch -> !ch.contains("rename")).collect(Collectors.joining(" -> "))
+				));
+				
+				precalc.put(cluster, "trajectory_lumps_splits", getOneElementSet(
+						trajectorySteps.stream().filter(ch -> ch.contains("split") || ch.equals("lump")).collect(Collectors.joining(" -> "))	
+				));
 			}
 			
 			// Okay, here's where we reconcile!

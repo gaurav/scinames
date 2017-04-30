@@ -159,7 +159,7 @@ public final class ChangesListView {
 			).sorted();
 		else
 			sorted = FXCollections.observableArrayList(
-				projectView.getProject().getChanges(filterChangeType).collect(Collectors.toList())
+				projectView.getProject().getChanges().filter(ch -> ch.getType().equals(filterChangeType)).collect(Collectors.toList())
 			).sorted();
 		
 		controller.getTableItemsProperty().set(sorted);

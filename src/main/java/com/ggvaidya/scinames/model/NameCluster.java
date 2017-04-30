@@ -67,7 +67,7 @@ public class NameCluster {
 		//  - any of the changes involving this cluster involves a lump.
 		return foundIn.stream()
 			// Get all lumps and splits
-			.flatMap(ds -> Stream.concat(ds.getChanges(p, Change.LUMP), ds.getChanges(p, Change.SPLIT)))
+			.flatMap(ds -> ds.getChanges(p).filter(ch -> ch.getType().equals(Change.LUMP) || ch.getType().equals(Change.SPLIT)))
 			// Get those associated with names in this cluster.
 			.anyMatch(ch -> ch.getAllNames().stream().anyMatch(n -> names.contains(n)))
 		;
@@ -172,7 +172,7 @@ public class NameCluster {
 	
 	public List<Dataset> getFoundInSorted() {
 		if(foundIn.isEmpty())
-			return new ArrayList();
+			return new ArrayList<Dataset>();
 		
 		return foundIn.stream().sorted().collect(Collectors.toList());
 	}
