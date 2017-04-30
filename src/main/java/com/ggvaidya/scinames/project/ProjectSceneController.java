@@ -254,10 +254,7 @@ public class ProjectSceneController {
 				if(event.getClickCount() == 2 && !row.isEmpty()) {
 					Dataset tp = row.getItem();
 					
-					// System.err.println("Starting timepoint view on " + tp + " from row " + row);
-					
-					DatasetView view = new DatasetView(projectView, tp);
-					view.getStage().show();
+					projectView.openDetailedView(tp);
 				}
 			});
 			

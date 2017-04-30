@@ -35,6 +35,7 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.scene.Scene;
 import javafx.scene.control.TableColumn;
+import javafx.scene.input.MouseButton;
 import javafx.stage.Stage;
 import javafx.util.Callback;
 
@@ -116,5 +117,16 @@ public final class ValidationSuiteView {
 		col = createTableColumnForValidationError("Target", ve -> ve.getTarget().toString());
 		col.setPrefWidth(300.0);
 		cols.add(col);
+		
+		// Double-click on rows should take you to the entry.
+		controller.getTableView().setOnMouseClicked(evt -> {
+			if(evt.getButton() == MouseButton.PRIMARY && evt.getClickCount() == 2) {
+				// Double-click!
+				ValidationError ve = (ValidationError) controller.getTableView().getSelectionModel().getSelectedItem();
+				projectView.openDetailedView(ve.getTarget());
+				
+				evt.consume();
+			}
+		});
 	}
 }

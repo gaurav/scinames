@@ -41,7 +41,10 @@ public class ChangeValidator implements Validator {
 			getIncorrectAdditionsAndDeletions(p),
 			Stream.concat(
 				getIncorrectLumpsAndSplits(p),
-				checkFromWasPreviouslyRecognized(p)
+				Stream.concat(
+					checkFromWasPreviouslyRecognized(p),
+					changesOfNonRecognizedTypes(p)
+				)
 			)
 		);
 	}
@@ -56,7 +59,7 @@ public class ChangeValidator implements Validator {
 				} else
 					return false;
 			})
-			.map(ch -> new ValidationError(this, p, "Incorrect addition or deletion", ch));
+			.map(ch -> new ValidationError<Change>(this, p, "Incorrect addition or deletion", ch));
 	}
 	
 	private Stream<ValidationError> getIncorrectLumpsAndSplits(Project p) {
@@ -69,7 +72,7 @@ public class ChangeValidator implements Validator {
 				} else
 					return false;
 			})
-			.map(ch -> new ValidationError(this, p, "Incorrect lump or split", ch));
+			.map(ch -> new ValidationError<Change>(this, p, "Incorrect lump or split", ch));
 	}
 	
 	private Stream<ValidationError> checkFromWasPreviouslyRecognized(Project p) {
@@ -84,7 +87,13 @@ public class ChangeValidator implements Validator {
 				
 				return !ch.getFromStream().allMatch(n -> prevNames.contains(n));
 			})
-			.map(ch -> new ValidationError(this, p, "'From' not previously recognized", ch));
+			.map(ch -> new ValidationError<Change>(this, p, "'From' not previously recognized", ch));
+	}
+	
+	private Stream<ValidationError> changesOfNonRecognizedTypes(Project p) {
+		return p.getChanges()
+			.filter(ch -> !Change.RECOGNIZED_TYPES.contains(ch.getType()))
+			.map(ch -> new ValidationError<Change>(this, p, "Change type '" + ch.getType().toString() + "' not recognized", ch));	
 	}
 
 	@Override

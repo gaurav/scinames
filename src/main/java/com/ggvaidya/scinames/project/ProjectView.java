@@ -28,12 +28,15 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
+import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.AnchorPane;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
 import com.ggvaidya.scinames.SciNames;
+import com.ggvaidya.scinames.dataset.DatasetView;
+import com.ggvaidya.scinames.model.Change;
 import com.ggvaidya.scinames.model.Dataset;
 import com.ggvaidya.scinames.model.Project;
 import java.util.logging.Logger;
@@ -226,5 +229,30 @@ public class ProjectView {
 			setProject(blank);
 			controller.updateProject(blank);
 		}
+	}
+	
+	/**
+	 * Open a window showing a detailed view on the passed object.
+	 * 
+	 * @param o
+	 */
+	public void openDetailedView(Object obj) {
+		Class objClass = obj.getClass();
+		if(Dataset.class.isAssignableFrom(objClass))
+			openDetailedView((Dataset)obj);
+		else if(Change.class.isAssignableFrom(objClass))
+			openDetailedView((Change)obj);
+		else
+			new Alert(AlertType.ERROR, "No detailed view available for " + obj + " (class " + objClass + ")");
+	}
+	
+	public void openDetailedView(Dataset ds) {
+		DatasetView view = new DatasetView(this, ds);
+		view.getStage().show();
+	}
+	
+	public void openDetailedView(Change ch) {
+		DatasetView view = new DatasetView(this, ch);
+		view.getStage().show();
 	}
 }

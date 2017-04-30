@@ -16,7 +16,7 @@
  */
 package com.ggvaidya.scinames.model;
 
-import com.ggvaidya.scinames.util.ModificationTimeProperty;
+import java.lang.reflect.Array;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -26,6 +26,16 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.NamedNodeMap;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+import org.xml.sax.SAXException;
+
+import com.ggvaidya.scinames.util.ModificationTimeProperty;
+
 import javafx.beans.property.MapProperty;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SetProperty;
@@ -36,12 +46,6 @@ import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableMap;
 import javafx.collections.ObservableSet;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.NamedNodeMap;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
-import org.xml.sax.SAXException;
 
 /**
  * A single taxonomic change: an addition, deletion, merge, lump or split.
@@ -52,9 +56,15 @@ import org.xml.sax.SAXException;
  */
 public class Change {
 	/* Change types */
-	public static final class Type implements Comparable {
+	public static final class Type implements Comparable<Type> {
 		private static Map<String, Type> singletons = new HashMap<>();
 		
+		/**
+		 * Return the singleton corresponding to a particular name of a change type.
+		 * 
+		 * @param text 
+		 * @return
+		 */
 		public static Type of(String text) {
 			text = text.toLowerCase();
 			
@@ -64,6 +74,10 @@ public class Change {
 			return singletons.get(text);
 		}
 
+		/**
+		 * @return The "inversion" of this type: additions become deletions,
+		 * splits become lumps and so on.
+		 */
 		public Type invert() {
 			if(equals(Change.ADDITION))			return Change.DELETION;
 			else if(equals(Change.DELETION))	return Change.ADDITION;
@@ -79,8 +93,8 @@ public class Change {
 		private Type(String s) { type = s; }
 
 		@Override
-		public int compareTo(Object o) {
-			return type.compareToIgnoreCase(((Change.Type)o).type);
+		public int compareTo(Change.Type ty) {
+			return type.compareToIgnoreCase(ty.type);
 		}
 	}
 	
@@ -90,6 +104,14 @@ public class Change {
 	public static final Type LUMP = Type.of("lump");
 	public static final Type SPLIT = Type.of("split");
 	public static final Type ERROR = Type.of("error");
+	public static final Set<Type> RECOGNIZED_TYPES = new HashSet<>(Arrays.asList(
+		ADDITION,
+		DELETION,
+		RENAME,
+		LUMP,
+		SPLIT,
+		ERROR
+	));
 	
 	/* Private variables and properties */
 	private UUID id = UUID.randomUUID();
