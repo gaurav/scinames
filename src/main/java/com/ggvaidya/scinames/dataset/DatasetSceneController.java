@@ -256,6 +256,13 @@ public class DatasetSceneController {
 		);
 		tv.getColumns().add(colFiltered);
 		
+		TableColumn<Change, String> colNote = new TableColumn<>("Note");
+		colNote.setCellFactory(TextFieldTableCell.forTableColumn());
+		colNote.setCellValueFactory(new PropertyValueFactory<>("note"));
+		colNote.setPrefWidth(100.0);
+		colNote.setEditable(true);
+		tv.getColumns().add(colNote);
+		
 		TableColumn<Change, String> colProperties = new TableColumn<>("Properties");
 		colProperties.setCellValueFactory(
 			(TableColumn.CellDataFeatures<Change, String> features) -> 

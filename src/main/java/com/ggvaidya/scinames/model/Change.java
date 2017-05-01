@@ -42,6 +42,8 @@ import javafx.beans.property.SetProperty;
 import javafx.beans.property.SimpleMapProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleSetProperty;
+import javafx.beans.property.StringProperty;
+import javafx.beans.property.StringPropertyBase;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableMap;
@@ -155,6 +157,38 @@ public class Change {
 			return false;
 		
 		return properties.get(propName).equals("yes");
+	}
+	
+	/**
+	 * Used to store notes associated with this change. This is actually a property ("note"), so
+	 * we create a StringProperty 
+	 */
+	public StringProperty noteProperty() {
+		Change change = this;
+		
+		return new StringPropertyBase() {
+			
+			@Override
+			public String getName() {
+				return "note";
+			}
+			
+			@Override
+			public Object getBean() {
+				return change;
+			}
+			
+			@Override
+			public String get() {
+				return change.getProperties().get("note");
+			}
+
+			@Override
+			public void set(String value) {
+				change.getProperties().put("note", value);
+				change.lastModified.modified();
+			}
+		};
 	}
 	
 	public String getFromString() {
