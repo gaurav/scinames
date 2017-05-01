@@ -24,7 +24,15 @@ package com.ggvaidya.scinames.validation;
 import com.ggvaidya.scinames.model.Change;
 import com.ggvaidya.scinames.model.Dataset;
 import com.ggvaidya.scinames.model.Name;
+import com.ggvaidya.scinames.model.NameCluster;
 import com.ggvaidya.scinames.model.Project;
+
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -37,16 +45,15 @@ import java.util.stream.Stream;
 public class ChangeValidator implements Validator {
 	@Override
 	public Stream<ValidationError> validate(Project p) {
-		return Stream.concat(
-			getIncorrectAdditionsAndDeletions(p),
-			Stream.concat(
-				getIncorrectLumpsAndSplits(p),
-				Stream.concat(
-					checkFromWasPreviouslyRecognized(p),
-					changesOfNonRecognizedTypes(p)
-				)
-			)
-		);
+		List<ValidationError> errors = new LinkedList<>();
+		
+		errors.addAll(getIncorrectAdditionsAndDeletions(p).collect(Collectors.toList()));
+		errors.addAll(getIncorrectLumpsAndSplits(p).collect(Collectors.toList()));
+		errors.addAll(checkFromWasPreviouslyRecognized(p).collect(Collectors.toList()));
+		errors.addAll(changesOfNonRecognizedTypes(p).collect(Collectors.toList()));
+		errors.addAll(checkForDuplicateNameClustersOnSameSide(p).collect(Collectors.toList()));
+		
+		return errors.stream();
 	}
 	
 	private Stream<ValidationError> getIncorrectAdditionsAndDeletions(Project p) {
@@ -94,6 +101,49 @@ public class ChangeValidator implements Validator {
 		return p.getChanges()
 			.filter(ch -> !Change.RECOGNIZED_TYPES.contains(ch.getType()))
 			.map(ch -> new ValidationError<Change>(this, p, "Change type '" + ch.getType().toString() + "' not recognized", ch));	
+	}
+	
+	private Stream<ValidationError> checkForDuplicateNameClustersOnSameSide(Project p) {
+		return p.getChanges()
+			.flatMap(ch -> Stream.concat(
+				checkNameClusters(p, ch, "from", ch.getFrom()), 
+				checkNameClusters(p, ch, "to", ch.getTo())
+			));
+	}
+	
+	/**
+	 * Helper function. Checks to see if any of these sets of names (intended to be either all the
+	 * getFrom()s or getTo()s from a list of changes) contains the same name cluster more than once.
+	 * 
+	 * @param sets
+	 * @return
+	 */
+	private Stream<ValidationError> checkNameClusters(Project p, Change ch, String nameSetName, Set<Name> names) {
+		Map<NameCluster, Name> clustersSeen = new HashMap<>();
+		
+		return names.stream().flatMap(name -> {
+			Optional<NameCluster> optCluster = p.getNameClusterManager().getCluster(name);
+			if(!optCluster.isPresent()) 
+				return Stream.of(
+					new ValidationError<Change>(this, p, "Change " + ch + " contains name '" + name + "' missing a name cluster", ch)
+				);
+			else {
+				NameCluster cluster = optCluster.get();
+				Stream<ValidationError> errors = Stream.empty();
+				
+				if(clustersSeen.containsKey(cluster)) {
+					errors = Stream.concat(errors, Stream.of(
+						new ValidationError<Change>(this, p, 
+							"Name cluster repeats twice in change " + ch + " in " + nameSetName + 
+							": first as " + clustersSeen.get(cluster) + ", then as " + name, 
+							ch)
+					));
+				}
+				
+				clustersSeen.put(cluster, name);
+				return errors;
+			}
+		});
 	}
 
 	@Override
