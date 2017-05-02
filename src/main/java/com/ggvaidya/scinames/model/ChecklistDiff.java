@@ -22,6 +22,7 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.LineNumberReader;
+import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javafx.collections.ObservableMap;
@@ -33,6 +34,8 @@ import javafx.collections.ObservableMap;
  */
 
 public class ChecklistDiff {
+	public static final Logger LOGGER = Logger.getLogger(ChecklistDiff.class.getSimpleName());
+	
 	// Regular expression patterns to parse a TaxDiff file.
 	public static final Pattern pTaxDiffFirstLine = Pattern.compile("^== (\\w+) \\((\\d+)\\) ==(.*)$");
 	public static final Pattern pTaxDiffAction = Pattern.compile("^(#)?(IGNORE )?([\\w\\s]+)\\s+(\".+\")\\s+to\\s+(\".+\")\\s*(?:#.*)?$", Pattern.CASE_INSENSITIVE);
@@ -101,7 +104,7 @@ public class ChecklistDiff {
 					throw new RuntimeException("Impossible code branch");
 				}
 				
-				System.err.println("Action: " + action + " from (" + from_str + ") to (" + to_str + "): '" + line + "'");
+				LOGGER.fine("Action: " + action + " from (" + from_str + ") to (" + to_str + "): '" + line + "'");
 				
 				Change ch;
 				
@@ -125,7 +128,7 @@ public class ChecklistDiff {
 						break;
 					} else if(pBlankLine.matcher(line).matches()) {
 						// Blank line, ignore.
-						System.err.println("Ignoring blank link in action properties: " + line);	
+						LOGGER.fine("Ignoring blank link in action properties: " + line);	
 						
 					} else if(m_propertyLine.matches()) {
 						String name = m_propertyLine.group(1);
@@ -166,7 +169,7 @@ public class ChecklistDiff {
 							
 							if(pBlankLine.matcher(line).matches()) {
 								// Ignore
-								System.err.println("Ignoring blank link in citation properties: " + line);
+								LOGGER.fine("Ignoring blank link in citation properties: " + line);
 							} else if(m_citationPropertyLine.matches()) {
 								String name = m_citationPropertyLine.group(1);
 								String value = m_citationPropertyLine.group(2);
@@ -204,7 +207,7 @@ public class ChecklistDiff {
 			// (2) A blank line, containing an optional comment.
 			else if(pBlankLine.matcher(line).matches()) {
 				// Blank line, ignore.
-				System.err.println("Ignoring blank link: " + line);
+				LOGGER.fine("Ignoring blank link: " + line);
 			}
 			
 			// (3) The taxdiff file has been terminated correctly!
