@@ -25,20 +25,35 @@ import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import com.ggvaidya.scinames.model.rowextractors.NameExtractorParseException;
+
 /**
- * A taxonomic checklist. It recognizes a comprehensive set of taxon concepts
- * with distinct Names.
+ * A taxonomic checklist. This used to be a data type, but most of what it does has now been
+ * incorporated into Dataset, so it's just static methods to load taxonomic checklists as a
+ * list of names.
  * 
  * @author Gaurav Vaidya <gaurav@ggvaidya.com>
  */
 public class Checklist {
-	// TODO: extend this to include more complex subspecific epithets.
 	public static Pattern pNameAndNumber = Pattern.compile("^(\\[?\\w+\\]?\\.)?\\s*(\\w+)\\s([\\w\\-]+)(?:\\s([\\w\\-]+))?\\s*$");
 	
+	/**
+	 * Load a dataset from a list of taxonomic checklists.
+	 *
+	 * @param f File to load
+	 * @return A Dataset loaded from the list of taxonomic checklists.
+	 * @throws IOException If there was a problem reading or parsing from this file.
+	 */
 	public static Dataset fromListInFile(File f) throws IOException {
 		LineNumberReader r = new LineNumberReader(new BufferedReader(new FileReader(f)));
 		
 		Dataset checklist = new Dataset();
+		try {
+			checklist.setNameExtractorsString("genusAndEpithets(genus, specificEpithet, subspecificEpithet)");
+		} catch(NameExtractorParseException ex) {
+			throw new RuntimeException("Checklist name extractor string could not be parsed: " + ex);
+		}
+		
 		// project, f.getName(), new SimplifiedDate());
 		String line;
 		while((line = r.readLine()) != null) {
@@ -61,25 +76,21 @@ public class Checklist {
 			if(number != null && number.equals(""))
 				number = null;
 			
-			addName(checklist, Optional.ofNullable(number), line, genus, species, Optional.ofNullable(subspecies));
+			DatasetRow row = new DatasetRow();
+			
+			row.put("verbatim", line);
+			row.put("genus", genus);
+			row.put("specificEpithet", species);
+			
+			if(subspecies != null)
+				row.put("subspecificEpithet", subspecies);
+
+			if(number != null)
+				row.put("id", number);
+			
+			checklist.rowsProperty().add(row);
 		}
 		
 		return checklist;
-	}
-
-	private static void addName(Dataset dataset, Optional<String> number, String line, String genus, String specificEpithet, Optional<String> subspecificEpithets) {
-		// Construct a row.
-		DatasetRow row = new DatasetRow();
-		
-		row.put("verbatim", line);
-		row.put("genus", genus);
-		row.put("specificEpithet", specificEpithet);
-		if(subspecificEpithets.isPresent())
-			row.put("subspecificEpithet", subspecificEpithets.get());
-		
-		if(number.isPresent())
-			row.put("id", number.get());
-		
-		dataset.rowsProperty().add(row);
 	}
 }

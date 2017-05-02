@@ -27,15 +27,12 @@ import java.util.regex.Pattern;
 import javafx.collections.ObservableMap;
 
 /**
- * A list of changes made since the last Checklist. Ideally, we'll get this
- * working seamless with Checklists so that we can string them together to
- * create a cohesive view of the entire checklist.
+ * Used to be a datatype, but now is just loading modules for TaxDiff files.
  * 
  * @author Gaurav Vaidya <gaurav@ggvaidya.com>
  */
 
 public class ChecklistDiff {
-
 	// Regular expression patterns to parse a TaxDiff file.
 	public static final Pattern pTaxDiffFirstLine = Pattern.compile("^== (\\w+) \\((\\d+)\\) ==(.*)$");
 	public static final Pattern pTaxDiffAction = Pattern.compile("^(#)?(IGNORE )?([\\w\\s]+)\\s+(\".+\")\\s+to\\s+(\".+\")\\s*(?:#.*)?$", Pattern.CASE_INSENSITIVE);
@@ -210,7 +207,7 @@ public class ChecklistDiff {
 				System.err.println("Ignoring blank link: " + line);
 			}
 			
-			// (3) 
+			// (3) The taxdiff file has been terminated correctly!
 			else if(pEndOfTaxDiff.matcher(line).matches()) {
 				// All done!
 				break;
