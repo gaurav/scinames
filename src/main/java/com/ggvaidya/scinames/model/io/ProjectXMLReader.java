@@ -302,7 +302,7 @@ public class ProjectXMLReader {
 												kv -> kv.getValue()
 										));
 									
-									dataset.rowsProperty().add(new DatasetRow(rowData));
+									dataset.rowsProperty().add(new DatasetRow(dataset, rowData));
 								} else
 									throw new XMLStreamException("Unexpected start element found in 'rows': " + start);
 							} else

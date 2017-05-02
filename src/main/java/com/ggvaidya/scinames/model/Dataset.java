@@ -532,7 +532,7 @@ public class Dataset implements Citable, Comparable {
 		dataset.rows.clear();
 		dataset.rows.addAll(
 			parser.getRecords().stream()
-				.map(record -> {  DatasetRow row = new DatasetRow(); row.putAll(record.toMap()); return row;})
+				.map(record -> {  DatasetRow row = new DatasetRow(dataset); row.putAll(record.toMap()); return row;})
 				.collect(Collectors.toList())
 		);
 		

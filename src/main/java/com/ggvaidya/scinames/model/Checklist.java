@@ -76,7 +76,7 @@ public class Checklist {
 			if(number != null && number.equals(""))
 				number = null;
 			
-			DatasetRow row = new DatasetRow();
+			DatasetRow row = new DatasetRow(checklist);
 			
 			row.put("verbatim", line);
 			row.put("genus", genus);

@@ -28,22 +28,29 @@ import java.util.Map;
 import java.util.Set;
 
 /**
+ * A dataset row consists of a series of DatasetColumn-String pairs that represent a row
+ * of information in a dataset. Values can be retrieved by DatasetColumn or by the column
+ * name.
  *
  * @author Gaurav Vaidya <gaurav@ggvaidya.com>
  */
 public class DatasetRow {
+	private Dataset dataset;
 	private Map<DatasetColumn, String> data = new HashMap<>();
 	
-	public DatasetRow() {}
-	public DatasetRow(Map<DatasetColumn, String> entries) {
+	public DatasetRow(Dataset ds) { dataset = ds; }
+	public DatasetRow(Dataset ds, Map<DatasetColumn, String> entries) {
+		dataset = ds;
 		data.putAll(entries);
 	}
+	
 	public void putAll(Map<String, String> map) {
 		for(String key: map.keySet()) {
 			put(key, map.get(key));
 		}
 	}
 
+	public Dataset getDataset()						{ return dataset; }
 	public String get(DatasetColumn col)			{ return data.get(col); }
 	public String get(String colName)				{ return data.get(DatasetColumn.of(colName)); }	
 	public void put(DatasetColumn col, String val)	{ data.put(col, val); }	
