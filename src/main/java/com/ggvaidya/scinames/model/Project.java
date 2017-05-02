@@ -291,7 +291,7 @@ public class Project {
 		// Index this timepoint
 		t.getReferencedNames().forEach((Name n) -> {
 			names.add(n);
-			n.asBinomial().ifPresent(binomialName -> binomialNames.add(binomialName));
+			n.asBinomial().forEach(binomialName -> binomialNames.add(binomialName));
 			
 			if(!timepointsByName.containsKey(n))
 				timepointsByName.put(n, new ArrayList<Dataset>());

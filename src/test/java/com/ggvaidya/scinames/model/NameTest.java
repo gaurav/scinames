@@ -20,9 +20,12 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.util.Arrays;
+import java.util.List;
 import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import org.junit.jupiter.api.Test;
 
@@ -65,22 +68,55 @@ public class NameTest {
 	 */
 	@Test
 	public void testGet() {
-            testFullName(Name.get("Alpha", "beta", "gamma"), "Alpha beta gamma");
-            testFullName(Name.get("Alpha", "beta ", "gamma"), "Alpha beta gamma");
-            testFullName(Name.get("Alpha", "beta"), "Alpha beta");
-            testFullName(Name.getFromFullName("Alpha beta"), "Alpha beta");
-            testFullName(Name.getFromFullName("      Alpha beta       "), "Alpha beta");
-                
-            // Genus names
-            testFullName(Name.getFromFullName("Alpha"), "Alpha");
-            testAssertion(Name.getFromFullName("Alpha"), n -> assertEquals(null, n.getBinomialName()));
-            testAssertion(Name.getFromFullName("Alpha"), n -> assertFalse(n.asBinomial().isPresent()));
-            testFullName(Name.getFromFullName("Alpha sp"), "Alpha sp sp");
-            testAssertion(Name.getFromFullName("Alpha sp"), n -> assertFalse(n.hasSpecificEpithet()));
-            testAssertion(Name.getFromFullName("Alpha sp"), n -> assertEquals(null, n.getBinomialName()));
-            testAssertion(Name.getFromFullName("Alpha sp"), n -> assertFalse(n.asBinomial().isPresent()));
-        
-            // Subspecies
-            testProperty(Name.getFromFullName("Alpha beta    subsp gamma   "), "getInfraspecificEpithetsAsString() should be 'subsp gamma'", n -> n.getInfraspecificEpithetsAsString().equals("subsp gamma"));
-        }
+        testFullName(Name.get("Alpha", "beta", "gamma"), "Alpha beta gamma");
+        testFullName(Name.get("Alpha", "beta ", "gamma"), "Alpha beta gamma");
+        testFullName(Name.get("Alpha", "beta"), "Alpha beta");
+        testFullName(Name.getFromFullName("Alpha beta"), "Alpha beta");
+        testFullName(Name.getFromFullName("      Alpha beta       "), "Alpha beta");
+            
+        // Genus names
+        testFullName(Name.getFromFullName("Alpha"), "Alpha");
+        testAssertion(Name.getFromFullName("Alpha"), n -> assertEquals(null, n.getBinomialName()));
+        testAssertion(Name.getFromFullName("Alpha"), n -> assertEquals(n.asBinomial().count(), 0));
+        testFullName(Name.getFromFullName("Alpha sp"), "Alpha sp sp");
+        testAssertion(Name.getFromFullName("Alpha sp"), n -> assertFalse(n.hasSpecificEpithet()));
+        testAssertion(Name.getFromFullName("Alpha sp"), n -> assertEquals(null, n.getBinomialName()));
+        testAssertion(Name.getFromFullName("Alpha sp"), n -> assertEquals(n.asBinomial().count(), 0));
+    
+        // Subspecies
+        testProperty(Name.getFromFullName("Alpha beta    subsp gamma   "), "getInfraspecificEpithetsAsString() should be 'subsp gamma'", n -> n.getInfraspecificEpithetsAsString().equals("subsp gamma"));
+    }
+	
+	/**
+	 * Can we 
+	 */
+	@Test
+	public void testAsBinomial() {
+		List<Optional<Name>> namesFromString = Arrays.asList(
+			Name.getFromFullName("Panthera tigris"),
+			Name.getFromFullName("Panthera tigris tigris"),
+			Name.getFromFullName("Mus musculus"),
+			Name.getFromFullName("Homo sapiens sapiens"),
+			Name.getFromFullName("Branta canadensis subsp. hutchinsii"),
+			Name.getFromFullName("Branta"),
+			Name.getFromFullName("Yersinia")
+		);
+		List<Name> names = namesFromString.stream().map(opt -> opt.orElse(null)).collect(Collectors.toList());
+		
+		// Did they all parse?
+		assertFalse(names.contains(null));
+		
+		// If we collapse to binomial, do we get the expected list?
+		List<Name> expected = Arrays.asList(
+			Name.get("Panthera", "tigris"),
+			Name.get("Panthera", "tigris"),
+			Name.get("Mus", "musculus"),
+			Name.get("Homo", "sapiens"),
+			Name.get("Branta", "canadensis")
+		);
+		assertEquals(
+			names.stream().flatMap(n -> n.asBinomial()).collect(Collectors.toList()),
+			expected
+		);
+	}
 }

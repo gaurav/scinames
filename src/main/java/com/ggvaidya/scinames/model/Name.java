@@ -27,7 +27,10 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.logging.Logger;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NamedNodeMap;
@@ -35,36 +38,54 @@ import org.w3c.dom.Node;
 import org.xml.sax.SAXException;
 
 /**
- * A scientific name. Pretty much the heart of this whole thing.
+ * A scientific name.
+ * 
+ * These are implemented as singletons: the same full name should be represented by the
+ * same Name object. This should simplify renames eventually.
  * 
  * @author Gaurav Vaidya <gaurav@ggvaidya.com>
  */
-public class Name implements Comparable {
+public class Name implements Comparable<Name> {
 	private static final Logger LOGGER = Logger.getLogger(Name.class.getSimpleName());
 	
+	/** Denotes an empty name. */
 	public static final Name EMPTY = new Name();
+	
+	/** What string is used to separate name components? */
 	public static final String SEPARATOR = " ";
         
-        /** 
-         * What do we call a name with a genus and potentially infraspecific
-         * names, but no specific epithet?
-         */
-        public static final String GENUS_SP = "sp";
+    /** 
+     * What do we call a name with a genus and potentially infraspecific
+     * names, but no specific epithet? Think of genus names as either
+     * 'Alpha' or 'Alpha ' + GENUS_SP.
+     */
+    public static final String GENUS_SP = "sp";
+    
+    /* Regular expressions */
+    public static final Pattern PATTERN_SPECIFICEPITHET = Pattern.compile("^[a-z\\-]+$");
 	
+    /* 
+     * Internal variables 
+     * 
+     * Note that 'genus' is guaranteed to be set, but all of the other variables may be null.
+     */
 	private String genus;
 	private String specificEpithet;
-	
-	// Okay, so, this is tricky: we take all the infraspecificEpithets, 
-	// pair them up, and then enter them here *except* for any hanging ones,
-	// which we enter into a 'value' with a blank 'key'.
 	private List<InfraspecificEpithet> infraspecificEpithets = new LinkedList<>();
 	
-	// A helper class
+	/**
+	 * InfraspecificEpithet wraps up the idea that infraspecific epithets can be
+	 * identifiers (e.g. 'tigris') or structural (e.g. "var."). Where possible,
+	 * we'd like to pair that information up (e.g. "var.": "tigris"), which
+	 * InfraspecificEpithet allows us to do. However it's represented, we should
+	 * be able to unroll it back into a string (e.g. "var. tigris"). InfraspecificEpithet
+	 * allows us to do all this.
+	 */
 	public static class InfraspecificEpithet {
 		private String name = null;
-		public Optional<String> getName() { return Optional.ofNullable(name); }
+		private String value = "";		
 		
-		private String value = "";
+		public Optional<String> getName() { return Optional.ofNullable(name); }
 		public String getValue() { return value; }
 		
 		public InfraspecificEpithet(String val)			{ value = val; }
@@ -75,26 +96,14 @@ public class Name implements Comparable {
 		}
 	}
 	
-	private Name() {
-		// Create an empty name.
-		this.genus = "(empty name)";
-	}
-
-	private Name(String genus) {
-		this.genus = genus;
-	}
-	
-	private Name(String genus, String specificEpithet) {
-		this.genus = genus;
-		
-		// Is putative specific epithet lowercase and alphanumeric?
-		if(specificEpithet.matches("[a-z\\-]+"))
-		    this.specificEpithet = specificEpithet;
-		else
-			setInfraspecificEpithetsFromString(specificEpithet);
-	}
-	
-	public void setInfraspecificEpithets(String... otherEpithets) {
+	/**
+	 * Replace the infraspecific epithets with the string of names provided.
+	 * This destroys the current infraspecific epithets, which is why it's
+	 * private. 
+	 * 
+	 * @param otherEpithets The infraspecific epithets to add.
+	 */
+	private void setInfraspecificEpithets(String... otherEpithets) {
 		infraspecificEpithets.clear();
 		if(otherEpithets.length > 0) {		
 			int x;
@@ -115,7 +124,7 @@ public class Name implements Comparable {
 	
 	public void setInfraspecificEpithetsFromString(String str) {
 		setInfraspecificEpithets(str.split("\\s+"));
-	}
+	}	
 	
 	private static Set<String> specificEpithetsThatArentLowercase = new HashSet(Arrays.asList(
 		"sp",
@@ -125,17 +134,46 @@ public class Name implements Comparable {
 		"af",
 		"af.",
 		"aff",
-		"aff."
+		"aff.",
+		"cf",
+		"cf."
 	));
 	
+	/* 
+	 * Name constructors. These should not be used outside this object: instead,
+	 * use Name.getFromFullName() or Name.get().
+	 */
+	
+	private Name() {
+		// Create an empty name.
+		this.genus = "(empty name)";
+	}
+
+	private Name(String genus) {
+		this.genus = genus;
+	}
+	
+	private Name(String genus, String specificEpithet) {
+		this.genus = genus;
+		
+		// Is putative specific epithet lowercase and alphanumeric?
+		if(PATTERN_SPECIFICEPITHET.matcher(specificEpithet).matches())
+		    this.specificEpithet = specificEpithet;
+		else
+			setInfraspecificEpithetsFromString(specificEpithet);
+	}
+	
+	/*
+	 * We provide singletons for provided names. This is how we do it.
+	 */
+	
 	private static Map<String, Name> namesByFullName = new HashMap<>();
-	private static Map<String, Name> namesByBinomial = new HashMap<>();
+	private static Map<String, Name> namesByBinomial = new HashMap<>(); // TODO delete
 	
 	public static Name get(String genus, String specificEpithet, String subspecificEpithets) {
-            genus = genus.trim();
-            specificEpithet = specificEpithet.trim();
-            subspecificEpithets = subspecificEpithets.trim();
-            
+        genus = genus.trim();
+        specificEpithet = specificEpithet.trim();
+        subspecificEpithets = subspecificEpithets.trim();
 		String fullName = genus + SEPARATOR + specificEpithet + SEPARATOR + subspecificEpithets;
 		
 		if(namesByFullName.containsKey(fullName))
@@ -143,7 +181,7 @@ public class Name implements Comparable {
 		
 		// Now hang on. Is that a REAL specific epithet?
 		Name name;
-		if(specificEpithetsThatArentLowercase.contains(specificEpithet.toLowerCase())) {
+		if(!PATTERN_SPECIFICEPITHET.matcher(specificEpithet).matches() || specificEpithetsThatArentLowercase.contains(specificEpithet.toLowerCase())) {
 			// Oops, it's actually a genus name.
 			name = new Name(genus);
 			subspecificEpithets = specificEpithet + SEPARATOR + subspecificEpithets;
@@ -159,8 +197,8 @@ public class Name implements Comparable {
 	}
 
 	public static Name get(String genus, String specificEpithet) {
-            genus = genus.trim();
-            specificEpithet = specificEpithet.trim();
+        genus = genus.trim();
+        specificEpithet = specificEpithet.trim();
             
 		String fullName = genus + SEPARATOR + specificEpithet;
 		
@@ -168,7 +206,7 @@ public class Name implements Comparable {
 			return namesByFullName.get(fullName);
 		
 		Name name;
-		if(specificEpithetsThatArentLowercase.contains(specificEpithet.toLowerCase())) {
+		if(!PATTERN_SPECIFICEPITHET.matcher(specificEpithet).matches() || specificEpithetsThatArentLowercase.contains(specificEpithet.toLowerCase())) {
 			// Oops, it's actually a genus name.
 			name = new Name(genus);
 			name.setInfraspecificEpithets(specificEpithet);
@@ -182,7 +220,8 @@ public class Name implements Comparable {
 	}
 	
 	public static Name get(String genus) {
-		String fullName = genus.trim();
+		String fullName = genus.trim();		
+		if(fullName.equals("")) return EMPTY;
 		
 		if(namesByFullName.containsKey(fullName))
 			return namesByFullName.get(fullName);
@@ -193,28 +232,49 @@ public class Name implements Comparable {
 		return name;
 	}
 	
+	/**
+	 * Attempts to parse the full name in the provided string. Returns
+	 * Optional.empty() if the name couldn't be parsed.
+	 * 
+	 * @param name Name to parse
+	 * @return Name object resulting from the parse.
+	 */
 	public static Optional<Name> getFromFullName(String name) {
-            name = name.trim();
-            
+        name = name.trim();
+        
 		if(name == null || name.equals("")) return Optional.empty();
-		String[] components = name.split(SEPARATOR + "+");
+		String[] components = name.split("\\s+");
 		
 		if(components.length > 3) {
-			String infraspecificEpithets = Arrays.asList(components).subList(2, components.length).stream().collect(Collectors.joining(SEPARATOR));
+			String infraspecificEpithets = Arrays.asList(components)
+				.subList(2, components.length)						// Ignore the first two components, which are
+																	// the genus and specificEpithet.
+				.stream().collect(Collectors.joining(SEPARATOR)); 	// Join with 'SEPARATOR'
                         
 			return Optional.ofNullable(Name.get(components[0], components[1], infraspecificEpithets));
 			
 		} else if(components.length == 3) {
 			return Optional.ofNullable(Name.get(components[0], components[1], components[2]));
+			
 		} else if(components.length == 2) {
 			return Optional.ofNullable(Name.get(components[0], components[1]));
+			
 		} else if(components.length == 1) {
 			return Optional.ofNullable(Name.get(components[0]));
+			
 		} else {
+			LOGGER.warning("Name '" + name + "' could not be parsed into a Name.");
 			return Optional.empty();
+			
 		}
 	}
 	
+	/**
+	 * Returns a binomial name for this Name. It's probably cleaner to use
+	 * asBinomial().
+	 * 
+	 * @return The binomial name if it exists, otherwise 'null'.
+	 */
 	public String getBinomialName() {
 		if(specificEpithet == null)
 			return null;
@@ -222,16 +282,23 @@ public class Name implements Comparable {
 			return genus + SEPARATOR + specificEpithet;
 	}
 	
-	public Optional<Name> asBinomial() {
+	/**
+	 * Attempt to convert this Name to a binomial name. If impossible,
+	 * this will return Stream.empty(). It is designed to be used as
+	 * 	names.stream().flatMap(n -> n.asBinomial())
+	 * 
+	 * @return Optionally return a Binomial name.
+	 */
+	public Stream<Name> asBinomial() {
 		if(genus == null || specificEpithet == null)
-			return Optional.empty();
+			return Stream.empty();
 		
 		// We definitely have a binomial name. But do we have more?
 		if(hasSubspecificEpithet())
-			return Optional.of(Name.get(genus, specificEpithet));
+			return Stream.of(Name.get(genus, specificEpithet));
 					
-		// No more? Fine, this name will do.
-		return Optional.of(this);
+		// No more, so we're already binomial? Fine, this name will do.
+		return Stream.of(this);
 	}
 	
 	public boolean hasSpecificEpithet() {
@@ -244,15 +311,19 @@ public class Name implements Comparable {
 	
 	public String getFullName() {
 		if(specificEpithet == null) {
+			// Genus name only.
+			
 			if(infraspecificEpithets.isEmpty())
 				return genus;
 			else
 				return genus + SEPARATOR + GENUS_SP + SEPARATOR + getInfraspecificEpithetsAsString();
 		}
 		
+		// Genus and specific epithet, but no infraspecific epithets.
 		if(infraspecificEpithets.isEmpty())
 			return genus + SEPARATOR + specificEpithet;
 		
+		// Genus, specific epithet and infraspecific epithets.
 		return genus + SEPARATOR + specificEpithet + SEPARATOR + getInfraspecificEpithetsAsString();
 	}
 	
@@ -273,7 +344,7 @@ public class Name implements Comparable {
 	}
 	
 	public boolean hasSubgenericEpithet() {
-		return (genus != null && !infraspecificEpithets.isEmpty());
+		return (genus != null && (specificEpithet != null || !infraspecificEpithets.isEmpty()));
 	}
 	
 	public boolean hasSubspecificEpithet() {
@@ -291,11 +362,6 @@ public class Name implements Comparable {
 		hash = 71 * hash + Objects.hashCode(getFullName());
 		return hash;
 	}
-	
-	@Override
-	public boolean equals(Object o) throws ClassCastException {
-		return (compareTo(o) == 0);
-	}
 
 	public int compareTo(Name n) {
 		if(n == null || n == Name.EMPTY) return -1;
@@ -305,12 +371,7 @@ public class Name implements Comparable {
 		
 		return this.getFullName().compareTo(n.getFullName());
 	}
-
-	@Override
-	public int compareTo(Object o) throws ClassCastException {
-		return this.compareTo((Name)o);
-	}
-
+	
 	public Element serializeToElement(Document doc) {
 		Element nameElement = doc.createElement("name");
 		
@@ -328,6 +389,9 @@ public class Name implements Comparable {
 	}
 	
 	public static Name serializeFromNode(Node nameNode) throws SAXException {
+		throw new UnsupportedOperationException("Serializing Name to Node is no longer supported");
+		/*
+		
 		if(!nameNode.getNodeName().equals("name"))
 			throw new SAXException("Name.serializeFromNode called with a non-Name node: " + nameNode);
 		
@@ -354,5 +418,6 @@ public class Name implements Comparable {
 			name = Name.get(genus);
 		
 		return name;
+		*/
 	}
 }

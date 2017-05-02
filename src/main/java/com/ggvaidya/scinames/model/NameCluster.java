@@ -135,7 +135,7 @@ public class NameCluster {
 		
 		// Add the binomial form of the name.
 		// If it's the same as before, it's just a duplicate.
-		n.asBinomial().ifPresent(name -> {
+		n.asBinomial().forEach(name -> {
 			names.add(name);
 			binomialNameByDataset.put(ds, name);
 		});

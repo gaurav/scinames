@@ -166,7 +166,7 @@ public class DataReconciliatorController implements Initializable {
 				if(namesDataset == ALL)
 					nameClusters = project.getNameClusterManager().getSpeciesClusters().collect(Collectors.toList());
 				else
-					nameClusters = project.getNameClusterManager().getClusters(namesDataset.getRecognizedNames(project).filter(n -> n.hasSpecificEpithet()).map(n -> n.asBinomial().get()).distinct().collect(Collectors.toList()));
+					nameClusters = project.getNameClusterManager().getClusters(namesDataset.getRecognizedNames(project).filter(n -> n.hasSpecificEpithet()).flatMap(n -> n.asBinomial()).distinct().collect(Collectors.toList()));
 				
 				break;
 				
@@ -184,7 +184,7 @@ public class DataReconciliatorController implements Initializable {
 				else
 					nameClusters = project.getNameClusterManager().getClusters(
 						namesDataset.getRecognizedNames(project).filter(n -> n.hasSpecificEpithet())
-						.map(n -> n.asBinomial().get()).distinct()
+						.flatMap(n -> n.asBinomial()).distinct()
 						.collect(Collectors.toList())
 					).stream().flatMap(cl -> cl.getTaxonConcepts(project).stream()).collect(Collectors.toList());
 				
