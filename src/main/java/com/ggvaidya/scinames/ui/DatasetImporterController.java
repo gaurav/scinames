@@ -121,7 +121,7 @@ public class DatasetImporterController implements Initializable {
 		}
 		
 		// TODO: make this flag-controllable!
-		dataset.setIsChecklist(true);
+		dataset.isChecklistProperty().set(true);
 		
 		if(currentNameExtractor != null && !currentNameExtractor.equals("")) {
 			try {

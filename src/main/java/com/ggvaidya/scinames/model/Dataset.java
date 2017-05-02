@@ -16,6 +16,8 @@
  */
 package com.ggvaidya.scinames.model;
 
+import com.ggvaidya.scinames.model.filters.ChangeFilter;
+import com.ggvaidya.scinames.model.filters.ChangeFilterFactory;
 import com.ggvaidya.scinames.model.rowextractors.NameExtractor;
 import com.ggvaidya.scinames.model.rowextractors.NameExtractorFactory;
 import com.ggvaidya.scinames.model.rowextractors.NameExtractorParseException;
@@ -37,8 +39,10 @@ import java.util.logging.Level;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javafx.beans.Observable;
+import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.ReadOnlyStringWrapper;
+import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
@@ -62,21 +66,9 @@ import org.w3c.dom.Element;
  *	- A Checklist is simply a Dataset without any data apart from name.
  *  - A ChecklistDiff is simply a set of explicit changes without any data.
  * 
- * TIMEPOINT DEPRECATION STRATEGY (as of March 7, 2017):
- *  - 1. Rewrite dataset so that it incorporates the change management logic of
- *		 a ChecklistDiff.
- *  - 2. Rewrite XML export code so that we use XMLEventWriter to write everything.
- *  - 3. Rewrite XML import code so that we can use XMLEventReader to read everything.
- *		- At this point, everything will work on this one datatype.
- *  - 4. Add support for providing metadata on columns: so a particular column
- *		 can be marked as "scientificName", or "genus" or "specificEpithet".
- *		 This needs to be an entire subsystem within Dataset.
- *  - 4. ... ?
- *  - 5. Profit!
- * 
  * @author Gaurav Vaidya <gaurav@ggvaidya.com>
  */
-public class Dataset implements Citable, Comparable {
+public class Dataset implements Citable, Comparable<Dataset> {
 	private static final Logger LOGGER = Logger.getLogger(Dataset.class.getSimpleName());
 	
 	/* Private variables */
@@ -84,7 +76,7 @@ public class Dataset implements Citable, Comparable {
 	private String name;
 	private ObjectProperty<SimplifiedDate> dateProperty = new SimpleObjectProperty<>(SimplifiedDate.MIN);
 	private Dataset prevDataset;
-	private boolean flag_isChecklist = true;
+	private BooleanProperty isChecklistProperty = new SimpleBooleanProperty(true);
 	private ModificationTimeProperty lastModified = new ModificationTimeProperty();
 	
 	// Data in this dataset.
@@ -94,11 +86,12 @@ public class Dataset implements Citable, Comparable {
 	private ObservableList<Change> implicitChanges = FXCollections.observableList(new LinkedList<>());	
 	
 	{
-		// columns.addListener(c -> lastModified.modified());
-		explicitChanges.addListener((Observable o) -> {
-			lastModified.modified();
-		});
+		/* Make sure that certain changes trigger modifications. */
 		dateProperty.addListener(c -> lastModified.modified());
+		isChecklistProperty.addListener(c -> lastModified.modified());
+		columns.addListener((Observable c) -> lastModified.modified());
+		rows.addListener((Observable c) -> lastModified.modified());
+		explicitChanges.addListener((Observable o) -> lastModified.modified());
 	}
 	
 	/* Accessors */
@@ -113,14 +106,12 @@ public class Dataset implements Citable, Comparable {
 	public ObservableList<DatasetRow> rowsProperty() { return rows; }
 	public ObservableList<Change> explicitChangesProperty() { return explicitChanges; }
 	public Stream<DatasetRow> getRowsAsStream() { return rows.stream(); }
-	public boolean isChecklist() { return flag_isChecklist; }
-	public void setIsChecklist(boolean flag) { flag_isChecklist = flag; lastModified.modified(); }
+	public boolean isChecklist() { return isChecklistProperty.get(); }
+	public BooleanProperty isChecklistProperty() { return isChecklistProperty; }
 	
 	/* Higher order accessors */
 	@Override
-	public int compareTo(Object o) {
-		Dataset tp = (Dataset) o;
-		
+	public int compareTo(Dataset tp) {
 		return getDate().compareTo(tp.getDate());
 	}
 	
@@ -136,7 +127,7 @@ public class Dataset implements Citable, Comparable {
 	
 	public Set<DatasetRow> getRowsByName(Name name) {
 		Set<Name> namesInAllRows = getNamesInAllRows();
-		if(!namesInAllRows.contains(name)) return new HashSet();
+		if(!namesInAllRows.contains(name)) return new HashSet<>();
 		
 		return getNamesByRow().entrySet().stream()
 			.filter(entry -> entry.getValue().contains(name))
@@ -147,12 +138,22 @@ public class Dataset implements Citable, Comparable {
 	/* Managing previous timepoint */
 	public Dataset getPreviousDataset() { return prevDataset; }
 	
+	/**
+	 * Set the previous dataset. This is where we calculate implicit changes from the previous
+	 * dataset that have not been explained in our explicit changes.
+	 * 
+	 * @param proj Optionally, the project this dataset is a part of. Used for change filtering.
+	 * @param tp Optionally, the previous dataset. If null, means there isn't one: we should be considered
+	 * 		the first checklist.
+	 */
 	public void setPreviousDataset(Optional<Project> proj, Optional<Dataset> tp) {
 		prevDataset = tp.orElse(null);
 		
-		// Implicit changes are meaningless for non-checklists.
 		implicitChanges.clear();	
-		if(flag_isChecklist) {
+		if(isChecklistProperty.get()) {
+			// Implicit changes don't exist for non-checklists. If we're a checklist, figure out what
+			// names are new or have been removed in this checklist.
+			
 			Set<Name> names = getNamesInAllRows();
 			Set<Name> prevNames;
 
@@ -162,6 +163,21 @@ public class Dataset implements Citable, Comparable {
 			} else {
 				prevNames = new HashSet<>();
 			}
+			
+			/*
+			 * Logically, at this point, we need to apply the change filter so that changes that
+			 * should be filtered out, are filtered out. However, we haven't calculated name clusters
+			 * at this point, so the filtering wouldn't be correct anyway.
+			 * 
+			 * So, instead, we accept all explicit changes and calculate implicit changes on that
+			 * basis. We then filter changes out of the explicit and implicit changes as needed.
+			 * 
+			ChangeFilter cf = ChangeFilterFactory.getNullChangeFilter();
+			
+			if(proj.isPresent()) {
+				cf = proj.get().getChangeFilter();
+			}
+			*/
 
 			// What names do explicit changes add or remove?
 			Set<Name> addedByExplicitChanges = explicitChanges.stream().flatMap(ch -> ch.getToStream()).collect(Collectors.toSet());
@@ -171,11 +187,9 @@ public class Dataset implements Citable, Comparable {
 			Stream<Change> additions = names.stream()
 				.filter(n -> !prevNames.contains(n) && !addedByExplicitChanges.contains(n))
 				.map(n -> new Change(this, ChangeType.ADDITION, Stream.empty(), Stream.of(n)));
-				//.filter(project.getChangeFilter());
 			Stream<Change> deletions = prevNames.stream()
 				.filter(n -> !names.contains(n) && !deletedByExplicitChanges.contains(n))
 				.map(n -> new Change(this, ChangeType.DELETION, Stream.of(n), Stream.empty()));
-				//.filter(project.getChangeFilter());
 			
 			implicitChanges.addAll(additions.collect(Collectors.toList()));
 			implicitChanges.addAll(deletions.collect(Collectors.toList()));
@@ -197,11 +211,23 @@ public class Dataset implements Citable, Comparable {
 			  don't waste any more time.
 	*/
 	
+	private Map<DatasetRow, Set<Name>> namesByRow = null;
+	private Map<Name, Set<DatasetRow>> rowsByName = null;
+	private Set<Name> namesInRows = null;
+	
+	/*
+	 * Tracks when the namesByRow was last modified. For some reason, we have two systems to
+	 * track this: you can look at namesByRow or namesByRowLastModified. getNamesByRow() looks
+	 * at both.
+	 */
+	private ModificationTimeProperty namesByRowLastModified = new ModificationTimeProperty();
+	
 	{
 		// If the columns or rows change, we need to reparse ALL names.
 		columns.addListener((ListChangeListener.Change<? extends DatasetColumn> c) -> resetNamesCaches());
 		rows.addListener((ListChangeListener.Change<? extends DatasetRow> c) -> resetNamesCaches());
 		
+		lastModified.addListener((a, b, c) -> namesByRowLastModified.modified());
 	}
 	
 	private void resetNamesCaches() {
@@ -211,43 +237,17 @@ public class Dataset implements Citable, Comparable {
 		rowsByName = null;
 	}
 	
-	public Set<Name> getNamesInRow(DatasetRow row) {
-		Map<DatasetRow, Set<Name>> namesByRow = getNamesByRow();
-		
-		LOGGER.entering(Dataset.class.getSimpleName(), "getNamesInRow", row);
-		
-		if(namesByRow.containsKey(row))
-			return namesByRow.get(row);
-		else
-			return new HashSet();
-	}
-
-	public Set<Name> getNamesInAllRows() {
-		// Make sure our caches are up to date.
-		getNamesByRow();
-		
-		// At this point, they should be!
-		return namesInRows;
-	}
-	
-	public Map<Name, Set<DatasetRow>> getRowsByName() {
-		getNamesByRow();
-		
-		return rowsByName;
-	}
-	
-	public Map<Name, Set<DatasetRow>> rowsByName = null;
-	private Map<DatasetRow, Set<Name>> namesByRow = null;
-	private Set<Name> namesInRows = null;
-	private ModificationTimeProperty namesByRowLastModified = new ModificationTimeProperty();
-	{
-		lastModified.addListener((a, b, c) -> namesByRowLastModified.modified());
-	}
+	/**
+	 * The workhorse method for name parsing.
+	 * 
+	 * @return Map of rows in this dataset against all the names in each row.
+	 */
 	public Map<DatasetRow, Set<Name>> getNamesByRow() {
 		LOGGER.entering(Dataset.class.getSimpleName(), "getNamesByRow");
 		
 		if(namesByRow == null || namesByRowLastModified.isModified()) {
-			LOGGER.log(Level.FINE, "Recalculating names using extractors: {0}", NameExtractorFactory.serializeExtractorsToString(getNameExtractors()));
+			LOGGER.log(Level.FINE, "Recalculating names using extractors: {0}", 
+				NameExtractorFactory.serializeExtractorsToString(getNameExtractors()));
 			
 			long startTime = System.nanoTime();
 			
@@ -291,57 +291,178 @@ public class Dataset implements Citable, Comparable {
 		return namesByRow;
 	}
 	
-	public String getNameExtractorsAsString() {
-		return NameExtractorFactory.serializeExtractorsToString(nameExtractors);
+	public Set<Name> getNamesInRow(DatasetRow row) {
+		// trigger parse if necessary
+		Map<DatasetRow, Set<Name>> namesByRow = getNamesByRow();
+		
+		LOGGER.entering(Dataset.class.getSimpleName(), "getNamesInRow", row);
+		
+		if(namesByRow.containsKey(row))
+			return namesByRow.get(row);
+		else
+			return new HashSet();
+	}
+
+	/**
+	 * Returns the set of all names recorded in the rows of this dataset. Note that this
+	 * does NOT include names referenced from the explicit changes -- please see getReferencedNames()
+	 * for that!
+	 * 
+	 * @return The set of all names recorded in the rows of this dataset.
+	 */
+	public Set<Name> getNamesInAllRows() {
+		// Make sure our caches are up to date.
+		getNamesByRow();
+		
+		// At this point, they should be!
+		return namesInRows;
 	}
 	
-	public void setNameExtractorsString(String str) throws NameExtractorParseException {
-		nameExtractors = NameExtractorFactory.getExtractors(str);
-		LOGGER.log(Level.FINE, "setNameExtractorsString() called, extractors now set to {0}", NameExtractorFactory.serializeExtractorsToString(nameExtractors));
-		resetNamesCaches();
+	/**
+	 * @return The inverse of getNamesByRow(): returns the set of rows associated with each name.
+	 */
+	public Map<Name, Set<DatasetRow>> getRowsByName() {
+		// Make sure our caches are up to date.
+		getNamesByRow();
+		
+		// At this point, they should be!
+		return rowsByName;
 	}
+	
+	/*
+	 * Name extractors subsystem.
+	 * 
+	 * See model.rowextractors for more information.
+	 */
 	
 	private List<NameExtractor> nameExtractors = NameExtractorFactory.getDefaultExtractors();
 	public List<NameExtractor> getNameExtractors() { return nameExtractors; }
 	
+	/**
+	 * @return The current name extractors as a string.
+	 */
+	public String getNameExtractorsAsString() {
+		return NameExtractorFactory.serializeExtractorsToString(nameExtractors);
+	}
+	
+	/**
+	 * Set the current name extractors as a string.
+	 * 
+	 * @param str String represention of name extractors
+	 * @throws NameExtractorParseException If the string representation could not be parsed.
+	 */
+	public void setNameExtractorsString(String str) throws NameExtractorParseException {
+		nameExtractors = NameExtractorFactory.getExtractors(str);
+		LOGGER.log(Level.FINE, 
+			"setNameExtractorsString() called, extractors now set to {0}", 
+			NameExtractorFactory.serializeExtractorsToString(nameExtractors));
+		resetNamesCaches();
+	}
+	
+	/**
+	 * Returns a Stream of all distinct names referenced from this dataset. This includes 
+	 * names found in dataset rows and names found in ALL explicit changes (not just 
+	 * filtered ones!), and nothing else.
+	 * 
+	 * @return A Stream of all distinct names referenced from this dataset.
+	 */
 	public Stream<Name> getReferencedNames() {
 		Stream<Name> namesFromData = getNamesInAllRows().stream();
-		Stream<Name> namesFromChanges = explicitChanges.stream().flatMap(ch -> Stream.concat(ch.getFromStream(), ch.getToStream()));
-
-		// LOGGER.log(Level.FINE, "dataset.getReferencedNames(): getNamesInAllRows() at {0}", getNamesInAllRows().size());
+		Stream<Name> namesFromChanges = explicitChanges.stream().flatMap(
+			ch -> Stream.concat(ch.getFromStream(), ch.getToStream())
+		);
 		
 		return Stream.concat(namesFromData, namesFromChanges).distinct();
 	}
 
-	public Stream<Name> getRecognizedNames(Project project) {
+	/**
+	 * Returns a Stream of all distinct names recognized at the end of this checklist.
+	 * 
+	 * For a checklist, this is every name in every row, plus names added by explicit
+	 * changes (which overrule the dataset), minus names removed by explicit changes.
+	 * 
+	 * For a dataset, it's (prevDataset's recognized names) + 
+	 * (names added by explicit and implicit changes) - (names removed by explicit
+	 * and implicit changes).
+	 * 
+	 * @param proj Required for filtering changes
+	 * @return A Stream of recognized names as at the end of this checklist.
+	 */
+	public Stream<Name> getRecognizedNames(Project proj) {
 		// Start with names we explicitly add.
-		Stream<Name> names = getChanges(project).flatMap(ch -> ch.getToStream());
+		Stream<Name> names = getChanges(proj).flatMap(ch -> ch.getToStream());
 		
-		if(flag_isChecklist) {
+		if(isChecklistProperty.get()) {
 			// If this is a checklist, then we use the names we have now.
 			names = Stream.concat(names, getNamesInAllRows().stream());
 		} else {
 			// If this is not a checklist, then pass through previously recognized names.
 			if(prevDataset != null)
-				names = Stream.concat(names, prevDataset.getRecognizedNames(project));
+				names = Stream.concat(names, prevDataset.getRecognizedNames(proj));
 		}
 		
 		// Delete names we explicitly delete.
-		Set<Name> deletedNames = getChanges(project)
+		Set<Name> deletedNames = getChanges(proj)
 			.flatMap(ch -> ch.getFromStream())
 			.collect(Collectors.toSet());
 		return names.filter(n -> !deletedNames.contains(n)).distinct();
 	}
+	
+	/* Display options: provides information on what happened in this dataset for UI purposes */
 
 	public String getNameCountSummary(Project project) {
 		return getRecognizedNames(project).count() + " (" + getReferencedNames().count() + " in this dataset)";
 	}
 
 	public String getBinomialCountSummary(Project project) {
-		return getRecognizedNames(project).map(n -> n.getBinomialName()).distinct().count() + " (" + getReferencedNames().map(n -> n.getBinomialName()).distinct().count() + " in this dataset)";
+		return getRecognizedNames(project).flatMap(n -> n.asBinomial()).distinct().count() + " (" + getReferencedNames().flatMap(n -> n.asBinomial()).distinct().count() + " in this dataset)";
+	}
+	
+	/** 
+	 * Set up a TableView to contain the data contained in this dataset.
+	 * 
+	 * @param tv The TableView to populate.
+	 */
+	public void displayInTableView(TableView tv) {
+		// Setup table.
+		tv.setEditable(false);
+		//controller.setTableColumnResizeProperty(TableView.CONSTRAINED_RESIZE_POLICY);
+		ObservableList<TableColumn> cols = tv.getColumns();
+		cols.clear();
+		// We need to precalculate.
+		ObservableList<DatasetRow> rows = this.rowsProperty();
+		// Set up columns.
+		TableColumn<DatasetRow, String> colRowName = new TableColumn("Name");
+		colRowName.setCellValueFactory((TableColumn.CellDataFeatures<DatasetRow, String> features) -> {
+			DatasetRow row = features.getValue();
+			Set<Name> names = getNamesInRow(row);
+			if (names.isEmpty()) {
+				return new ReadOnlyStringWrapper("(None)");
+			} else {
+				return new ReadOnlyStringWrapper(names.stream().map(name -> name.getFullName()).collect(Collectors.joining("; ")));
+			}
+		});
+		colRowName.setPrefWidth(100.0);
+		cols.add(colRowName);
+		// Create a column for every column here.
+		this.getColumns().forEach((DatasetColumn col) -> {
+			String colName = col.getName();
+			TableColumn<DatasetRow, String> colColumn = new TableColumn(colName);
+			colColumn.setCellValueFactory((TableColumn.CellDataFeatures<DatasetRow, String> features) -> {
+				DatasetRow row = features.getValue();
+				String val = row.get(colName);
+				return new ReadOnlyStringWrapper(val == null ? "" : val);
+			});
+			colColumn.setPrefWidth(100.0);
+			cols.add(colColumn);
+		});
+		// Set table items.
+		tv.getItems().clear();
+		tv.setItems(rows);
 	}
 	
 	/* Change management */
+	
 	public void onChangeChanged(Optional<Project> project, Change change) {
 		LOGGER.entering(Dataset.class.getSimpleName(), "project = " + project + ", change = " + change);
 		
@@ -373,7 +494,6 @@ public class Dataset implements Citable, Comparable {
 	}
 	
 	public Stream<Change> getImplicitChanges(Project p) {
-		// TODO: do we trust onChangeChanged() to track this
 		return implicitChanges.stream().filter(p.getChangeFilter());
 	}
 	
@@ -381,7 +501,9 @@ public class Dataset implements Citable, Comparable {
 		if(getExplicitChanges(p).count() == 0)
 			return "None";
 		
-		Map<ChangeType,Long> changeCounts = getExplicitChanges(p).collect(Collectors.groupingBy(Change::getType, Collectors.counting()));
+		Map<ChangeType,Long> changeCounts = getExplicitChanges(p)
+			.collect(Collectors.groupingBy(Change::getType, Collectors.counting()));
+		
 		String changes_by_type = changeCounts.entrySet().stream()
 				.sorted((a, b) -> b.getValue().compareTo(a.getValue()))
 				.map(e -> e.getValue() + " " + e.getKey())
@@ -394,7 +516,9 @@ public class Dataset implements Citable, Comparable {
 		if(getImplicitChanges(p).count() == 0)
 			return "None";
 		
-		Map<ChangeType,Long> implicitChangeCounts = getImplicitChanges(p).collect(Collectors.groupingBy(Change::getType, Collectors.counting()));;
+		Map<ChangeType,Long> implicitChangeCounts = getImplicitChanges(p)
+			.collect(Collectors.groupingBy(Change::getType, Collectors.counting()));
+		
 		String implicit_changes_by_type = implicitChangeCounts.entrySet().stream()
 			.sorted((a, b) -> b.getValue().compareTo(a.getValue()))
 			.map(e -> e.getValue() + " " + e.getKey())
@@ -418,7 +542,7 @@ public class Dataset implements Citable, Comparable {
 	
 	@Override
 	public String toString() {
-		String str_treatAsChecklist = (flag_isChecklist ? "Checklist " : "Dataset ");
+		String str_treatAsChecklist = (isChecklistProperty.get() ? "Checklist " : "Dataset ");
 		
 		return str_treatAsChecklist + getCitation();
 	}
@@ -428,17 +552,18 @@ public class Dataset implements Citable, Comparable {
 	}
 	
 	/* Data load */
+	
 	/**
-	 * Load a timepoint from a file. Checklists can be loaded from plain text
-	 * files containing a list of names, while ChecklistDiffs can be loaded
-	 * in TaxDiff format.
+	 * Attempt to load a dataset from a file. We use regular expressions to try to guess the file type,
+	 * and then delegate the job out. Rather cleverly, we try extracting the names using every extractor
+	 * this project knows about, and then pick the one that gives us the most number of names.
 	 * 
-	 * @param project Project within which this load is happening.
-	 * @param f File containing timepoint.
-	 * @return Timepoint contained in that file.
-	 * @throws IOException If the file isn't in the right format.
+	 * @param proj The project doing the loading, used to get the name extractors.
+	 * @param f The file to open.
+	 * @return The dataset loaded from that file.
+	 * @throws IOException If there was an error loading the file.
 	 */
-	public static Dataset loadFromFile(Project project, File f) throws IOException {
+	public static Dataset loadFromFile(Project proj, File f) throws IOException {
 		String firstLine;
 		try (LineNumberReader r = new LineNumberReader(new FileReader(f))) {
 			// Load the first line to try to identify the file type.
@@ -462,7 +587,7 @@ public class Dataset implements Citable, Comparable {
 			Dataset ds = Dataset.fromCSV(csvFormat, f);
 			
 			// Try all name extractors, see which one matches the most names.
-			Set<List<NameExtractor>> allAvailableNameExtractors = project.getNameExtractors();
+			Set<List<NameExtractor>> allAvailableNameExtractors = proj.getNameExtractors();
 			allAvailableNameExtractors.add(NameExtractorFactory.getDefaultExtractors());
 
 			LOGGER.info("Starting name extractor comparisons");
@@ -501,7 +626,7 @@ public class Dataset implements Citable, Comparable {
 	
 	// Blank constructor
 	public Dataset() {
-		
+		this.name = "(unnamed)";
 	}
 
 	/* Serialization */
@@ -543,7 +668,7 @@ public class Dataset implements Citable, Comparable {
 		Element datasetElement = doc.createElement("dataset");
 		
 		datasetElement.setAttribute("name", name);
-		datasetElement.setAttribute("is_checklist", flag_isChecklist ? "yes" : "no");
+		datasetElement.setAttribute("is_checklist", isChecklistProperty.get() ? "yes" : "no");
 		dateProperty.getValue().setDateAttributesOnElement(datasetElement);
 		
 		// Properties
@@ -659,42 +784,4 @@ public class Dataset implements Citable, Comparable {
 		
 		return dataset;
 	}*/
-	
-	public void displayInTableView(TableView tv) {
-		// Setup table.
-		tv.setEditable(false);
-		//controller.setTableColumnResizeProperty(TableView.CONSTRAINED_RESIZE_POLICY);
-		ObservableList<TableColumn> cols = tv.getColumns();
-		cols.clear();
-		// We need to precalculate.
-		ObservableList<DatasetRow> rows = this.rowsProperty();
-		// Set up columns.
-		TableColumn<DatasetRow, String> colRowName = new TableColumn("Name");
-		colRowName.setCellValueFactory((TableColumn.CellDataFeatures<DatasetRow, String> features) -> {
-			DatasetRow row = features.getValue();
-			Set<Name> names = getNamesInRow(row);
-			if (names.isEmpty()) {
-				return new ReadOnlyStringWrapper("(None)");
-			} else {
-				return new ReadOnlyStringWrapper(names.stream().map(name -> name.getFullName()).collect(Collectors.joining("; ")));
-			}
-		});
-		colRowName.setPrefWidth(100.0);
-		cols.add(colRowName);
-		// Create a column for every column here.
-		this.getColumns().forEach((DatasetColumn col) -> {
-			String colName = col.getName();
-			TableColumn<DatasetRow, String> colColumn = new TableColumn(colName);
-			colColumn.setCellValueFactory((TableColumn.CellDataFeatures<DatasetRow, String> features) -> {
-				DatasetRow row = features.getValue();
-				String val = row.get(colName);
-				return new ReadOnlyStringWrapper(val == null ? "" : val);
-			});
-			colColumn.setPrefWidth(100.0);
-			cols.add(colColumn);
-		});
-		// Set table items.
-		tv.getItems().clear();
-		tv.setItems(rows);
-	}
 }

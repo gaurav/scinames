@@ -216,7 +216,7 @@ public class ProjectXMLReader {
 						SimplifiedDate date = new SimplifiedDate(attributes);
 
 						Dataset dataset = new Dataset(attributes.get("name"), date);
-						dataset.setIsChecklist(attributes.containsKey("is_checklist") && attributes.get("is_checklist").equalsIgnoreCase("yes"));
+						dataset.isChecklistProperty().set(attributes.containsKey("is_checklist") && attributes.get("is_checklist").equalsIgnoreCase("yes"));
 						if(attributes.containsKey("nameExtractors")) {
 							try {
 							    dataset.setNameExtractorsString(attributes.get("nameExtractors"));
