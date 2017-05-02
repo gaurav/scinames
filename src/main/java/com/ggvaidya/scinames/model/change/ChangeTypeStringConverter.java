@@ -5,23 +5,24 @@
  */
 package com.ggvaidya.scinames.model.change;
 
-import com.ggvaidya.scinames.model.Change;
+import com.ggvaidya.scinames.model.ChangeType;
+
 import javafx.util.StringConverter;
 
 /**
  *
  * @author Gaurav Vaidya <gaurav@ggvaidya.com>
  */
-public class ChangeTypeStringConverter extends StringConverter<Change.Type> {
+public class ChangeTypeStringConverter extends StringConverter<ChangeType> {
 	public ChangeTypeStringConverter() {}
 
 	@Override
-	public String toString(Change.Type type) {
+	public String toString(ChangeType type) {
 		return type.getType();
 	}
 
 	@Override
-	public Change.Type fromString(String string) {
-		return Change.Type.of(string);
+	public ChangeType fromString(String string) {
+		return ChangeType.of(string);
 	}
 }

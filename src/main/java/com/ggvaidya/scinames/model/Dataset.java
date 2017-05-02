@@ -170,11 +170,11 @@ public class Dataset implements Citable, Comparable {
 			// Calculate implicit changes that can't be explained by an explicit change.
 			Stream<Change> additions = names.stream()
 				.filter(n -> !prevNames.contains(n) && !addedByExplicitChanges.contains(n))
-				.map(n -> new Change(this, Change.ADDITION, Stream.empty(), Stream.of(n)));
+				.map(n -> new Change(this, ChangeType.ADDITION, Stream.empty(), Stream.of(n)));
 				//.filter(project.getChangeFilter());
 			Stream<Change> deletions = prevNames.stream()
 				.filter(n -> !names.contains(n) && !deletedByExplicitChanges.contains(n))
-				.map(n -> new Change(this, Change.DELETION, Stream.of(n), Stream.empty()));
+				.map(n -> new Change(this, ChangeType.DELETION, Stream.of(n), Stream.empty()));
 				//.filter(project.getChangeFilter());
 			
 			implicitChanges.addAll(additions.collect(Collectors.toList()));
@@ -381,7 +381,7 @@ public class Dataset implements Citable, Comparable {
 		if(getExplicitChanges(p).count() == 0)
 			return "None";
 		
-		Map<Change.Type,Long> changeCounts = getExplicitChanges(p).collect(Collectors.groupingBy(Change::getType, Collectors.counting()));
+		Map<ChangeType,Long> changeCounts = getExplicitChanges(p).collect(Collectors.groupingBy(Change::getType, Collectors.counting()));
 		String changes_by_type = changeCounts.entrySet().stream()
 				.sorted((a, b) -> b.getValue().compareTo(a.getValue()))
 				.map(e -> e.getValue() + " " + e.getKey())
@@ -394,7 +394,7 @@ public class Dataset implements Citable, Comparable {
 		if(getImplicitChanges(p).count() == 0)
 			return "None";
 		
-		Map<Change.Type,Long> implicitChangeCounts = getImplicitChanges(p).collect(Collectors.groupingBy(Change::getType, Collectors.counting()));;
+		Map<ChangeType,Long> implicitChangeCounts = getImplicitChanges(p).collect(Collectors.groupingBy(Change::getType, Collectors.counting()));;
 		String implicit_changes_by_type = implicitChangeCounts.entrySet().stream()
 			.sorted((a, b) -> b.getValue().compareTo(a.getValue()))
 			.map(e -> e.getValue() + " " + e.getKey())

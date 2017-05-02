@@ -23,8 +23,8 @@
 
 package com.ggvaidya.scinames.summary;
 
-import com.ggvaidya.scinames.model.Change;
 import com.ggvaidya.scinames.model.Dataset;
+import com.ggvaidya.scinames.model.ChangeType;
 import com.ggvaidya.scinames.project.ProjectView;
 import com.ggvaidya.scinames.tabulardata.TabularDataViewController;
 import java.util.List;
@@ -103,7 +103,7 @@ public final class ProjectCountsView {
 					.count()
 			)
 		));
-		Stream<Change.Type> changes = projectView.getProject().getChanges().map(ch -> ch.getType()).distinct().sorted();
+		Stream<ChangeType> changes = projectView.getProject().getChanges().map(ch -> ch.getType()).distinct().sorted();
 		changes.forEach(chType -> 
 			cols.add(
 				createTableColumnForDataset(

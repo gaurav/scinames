@@ -109,7 +109,7 @@ public class ChecklistDiff {
 				Change ch;
 				
 				try {
-					ch = new Change(checklistDiff, Change.Type.of(action), from_str, to_str);
+					ch = new Change(checklistDiff, ChangeType.of(action), from_str, to_str);
 				} catch(IllegalStateException e) {
 					throw new IOException("Unable to parse change type '" + action + "', from '" + from_str + "' to '" + to_str + "': " + e);
 				}

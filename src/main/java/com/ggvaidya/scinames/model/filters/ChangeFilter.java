@@ -17,6 +17,8 @@
 package com.ggvaidya.scinames.model.filters;
 
 import com.ggvaidya.scinames.model.Change;
+import com.ggvaidya.scinames.model.ChangeType;
+
 import java.util.HashSet;
 import java.util.Map;
 import java.util.function.Function;
@@ -46,7 +48,7 @@ public abstract class ChangeFilter implements Predicate<Change> {
 		changesFiltered.add(ch);
 	}
 	public int getChangesFilteredCount() { return changesFiltered.size(); }
-	public Map<Change.Type, Long> getChangesFilteredByType() { 
+	public Map<ChangeType, Long> getChangesFilteredByType() { 
 		return changesFiltered.stream().map(ch -> ch.getType()).collect(
 				Collectors.groupingBy(
 						Function.identity(),

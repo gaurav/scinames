@@ -17,6 +17,7 @@
 package com.ggvaidya.scinames.model.filters;
 
 import com.ggvaidya.scinames.model.Change;
+import com.ggvaidya.scinames.model.ChangeType;
 import com.ggvaidya.scinames.model.Project;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -41,7 +42,7 @@ public class IgnoreSelfRenamesChangeFilter extends ChangeFilter {
 		if (!isActive())
 			return true;
 		
-		if(ch.getType().equals(Change.RENAME) && ch.getFromString().equals(ch.getToString())) {
+		if(ch.getType().equals(ChangeType.RENAME) && ch.getFromString().equals(ch.getToString())) {
 			// System.err.println(" - ignoreSelfRenames filter ignored: " + ch);
 			
 			addFilteredChange(ch);

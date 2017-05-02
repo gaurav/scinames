@@ -67,7 +67,7 @@ public class NameCluster {
 		//  - any of the changes involving this cluster involves a lump.
 		return foundIn.stream()
 			// Get all lumps and splits
-			.flatMap(ds -> ds.getChanges(p).filter(ch -> ch.getType().equals(Change.LUMP) || ch.getType().equals(Change.SPLIT)))
+			.flatMap(ds -> ds.getChanges(p).filter(ch -> ch.getType().equals(ChangeType.LUMP) || ch.getType().equals(ChangeType.SPLIT)))
 			// Get those associated with names in this cluster.
 			.anyMatch(ch -> ch.getAllNames().stream().anyMatch(n -> names.contains(n)))
 		;
@@ -271,7 +271,7 @@ public class NameCluster {
 			);
 			
 			List<Change> splumps = changesInvolvingNameCluster
-				.filter(ch -> ch.getType().equals(Change.LUMP) || ch.getType().equals(Change.SPLIT))
+				.filter(ch -> ch.getType().equals(ChangeType.LUMP) || ch.getType().equals(ChangeType.SPLIT))
 				.collect(Collectors.toList());
 			
 			current.addNames(tp, new ArrayList(namesFromThisCluster));

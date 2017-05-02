@@ -23,6 +23,7 @@ import com.ggvaidya.scinames.model.DatasetColumn;
 import com.ggvaidya.scinames.model.Name;
 import com.ggvaidya.scinames.model.NameCluster;
 import com.ggvaidya.scinames.model.NameClusterManager;
+import com.ggvaidya.scinames.model.ChangeType;
 import com.ggvaidya.scinames.model.change.ChangeTypeStringConverter;
 import com.ggvaidya.scinames.model.change.NameSetStringConverter;
 import com.ggvaidya.scinames.summary.DatasetTabularView;
@@ -220,14 +221,14 @@ public class DatasetSceneWithNameListsController {
 		tv.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
 		tv.getColumns().clear();
 
-		TableColumn<Change, Change.Type> colChangeType = new TableColumn("Type");
+		TableColumn<Change, ChangeType> colChangeType = new TableColumn("Type");
 		colChangeType.setCellFactory(ComboBoxTableCell.forTableColumn(
 			new ChangeTypeStringConverter(),
-			Change.ADDITION,
-			Change.DELETION,
-			Change.RENAME,			
-			Change.LUMP,
-			Change.SPLIT
+			ChangeType.ADDITION,
+			ChangeType.DELETION,
+			ChangeType.RENAME,			
+			ChangeType.LUMP,
+			ChangeType.SPLIT
 		));
 		colChangeType.setCellValueFactory(new PropertyValueFactory<>("type"));
 		colChangeType.setPrefWidth(100.0);

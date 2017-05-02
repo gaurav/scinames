@@ -25,6 +25,7 @@ package com.ggvaidya.scinames.summary;
 
 import com.ggvaidya.scinames.model.Change;
 import com.ggvaidya.scinames.model.NameClusterManager;
+import com.ggvaidya.scinames.model.ChangeType;
 import com.ggvaidya.scinames.project.ProjectView;
 import com.ggvaidya.scinames.tabulardata.TabularDataViewController;
 import java.util.stream.Collectors;
@@ -82,7 +83,7 @@ public final class ChangesListView {
 		controller.getHeaderTextProperty().addListener((c, a, b) -> { init(); });		
 		
 		// What are we filtering to?
-		Change.Type filterChangeType = (headerText.get().equals("all") ? null : Change.Type.of(headerText.get()));
+		ChangeType filterChangeType = (headerText.get().equals("all") ? null : ChangeType.of(headerText.get()));
 		
 		// Load up name cluster manager.
 		NameClusterManager nameClusterManager = projectView.getProject().getNameClusterManager();

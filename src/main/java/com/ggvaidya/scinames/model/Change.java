@@ -16,7 +16,6 @@
  */
 package com.ggvaidya.scinames.model;
 
-import java.lang.reflect.Array;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -57,68 +56,10 @@ import javafx.collections.ObservableSet;
  * @author Gaurav Vaidya <gaurav@ggvaidya.com>
  */
 public class Change {
-	/* Change types */
-	public static final class Type implements Comparable<Type> {
-		private static Map<String, Type> singletons = new HashMap<>();
-		
-		/**
-		 * Return the singleton corresponding to a particular name of a change type.
-		 * 
-		 * @param text 
-		 * @return
-		 */
-		public static Type of(String text) {
-			text = text.toLowerCase();
-			
-			if(!singletons.containsKey(text))
-				singletons.put(text, new Type(text));
-				
-			return singletons.get(text);
-		}
-
-		/**
-		 * @return The "inversion" of this type: additions become deletions,
-		 * splits become lumps and so on.
-		 */
-		public Type invert() {
-			if(equals(Change.ADDITION))			return Change.DELETION;
-			else if(equals(Change.DELETION))	return Change.ADDITION;
-			else if(equals(Change.LUMP))		return Change.SPLIT;
-			else if(equals(Change.SPLIT))		return Change.LUMP;
-			else if(equals(Change.ERROR))		return Change.ERROR;
-			else throw new RuntimeException("Unable to invert Change.Type: " + this);
-		}
-		
-		private String type;
-		public String getType() { return type; }		
-		@Override public String toString() { return type; }
-		private Type(String s) { type = s; }
-
-		@Override
-		public int compareTo(Change.Type ty) {
-			return type.compareToIgnoreCase(ty.type);
-		}
-	}
-	
-	public static final Type ADDITION = Type.of("added");
-	public static final Type DELETION = Type.of("deleted");
-	public static final Type RENAME = Type.of("rename");
-	public static final Type LUMP = Type.of("lump");
-	public static final Type SPLIT = Type.of("split");
-	public static final Type ERROR = Type.of("error");
-	public static final Set<Type> RECOGNIZED_TYPES = new HashSet<>(Arrays.asList(
-		ADDITION,
-		DELETION,
-		RENAME,
-		LUMP,
-		SPLIT,
-		ERROR
-	));
-	
 	/* Private variables and properties */
 	private UUID id = UUID.randomUUID();
 	private Dataset dataset;
-	private ObjectProperty<Type> typeProperty = new SimpleObjectProperty<>();
+	private ObjectProperty<ChangeType> typeProperty = new SimpleObjectProperty<>();
 	private SetProperty<Name> from = new SimpleSetProperty<>(FXCollections.observableSet());
 	private SetProperty<Name> to = new SimpleSetProperty<>(FXCollections.observableSet());
 	private SetProperty<Citation> citations = new SimpleSetProperty<>(FXCollections.observableSet());
@@ -136,8 +77,8 @@ public class Change {
 	/* Accessors */
 	public UUID getId() { return id; }
 	public Dataset getDataset() { return dataset; }
-	public Type getType() { return typeProperty.getValue(); }
-	public ObservableValue<Type> typeProperty() { return typeProperty; }
+	public ChangeType getType() { return typeProperty.getValue(); }
+	public ObservableValue<ChangeType> typeProperty() { return typeProperty; }
 	public Set<Name> getFrom() { return from.get(); }
 	public Set<Name> getTo() { return to.get(); }
 	public SetProperty<Name> fromProperty() { return from; }
@@ -210,11 +151,11 @@ public class Change {
 		// (from 1) + (from 2) -> (to 1) + (to 2) [type, dataset]
 		StringBuilder response = new StringBuilder();	
 		
-		Type type = typeProperty.getValue();
-		if(type.equals(ADDITION) && getFrom().isEmpty())
+		ChangeType type = typeProperty.getValue();
+		if(type.equals(ChangeType.ADDITION) && getFrom().isEmpty())
 			response.append("added ").append(getToStream().map(n -> n.getFullName()).collect(Collectors.joining(" + ")));
 		
-		else if(type.equals(DELETION) && getTo().isEmpty())
+		else if(type.equals(ChangeType.DELETION) && getTo().isEmpty())
 			response.append("deleted ").append(getFromStream().map(n -> n.getFullName()).collect(Collectors.joining(" + ")));
 		
 		else
@@ -239,7 +180,7 @@ public class Change {
 	 * @param from Stream of 'from' Names
 	 * @param to Stream of 'to' Names
 	 */
-	public Change(Dataset d, Type type, Stream<Name> from, Stream<Name> to) {
+	public Change(Dataset d, ChangeType type, Stream<Name> from, Stream<Name> to) {
 		dataset = d;
 		this.typeProperty.setValue(type);
 		this.from.addAll(from.collect(Collectors.toSet()));
@@ -275,7 +216,7 @@ public class Change {
 	 * @param from_str The and-string of input names.
 	 * @param to_str The and-string of output names.
 	 */
-	public Change(Dataset d, Type type, String from_str, String to_str) throws IllegalStateException {
+	public Change(Dataset d, ChangeType type, String from_str, String to_str) throws IllegalStateException {
 		Stream<Name> from_stream = convertAndStringToNames(from_str);
 		Stream<Name> to_stream = convertAndStringToNames(to_str);
 		
@@ -373,7 +314,7 @@ public class Change {
 			}
 		}
 		
-		Change ch = new Change(d, Change.Type.of(typeStr), fromList.stream(), toList.stream());
+		Change ch = new Change(d, ChangeType.of(typeStr), fromList.stream(), toList.stream());
 		ch.getProperties().putAll(properties);
 		ch.getCitations().addAll(citations);
 		ch.lastModifiedProperty().saved();

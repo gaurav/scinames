@@ -98,7 +98,7 @@ public class Project {
 	private ObservableSet<Name> binomialNames = FXCollections.observableSet(new HashSet<>());
 	private ObservableMap<String, String> properties = FXCollections.observableHashMap();
 	private NameClusterManager nameClusterManager = new NameClusterManager();
-	private ObservableSet<Change.Type> changeTypes = FXCollections.observableSet(new HashSet<>());
+	private ObservableSet<ChangeType> changeTypes = FXCollections.observableSet(new HashSet<>());
 	private ListProperty<Dataset> datasets = new SimpleListProperty(FXCollections.observableList(new LinkedList()));
 	{
 		datasets.addListener(new ListChangeListener<Dataset>() {
@@ -125,7 +125,7 @@ public class Project {
 	public ObservableMap<Name, List<Dataset>> timepointsByNameProperty() { return timepointsByName; }
 	public ObservableMap<String, String> propertiesProperty() { return properties; }
 	public Stream<NameCluster> getSpeciesNameClusters() { return nameClusterManager.getSpeciesClusters(); }
-	public ObservableSet<Change.Type> changeTypesProperty() { return changeTypes; }
+	public ObservableSet<ChangeType> changeTypesProperty() { return changeTypes; }
 	public NameClusterManager getNameClusterManager() { return nameClusterManager; }
 	
 	/* Check if property is set. The default is always false. */
@@ -280,7 +280,7 @@ public class Project {
 		t.getReferencedNames().forEach(n -> nameClusterManager.addCluster(new NameCluster(t, n)));
 		
 		// Track renames separately.
-		t.getChanges(this).filter(ch -> ch.getType().equals(Change.RENAME)).forEach(c ->
+		t.getChanges(this).filter(ch -> ch.getType().equals(ChangeType.RENAME)).forEach(c ->
 			c.getFrom().forEach(from ->
 				c.getTo().forEach(
 					to -> nameClusterManager.addCluster(new Synonymy(from, to, t))
@@ -299,7 +299,7 @@ public class Project {
 			timepointsByName.get(n).add(t);
 		});
 		
-		Set<Change.Type> newChangeTypes = t.getChanges(this).map(c -> c.getType()).collect(Collectors.toSet());
+		Set<ChangeType> newChangeTypes = t.getChanges(this).map(c -> c.getType()).collect(Collectors.toSet());
 		changeTypes.addAll(newChangeTypes);
 		
 		// Finally, changes in the new dataset should change this database.
@@ -595,7 +595,7 @@ public class Project {
 	
 	/* Find lumps and splits */
 	public Stream<Change> getLumpsAndSplits() {
-		return getChanges().filter(ch -> ch.getType().equals(Change.LUMP) || ch.getType().equals(Change.SPLIT));
+		return getChanges().filter(ch -> ch.getType().equals(ChangeType.LUMP) || ch.getType().equals(ChangeType.SPLIT));
 	}
 	
 	/* Finding partial and complete reversions */

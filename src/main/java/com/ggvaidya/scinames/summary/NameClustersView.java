@@ -23,8 +23,8 @@
 
 package com.ggvaidya.scinames.summary;
 
-import com.ggvaidya.scinames.model.Change;
 import com.ggvaidya.scinames.model.NameCluster;
+import com.ggvaidya.scinames.model.ChangeType;
 import com.ggvaidya.scinames.project.ProjectView;
 import com.ggvaidya.scinames.tabulardata.TabularDataViewController;
 import java.util.stream.Collectors;
@@ -103,7 +103,7 @@ public final class NameClustersView {
 		colTaxonConcepts.setPrefWidth(200.0);
 		cols.add(colTaxonConcepts);
 		
-		for(Change.Type type: FXCollections.observableArrayList(projectView.getProject().changeTypesProperty()).sorted()) {
+		for(ChangeType type: FXCollections.observableArrayList(projectView.getProject().changeTypesProperty()).sorted()) {
 			TableColumn<NameCluster, String> colChangesByType = new TableColumn(type.getType());
 			colChangesByType.setCellValueFactory((TableColumn.CellDataFeatures<NameCluster, String> features) -> {
 				NameCluster cluster = features.getValue();

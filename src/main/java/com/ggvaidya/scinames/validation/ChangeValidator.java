@@ -22,6 +22,7 @@
 package com.ggvaidya.scinames.validation;
 
 import com.ggvaidya.scinames.model.Change;
+import com.ggvaidya.scinames.model.ChangeType;
 import com.ggvaidya.scinames.model.Dataset;
 import com.ggvaidya.scinames.model.Name;
 import com.ggvaidya.scinames.model.NameCluster;
@@ -92,9 +93,9 @@ public class ChangeValidator implements Validator {
 	private Stream<ValidationError> getIncorrectAdditionsAndDeletions(Project p) {
 		return p.getChanges()
 			.filter(ch -> {
-				if(ch.getType().equals(Change.ADDITION)) {
+				if(ch.getType().equals(ChangeType.ADDITION)) {
 					return !(ch.getFrom().isEmpty() && !ch.getTo().isEmpty());
-				} else if(ch.getType().equals(Change.DELETION)) {
+				} else if(ch.getType().equals(ChangeType.DELETION)) {
 					return !(!ch.getFrom().isEmpty() && ch.getTo().isEmpty());
 				} else
 					return false;
@@ -105,9 +106,9 @@ public class ChangeValidator implements Validator {
 	private Stream<ValidationError> getIncorrectLumpsAndSplits(Project p) {
 		return p.getChanges()
 			.filter(ch -> {
-				if(ch.getType().equals(Change.LUMP)) {
+				if(ch.getType().equals(ChangeType.LUMP)) {
 					return !(ch.getFrom().size() > ch.getTo().size());
-				} else if(ch.getType().equals(Change.SPLIT)) {
+				} else if(ch.getType().equals(ChangeType.SPLIT)) {
 					return !(ch.getFrom().size() < ch.getTo().size());
 				} else
 					return false;
@@ -132,7 +133,7 @@ public class ChangeValidator implements Validator {
 	
 	private Stream<ValidationError> changesOfNonRecognizedTypes(Project p) {
 		return p.getChanges()
-			.filter(ch -> !Change.RECOGNIZED_TYPES.contains(ch.getType()))
+			.filter(ch -> !ChangeType.RECOGNIZED_TYPES.contains(ch.getType()))
 			.map(ch -> new ValidationError<Change>(this, p, "Change type '" + ch.getType().toString() + "' not recognized", ch));	
 	}
 	

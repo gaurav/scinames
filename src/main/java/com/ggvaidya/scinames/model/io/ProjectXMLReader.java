@@ -11,6 +11,7 @@ import com.ggvaidya.scinames.model.Citation;
 import com.ggvaidya.scinames.model.Dataset;
 import com.ggvaidya.scinames.model.Name;
 import com.ggvaidya.scinames.model.Project;
+import com.ggvaidya.scinames.model.ChangeType;
 import com.ggvaidya.scinames.model.Dataset;
 import com.ggvaidya.scinames.model.DatasetColumn;
 import com.ggvaidya.scinames.model.DatasetRow;
@@ -329,7 +330,7 @@ public class ProjectXMLReader {
 			if(nextTag.isEndElement()) {
 				Stream<Name> from = (fromNames == null) ? Stream.empty() : fromNames.stream();
 				Stream<Name> to = (toNames == null) ? Stream.empty() : toNames.stream();
-				Change.Type type = Change.Type.of(changeElementAttrs.get("type"));
+				ChangeType type = ChangeType.of(changeElementAttrs.get("type"));
 				Change ch = new Change(tp, type, from, to);
 				
 				if(properties != null)
