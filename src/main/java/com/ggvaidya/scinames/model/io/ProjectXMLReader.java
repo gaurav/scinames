@@ -11,6 +11,7 @@ import com.ggvaidya.scinames.model.Citation;
 import com.ggvaidya.scinames.model.Dataset;
 import com.ggvaidya.scinames.model.Name;
 import com.ggvaidya.scinames.model.Project;
+import com.ggvaidya.scinames.model.Tag;
 import com.ggvaidya.scinames.model.ChangeType;
 import com.ggvaidya.scinames.model.Dataset;
 import com.ggvaidya.scinames.model.DatasetColumn;
@@ -430,6 +431,7 @@ public class ProjectXMLReader {
 	
 	public static Citation readCitation(XMLEventReader reader, StartElement citationTag) throws XMLStreamException {
 		String citationText = null;
+		Set<Tag> tags = null;
 		Map<String, String> props = null;
 		
 		SimplifiedDate date = new SimplifiedDate(getAllAttributes(citationTag, "year", "month", "day"));
@@ -466,6 +468,13 @@ public class ProjectXMLReader {
 								throw new XMLStreamException("Unexpected content in 'cite' in 'citation': " + nextTag);
 						}	
 						citationText = citationSB.toString();
+						break;
+						
+					case "tags":
+						List<XMLKeyValue> tagTags = getTagSeries(reader, "tag");
+						if(tags != null)
+							throw new XMLStreamException("Duplicate tags provided at: " + start);
+						tags = tagTags.stream().map(kv -> Tag.fromName(kv.getValue())).collect(Collectors.toSet());
 						break;
 						
 					case "properties":

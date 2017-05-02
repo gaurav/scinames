@@ -104,10 +104,21 @@ public class Citation implements Citable {
 		});
 		e.appendChild(propertiesElement);
 		
+		Element tagsElement = d.createElement("tags");
+		tags.forEach(tag -> {
+			Element tagProperty = d.createElement("tag");
+			tagProperty.setTextContent(tag.getName());
+			tagsElement.appendChild(tagProperty);
+		});
+		e.appendChild(tagsElement);
+		
 		return e;
 	}
 	
 	public static Citation serializeFromNode(Node n) throws SAXException {
+		throw new UnsupportedOperationException("Serializing citations from XML using SAX is no longer supported.");
+		
+		/* 
 		SimplifiedDate sd = new SimplifiedDate(n);
 		Map<String, String> props = new HashMap<>();
 		String citationText = null;
@@ -150,5 +161,6 @@ public class Citation implements Citable {
 		c.getProperties().putAll(props);
 		
 		return c;
+		*/
 	}
 }
