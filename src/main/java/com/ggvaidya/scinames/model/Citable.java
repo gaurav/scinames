@@ -19,9 +19,7 @@ package com.ggvaidya.scinames.model;
 import com.ggvaidya.scinames.util.SimplifiedDate;
 
 /**
- * A citation to a publication. All citation objects have dates, with '0'
- * representing unknown values, as well as a string representation of the
- * citation itself.
+ * A citation to a publication, which here is just defined as a citation text with a simplified date.
  * 
  * @author Gaurav Vaidya <gaurav@ggvaidya.com>
  */
