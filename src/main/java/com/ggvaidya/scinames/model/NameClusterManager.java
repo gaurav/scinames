@@ -34,17 +34,16 @@ import javafx.collections.ObservableSet;
  * synonymy, and can translate lists of names into name clusters.
  * 
  * Data structure:
-	1. Every Name is associated with a NameCluster.
-  2. Downstream systems will use NameClusters instead of Name when the
-     distinction is important. They will be able to lookup the NameCluster
-     associated with a name, but only after ALL the names and synonymies
-	   have been loaded in.
-  3. 
- 
- Usage:
-	1. Enter all synonymies into the cluster manager.
-  2. For a given Name, translate it into a NameCluster that represents
-     that name and a set of 
+ * 	1. 	Every Name is associated with a NameCluster.
+ * 	2. 	Downstream systems will use NameClusters instead of Name when the
+ * 		distinction is important. They will be able to lookup the NameCluster
+ * 		associated with a name, but only after ALL the names and synonymies
+ * 		have been loaded in.
+ * 
+ * Usage:
+ * 	1. Enter all synonymies into the cluster manager.
+ * 	2. For a given Name, translate it into a NameCluster that represents
+ * 		that name and the set of datasets it was found in.
  * 
  * @author Gaurav Vaidya <gaurav@ggvaidya.com>
  */
@@ -70,12 +69,31 @@ public class NameClusterManager {
 		return Optional.ofNullable(clustersByName.get(name));
 	}
 	
+	/**
+	 * Returns a list of name clusters for a list of names.
+	 * There is a one-to-one correspondence between the lists,
+	 * so if we don't have a name cluster for a name, we'll
+	 * return 'null' in that slot.
+	 * 
+	 * @param allNames Names to query.
+	 * @return List of all NameClusters corresponding to the provided names.
+	 */
 	public List<NameCluster> getClusters(Collection<Name> allNames) {
 		return allNames.stream()
 			.map(n -> clustersByName.get(n))
 			.collect(Collectors.toList());
 	}
 	
+	/**
+	 * Add a new cluster to this NameClusterManager. This may change ANY of the
+	 * name clusters in this manager, so you should include all renames FIRST
+	 * before making any other changes anywhere.
+	 * 
+	 * TODO We might want to turn this into a factory method that returns a NameClusterState,
+	 * which is then unmodifiable except by adding a namecluster to produce ANOTHER NameClusterState.
+	 * 
+	 * @param newCluster The new cluster to add.
+	 */
 	public void addCluster(NameCluster newCluster) {
 		// Are any of these names already known to us? If so, we need to merge
 		// them.

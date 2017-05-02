@@ -29,6 +29,7 @@ import com.ggvaidya.scinames.project.ProjectView;
 import com.ggvaidya.scinames.tabulardata.TabularDataViewController;
 import java.util.List;
 import javafx.beans.property.ReadOnlyStringWrapper;
+import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.collections.ObservableMap;
 import javafx.scene.Scene;
@@ -102,7 +103,7 @@ public final class SpeciesNamesView {
 		
 		// Set table items.
 		controller.getTableItemsProperty().set(
-			projectView.getProject().getBinomialNamesAsList().sorted()
+			FXCollections.observableArrayList(projectView.getProject().binomialNamesProperty()).sorted()
 		);
 	}
 }
