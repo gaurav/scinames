@@ -23,7 +23,19 @@ package com.ggvaidya.scinames.model;
  * @author Gaurav Vaidya <gaurav@ggvaidya.com>
  */
 public class Synonymy extends NameCluster {
-	public Synonymy(Name from, Name to, Dataset foundIn) {
-		super(foundIn, from, to);
+	private Dataset dataset;
+	private Name from;
+	private Name to;
+	
+	public Synonymy(Name nameFrom, Name nameTo, Dataset foundIn) {
+		super(foundIn, nameFrom, nameTo);
+		
+		from = nameFrom;
+		to = nameTo;
+		dataset = foundIn;
 	}
+	
+	public Dataset getDataset() { return dataset; }
+	public Name getFrom() { return from; }
+	public Name getTo() { return to; }
 }
