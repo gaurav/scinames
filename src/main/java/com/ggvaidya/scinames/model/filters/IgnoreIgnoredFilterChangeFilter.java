@@ -41,7 +41,7 @@ public class IgnoreIgnoredFilterChangeFilter extends ChangeFilter {
 		if (!isActive()) {
 			return true;
 		}
-		boolean ignored = ch.isPropertySet("ignored");
+		boolean ignored = ch.isPropertySetTrue("ignored");
 		if (!ignored) {
 			return true;
 		}

@@ -17,10 +17,7 @@
 package com.ggvaidya.scinames.model;
 
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -28,9 +25,7 @@ import java.util.stream.Stream;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
-import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
 import com.ggvaidya.scinames.util.ModificationTimeProperty;
@@ -58,16 +53,33 @@ import javafx.collections.ObservableSet;
 public class Change {
 	/* Private variables and properties */
 	private UUID id = UUID.randomUUID();
+	
+	/** The dataset this change is located in. */
 	private Dataset dataset;
+	
+	/** 
+	 * The ChangeType of this change. Note that this is not enforced here: ADDITIONs may have
+	 * delete taxa, for instance!
+	 */
 	private ObjectProperty<ChangeType> typeProperty = new SimpleObjectProperty<>();
+	
+	/** The names in the 'from' slot. */
 	private SetProperty<Name> from = new SimpleSetProperty<>(FXCollections.observableSet());
+	
+	/** The names in the 'to' slot. */
 	private SetProperty<Name> to = new SimpleSetProperty<>(FXCollections.observableSet());
+	
+	/** Citations associated with this change. */
 	private SetProperty<Citation> citations = new SimpleSetProperty<>(FXCollections.observableSet());
-	private ModificationTimeProperty lastModified = new ModificationTimeProperty();
+
+	/** Properties associated with this change. */
 	private MapProperty<String, String> properties = new SimpleMapProperty<>(FXCollections.observableHashMap());
 	
+	/** When was this Change last changed? */
+	private ModificationTimeProperty lastModified = new ModificationTimeProperty();
+		
 	{
-		// If any of our properties change, we've changed.
+		/* If any of our properties change, we've changed. */
 		this.typeProperty.addListener((a, b, c) -> lastModified.modified());
 		this.from.addListener((a, b, c) -> lastModified.modified());
 		this.to.addListener((a, b, c) -> lastModified.modified());
@@ -90,10 +102,12 @@ public class Change {
 	public SetProperty<Citation> citationsProperty() { return citations; }
 	public ModificationTimeProperty lastModifiedProperty() { return lastModified; }
 	public ObservableMap<String, String> getProperties() { return properties.get(); }
-	public MapProperty propertiesProperty() { return properties; }	
+	public MapProperty<String, String> propertiesProperty() { return properties; }	
 	
 	/* Higher-level accessors */
-	public boolean isPropertySet(String propName) {
+	
+	/** Checks whether a property is set to 'true'. Currently, we code 'true' as 'yes'. */
+	public boolean isPropertySetTrue(String propName) {
 		if(!properties.containsKey(propName))
 			return false;
 		
@@ -102,13 +116,12 @@ public class Change {
 	
 	/**
 	 * Used to store notes associated with this change. This is actually a property ("note"), so
-	 * we create a StringProperty 
+	 * we create a StringProperty to wrap it.
 	 */
 	public StringProperty noteProperty() {
 		Change change = this;
 		
 		return new StringPropertyBase() {
-			
 			@Override
 			public String getName() {
 				return "note";
@@ -132,20 +145,29 @@ public class Change {
 		};
 	}
 	
+	/** @return 'from' names as a set of names separated by ' and '. */
 	public String getFromString() {
 		return String.join(" and ", from.stream().map(n -> n.getFullName()).collect(Collectors.toList()));
 	}
 	
+	/** @return 'to' names as a set of names separated by ' and '. */
 	public String getToString() {
 		return String.join(" and ", to.stream().map(n -> n.getFullName()).collect(Collectors.toList()));
 	}
 	
+	/** @return all unique names in both 'from' and 'to' slots. */
 	public Set<Name> getAllNames() {
 		Set<Name> all = new HashSet<>(from.get());
 		all.addAll(to.get());
 		return all;
 	}
 	
+	/** Add a single citation to this Change. */
+	void addCitation(Citation citation) {
+		citations.add(citation);
+	}
+	
+	/** @return A string representation of the important information: from, to, type and dataset. */
 	@Override
 	public String toString() {
 		// (from 1) + (from 2) -> (to 1) + (to 2) [type, dataset]
@@ -176,6 +198,7 @@ public class Change {
 	 * Create a Change of a particular type, using Streams to transmit the
 	 * from- and to- names.
 	 * 
+	 * @param d The dataset this change is present in.
 	 * @param type Change type, ideally one of the Change.* constants.
 	 * @param from Stream of 'from' Names
 	 * @param to Stream of 'to' Names
@@ -238,6 +261,9 @@ public class Change {
 	 * @throws SAXException If the Change node isn't formatted correctly.
 	 */
 	public static Change serializeFromNode(Dataset d, Node n) throws SAXException {
+		throw new UnsupportedOperationException("Serializing a Change using SAX is no longer supported");
+		
+		/*
 		if(!n.getNodeName().equalsIgnoreCase("change"))
 			throw new SAXException("Change.serializeFromNode called on non-Change node: " + n);
 		
@@ -320,6 +346,7 @@ public class Change {
 		ch.lastModifiedProperty().saved();
 		
 		return ch;
+		*/
 	}
 
 	/**
@@ -371,9 +398,5 @@ public class Change {
 			element.appendChild(citationsElement);
 		
 		return element;
-	}
-
-	void addCitation(Citation citation) {
-		citations.add(citation);
 	}
 }
