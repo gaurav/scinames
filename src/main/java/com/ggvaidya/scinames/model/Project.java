@@ -77,8 +77,7 @@ import javafx.collections.ObservableMap;
 import javafx.collections.ObservableSet;
 
 /**
- * A "project", consisting of a series of Timepoints (Checklists and 
- * ChecklistDiffs) arranged in a particular order.
+ * A project consists of a series of Datasets arranged in a particular order.
  * 
  * @author Gaurav Vaidya <gaurav@ggvaidya.com>
  */
@@ -91,15 +90,13 @@ public class Project {
 	/* Instance variables */
 	private StringProperty projectName;
 	private ObjectProperty<File> projectFile;
-	private ModificationTimeProperty lastModified = new ModificationTimeProperty();
-	private ObjectProperty<ChangeFilter> changeFilterProperty = new SimpleObjectProperty<ChangeFilter>(ChangeFilterFactory.getNullChangeFilter());
-	private ObservableMap<Name, List<Dataset>> timepointsByName = FXCollections.observableMap(new HashMap<>());
-	private ObservableSet<Name> names = FXCollections.observableSet(new HashSet<>());
-	private ObservableSet<Name> binomialNames = FXCollections.observableSet(new HashSet<>());
 	private ObservableMap<String, String> properties = FXCollections.observableHashMap();
+	private ObjectProperty<ChangeFilter> changeFilterProperty = new SimpleObjectProperty<ChangeFilter>(ChangeFilterFactory.getNullChangeFilter());
 	private NameClusterManager nameClusterManager = new NameClusterManager();
 	private ObservableSet<ChangeType> changeTypes = FXCollections.observableSet(new HashSet<>());
-	private ListProperty<Dataset> datasets = new SimpleListProperty(FXCollections.observableList(new LinkedList()));
+	private ListProperty<Dataset> datasets = new SimpleListProperty<>(FXCollections.observableList(new LinkedList()));
+	private ModificationTimeProperty lastModified = new ModificationTimeProperty();
+	
 	{
 		datasets.addListener(new ListChangeListener<Dataset>() {
 			@Override
@@ -108,6 +105,10 @@ public class Project {
 			}
 		});
 	}
+	
+	private ObservableMap<Name, List<Dataset>> timepointsByName = FXCollections.observableMap(new HashMap<>());
+	private ObservableSet<Name> names = FXCollections.observableSet(new HashSet<>());
+	private ObservableSet<Name> binomialNames = FXCollections.observableSet(new HashSet<>());
 	
 	/* Accessors */
 	public String getName() { return projectName.getValue(); }
@@ -126,10 +127,12 @@ public class Project {
 	public ObservableMap<String, String> propertiesProperty() { return properties; }
 	public Stream<NameCluster> getSpeciesNameClusters() { return nameClusterManager.getSpeciesClusters(); }
 	public ObservableSet<ChangeType> changeTypesProperty() { return changeTypes; }
+	public ObjectProperty<ChangeFilter> changeFilterProperty() { return changeFilterProperty; }
+	public ChangeFilter getChangeFilter() { return changeFilterProperty.get(); }
 	public NameClusterManager getNameClusterManager() { return nameClusterManager; }
 	
 	/* Check if property is set. The default is always false. */
-	public boolean isPropertySet(String propName) {
+	public boolean isPropertySetTrue(String propName) {
 		if(!properties.containsKey(propName))
 			return false;
 		
@@ -160,6 +163,16 @@ public class Project {
 		lastModified.addListener((a, b, c) -> recognizedNamesCache.clear());
 	}
 	
+	/**
+	 * Get all the recognized names at the end of a particular dataset.
+	 * We memoize this with a cache, so this is more efficient than
+	 * calling Dataset.getRecognizedName(Dataset). Given that implicit and
+	 * explicit changes are cached now, though, it might not be *much* more
+	 * efficient.
+	 * 
+	 * @param d The dataset you want recognized names from.
+	 * @return The set of names recognized at the end of this dataset.
+	 */
 	public Set<Name> getRecognizedNames(Dataset d) {
 		if(recognizedNamesCache.containsKey(d))
 			return recognizedNamesCache.get(d);
@@ -168,14 +181,20 @@ public class Project {
 		return recognizedNamesCache.get(d);
 	}
 	
+	/**
+	 * @return All the changes in this project.
+	 */
 	public Stream<Change> getChanges() {
 		return datasets.stream().flatMap(t -> t.getChanges(this));
 	}
 	
-	public ObjectProperty<ChangeFilter> changeFilterProperty() {
-		return changeFilterProperty;
-	}
-
+	/**
+	 * Add a ChangeFilter. These are stored as a linked list, so we tell the
+	 * current ChangeFilter to add it, which will pass it on to the next and
+	 * to the next and so on.
+	 * 
+	 * @param cf The ChangeFilter to be added.
+	 */
 	public void addChangeFilter(ChangeFilter cf) {
 		if(changeFilterProperty.get() == null)
 			changeFilterProperty.set(cf);
@@ -183,19 +202,17 @@ public class Project {
 			changeFilterProperty.get().addChangeFilter(cf);
 	}
 	
-	public ChangeFilter getChangeFilter() {
-		return changeFilterProperty.get();
-	}
-	
-	public ObservableList<Name> getNamesAsList() { 
-		return FXCollections.observableArrayList(names);
-	}
-
-	public ObservableList<Name> getBinomialNamesAsList() {
-		return FXCollections.observableArrayList(binomialNames);
-	}
-	
 	// TODO memoize until lastModified.
+	/**
+	 * Returns a list of dataset rows across all datasets for a particular name.
+	 * 
+	 * Note that while the API signature allows for duplicate rows to be summarized, this hasn't
+	 * yet been implemented: we'll return a unique dataset row from multiple datasets even where
+	 * the data in those rows is identical.
+	 * 
+	 * @param n The name to identify across all datasets.
+	 * @return A Map<DatasetRow, Set<Dataset>> indicating rows to be returned.
+	 */
 	public Map<DatasetRow, Set<Dataset>> getRowsForName(Name n) {
 		Map<Dataset, Set<DatasetRow>> timepointsPerRow = getDatasets().stream().collect(Collectors.toMap(
 			tp -> tp,
@@ -217,6 +234,12 @@ public class Project {
 		return results;
 	}
 	
+	/**
+	 * Summarize information on a particular Name across all datasets.
+	 * 
+	 * @param n Name to search all datasets for.
+	 * @return A Map<DatasetColumn, Set<String>> showing values we know about for each dataset column.
+	 */
 	public Map<DatasetColumn, Set<String>> getDataForName(Name n) {
 		Map<DatasetRow, Set<Dataset>> rowsForName = getRowsForName(n);
 		final Map<DatasetColumn, Set<String>> results = new HashMap<>();
@@ -237,6 +260,9 @@ public class Project {
 		return results;
 	}
 	
+	/**
+	 * @return A set of all name extractors used in this project.
+	 */
 	public Set<List<NameExtractor>> getNameExtractors() {
 		Set<List<NameExtractor>> set = datasets.stream().map(ds -> ds.getNameExtractors()).collect(Collectors.toSet());
 		set.remove(NameExtractorFactory.getDefaultExtractors());
@@ -266,44 +292,59 @@ public class Project {
 	}
 	
 	/* Managing timepoints */
-	public void addDataset(Dataset t) {
+	
+	/**
+	 * Add a new dataset to this project. This manages setting the previous dataset for
+	 * the new dataset and calculates name clusters for all names.
+	 * 
+	 * @param ds Dataset to add.
+	 */
+	public void addDataset(Dataset ds) {
 		Dataset prev = null;
 		
 		if(!datasets.isEmpty())
 			prev = datasets.get(datasets.size() - 1);
 		
-		datasets.add(t);
-		t.setPreviousDataset(Optional.of(this), Optional.ofNullable(prev));
+		// Add dataset to list of datasets.
+		datasets.add(ds);
+		
+		// Tell dataset who its previous submitter is.
+		ds.setPreviousDataset(Optional.of(this), Optional.ofNullable(prev));
 		lastModified.modified();
 		
-		// First, add all names to the nameClusterManager.
-		t.getReferencedNames().forEach(n -> nameClusterManager.addCluster(new NameCluster(t, n)));
+		// Add all referenced names to the nameClusterManager. That way, a name cluster
+		// must exist for each of them (and they'll be lumped in with others if we have
+		// existing renames to that effect).
+		ds.getReferencedNames().forEach(n -> nameClusterManager.addCluster(new NameCluster(ds, n)));
 		
-		// Track renames separately.
-		t.getChanges(this).filter(ch -> ch.getType().equals(ChangeType.RENAME)).forEach(c ->
+		// Renames lead to synonymies. This is the first time we use getChanges(...), so renames
+		// that are being filtered out will NOT affect name clusters.
+		ds.getChanges(this).filter(ch -> ch.getType().equals(ChangeType.RENAME)).forEach(c ->
 			c.getFrom().forEach(from ->
 				c.getTo().forEach(
-					to -> nameClusterManager.addCluster(new Synonymy(from, to, t))
+					to -> nameClusterManager.addCluster(new Synonymy(from, to, ds))
 				)
 			)
 		);
 		
-		// Index this timepoint
-		t.getReferencedNames().forEach((Name n) -> {
+		// Add names referenced in this dataset to our project-level indices.
+		ds.getReferencedNames().forEach((Name n) -> {
 			names.add(n);
 			n.asBinomial().forEach(binomialName -> binomialNames.add(binomialName));
 			
 			if(!timepointsByName.containsKey(n))
 				timepointsByName.put(n, new ArrayList<Dataset>());
 			
-			timepointsByName.get(n).add(t);
+			timepointsByName.get(n).add(ds);
 		});
 		
-		Set<ChangeType> newChangeTypes = t.getChanges(this).map(c -> c.getType()).collect(Collectors.toSet());
+		// Add change types referenced in this dataset to our project-level indices.
+		// As before, filtered changes will be ignored.
+		Set<ChangeType> newChangeTypes = ds.getChanges(this).map(c -> c.getType()).collect(Collectors.toSet());
 		changeTypes.addAll(newChangeTypes);
 		
 		// Finally, changes in the new dataset should change this database.
-		t.lastModifiedProperty().addListener((a, b, c) -> lastModified.modified());
+		ds.lastModifiedProperty().addListener((a, b, c) -> lastModified.modified());
 	}	
 	
 	/* Constructors */
@@ -325,7 +366,9 @@ public class Project {
 		
 		// Set up some properties.
 		properties.put(PROP_NAME_EXTRACTORS, 
-			getNameExtractors().stream().map(lne -> NameExtractorFactory.serializeExtractorsToString(lne)).distinct().sorted().collect(Collectors.joining("; "))
+			getNameExtractors().stream().map(lne -> 
+				NameExtractorFactory.serializeExtractorsToString(lne)).distinct()
+					.sorted().collect(Collectors.joining("; "))
 		);
 		
 		// Write out properties.
@@ -600,49 +643,64 @@ public class Project {
 	
 	/* Finding partial and complete reversions */
 	
-	// TODO: should we be using Taxon Concepts here? *Can* we?
+	/**
+	 * Find all cases of lumps and splits that partially revert previous lumps and splits. We define these
+	 * as sharing two names in opposite slots (i.e. two names from 'from' in 'to' or vice versa) after inverting
+	 * the type (lump -> split, split -> lump). 
+	 * 
+	 * @param changeReversed The change to reverse.
+	 * @return Stream of changes that are reversions or repeats of previous lumps and splits.
+	 */
 	public Stream<Change> getChangesReversing(Change changeReversed) {
 		List<NameCluster> changeReversedTo = nameClusterManager.getClusters(changeReversed.getTo());
 		List<NameCluster> changeReversedFrom = nameClusterManager.getClusters(changeReversed.getFrom());
 		
 		return getLumpsAndSplits().filter(
-			ch -> 
-				(ch.getType().equals(changeReversed.getType().invert()) && (
-					// Either contains TWO of the 'from' clusters in the 'to' slot.
+			// When change is inverted (LUMP -> SPLIT, SPLIT -> LUMP):
+			ch -> (ch.getType().equals(changeReversed.getType().invert()) && (
+					// AND either contains TWO of the 'from' clusters in the 'to' slot.
 					nameClusterManager.getClusters(ch.getFrom()).stream().filter(nc -> changeReversedTo.contains(nc)).count() >= 2
 
 					// OR contains TWO of the 'to' clusters in the 'from' slot.
 					|| nameClusterManager.getClusters(ch.getTo()).stream().filter(nc -> changeReversedFrom.contains(nc)).count() >= 2
-				)) || (
-					// This should include changes "in the same direction", as long as we don't duplicate ourselves.
-					ch != changeReversed
-					&& ch.getType().equals(changeReversed.getType()) 
+				))
+			
+			/*
+			// OR when change is the SAME (SPLIT -> SPLIT, LUMP -> LUMP) but this isn't the same change: 
+			|| (ch != changeReversed && ch.getType().equals(changeReversed.getType()) 
 					&& (
-						// OR contains TWO of the 'from' clusters in the 'from' slot (they're changing again!)
+						// AND it contains TWO of the 'from' clusters in the 'from' slot (they're changing again!)
 						nameClusterManager.getClusters(ch.getFrom()).stream().filter(nc -> changeReversedFrom.contains(nc)).count() >= 2
 
-						// OR contains TWO of the 'to' clusters in the 'to' slot (they've been changed again!)
+						// OR it contains TWO of the 'to' clusters in the 'to' slot (they've been changed again!)
 						|| nameClusterManager.getClusters(ch.getTo()).stream().filter(nc -> changeReversedTo.contains(nc)).count() >= 2	
 					)
 				)
+			*/
 		);
 	} 
 	
+	/**
+	 * Return a stream of perfectly reversing changes. This is cases where the change is the exact opposite,
+	 * with all the names in 'from' found in 'to' and all the names in 'to' found in 'from'.
+	 * 
+	 * @param changeReversed The change to reverse.
+	 * @return A Stream of all changes that perfectly reverse the source change.
+	 */
 	public Stream<Change> getChangesPerfectlyReversing(Change changeReversed) {
-		// We know that they have the right expected type, so we only need to
-		// filter that BOTH 'from' and 'to' are perfectly mirrored.
-		
 		return getChangesReversing(changeReversed).filter(
 			ch -> (
 				// How to be a perfect reversal: be the same but opposite
-				nameClusterManager.getClusters(ch.getFrom()).equals(nameClusterManager.getClusters(changeReversed.getTo()))
+				changeReversed.getType().equals(ch.getType().invert())
+				&& nameClusterManager.getClusters(ch.getFrom()).equals(nameClusterManager.getClusters(changeReversed.getTo()))
 				&& nameClusterManager.getClusters(ch.getTo()).equals(nameClusterManager.getClusters(changeReversed.getFrom()))
-			) || (
-				// OR be the same but not identical (e.g. A -> B + C -> A)
+			) /* || (
+				// OR be identical to the original (A + B -> C, C -> A + B, A + B -> C)
 				ch != changeReversed
+				&& changeReversed.getType().equals(ch.getType())
 				&& nameClusterManager.getClusters(ch.getFrom()).equals(nameClusterManager.getClusters(changeReversed.getFrom()))
 				&& nameClusterManager.getClusters(ch.getTo()).equals(nameClusterManager.getClusters(changeReversed.getTo()))		
-			)
+			) */
 		);
 	}
 	
@@ -667,6 +725,7 @@ public class Project {
 				+ " (" + ch.getDataset().getDate().getYearAsString() + ")"
 			).collect(Collectors.joining(" -> "))
 				
+			// Allows change sequences to be uniquely identified
 			+ " [starting with change id " + perfectlyReversingChanges.get(0).getId() + "]";
 	}
 }
