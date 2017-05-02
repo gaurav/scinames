@@ -41,8 +41,10 @@ import java.util.zip.GZIPOutputStream;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.stream.Location;
 import javax.xml.stream.XMLEventReader;
 import javax.xml.stream.XMLInputFactory;
+import javax.xml.stream.XMLReporter;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.transform.OutputKeys;
 import javax.xml.transform.Transformer;
@@ -81,6 +83,8 @@ import javafx.collections.ObservableSet;
  * @author Gaurav Vaidya <gaurav@ggvaidya.com>
  */
 public class Project {
+	public static final Logger LOGGER = Logger.getLogger(Project.class.getSimpleName());
+	
 	/* Constants */
 	public static final String PROP_NAME_EXTRACTORS = "com.ggvaidya.scinames.model.Project.name_extractors";
 	
@@ -462,6 +466,18 @@ public class Project {
 		Project project = null;
 		
 		XMLInputFactory factory = XMLInputFactory.newFactory();
+		factory.setXMLReporter(new XMLReporter() {
+			@Override
+			public void report(String message, String errorType, Object relatedInformation, Location location)
+					throws XMLStreamException {
+				LOGGER.warning(
+					errorType + " while loading project from XML file '" + loadFromFile + "': " +
+						message +
+						" (related info: " + relatedInformation.toString() + ", location: " + location
+				);
+			}
+		});
+		
 		try {
 			XMLEventReader reader = factory.createXMLEventReader(new GZIPInputStream(new FileInputStream(loadFromFile)));
 			

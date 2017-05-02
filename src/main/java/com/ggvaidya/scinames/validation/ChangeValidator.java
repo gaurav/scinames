@@ -27,6 +27,12 @@ import com.ggvaidya.scinames.model.Name;
 import com.ggvaidya.scinames.model.NameCluster;
 import com.ggvaidya.scinames.model.Project;
 
+import java.nio.ByteBuffer;
+import java.nio.charset.CharacterCodingException;
+import java.nio.charset.Charset;
+import java.nio.charset.CharsetDecoder;
+import java.nio.charset.CharsetEncoder;
+import java.nio.charset.CodingErrorAction;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -52,8 +58,35 @@ public class ChangeValidator implements Validator {
 		errors.addAll(checkFromWasPreviouslyRecognized(p).collect(Collectors.toList()));
 		errors.addAll(changesOfNonRecognizedTypes(p).collect(Collectors.toList()));
 		errors.addAll(checkForDuplicateNameClustersOnSameSide(p).collect(Collectors.toList()));
+		errors.addAll(getEncodingErrors(p).collect(Collectors.toList()));
 		
 		return errors.stream();
+	}
+	
+	private Stream<ValidationError> getEncodingErrors(Project p) {
+		CharsetDecoder utfDecoder = Charset.forName("UTF8").newDecoder()
+			.onMalformedInput(CodingErrorAction.REPORT)
+			.onUnmappableCharacter(CodingErrorAction.REPORT);
+		
+		CharsetEncoder asciiEncoder = Charset.forName("US-ASCII").newEncoder();
+		
+		return p.getChanges().flatMap(ch -> {
+			String str = ch.toString();
+			List<ValidationError> errors = new LinkedList<>();
+			
+			try {
+				utfDecoder.decode(ByteBuffer.wrap(str.getBytes(Charset.forName("UTF8"))));
+			} catch(CharacterCodingException ex) {
+				errors.add(new ValidationError<Change>(this, p, "Change '" + ch + "' contains invalid UTF-8 characters", ch));
+			}
+			
+			// Specifically, names should be convertible to ASCII.
+			if(!asciiEncoder.canEncode(str)) {
+				errors.add(new ValidationError<Change>(this, p, "Change '" + ch + "' cannot be rendered in ASCII", ch));
+			}
+			
+			return errors.stream();
+		});
 	}
 	
 	private Stream<ValidationError> getIncorrectAdditionsAndDeletions(Project p) {
