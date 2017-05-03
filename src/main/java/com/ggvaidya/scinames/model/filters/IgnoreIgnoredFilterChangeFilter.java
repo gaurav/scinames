@@ -22,7 +22,8 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
 /**
- *
+ * Ignores changes with a property 'ignored' set to 'yes'.
+ * 
  * @author Gaurav Vaidya <gaurav@ggvaidya.com>
  */
 public class IgnoreIgnoredFilterChangeFilter extends ChangeFilter {

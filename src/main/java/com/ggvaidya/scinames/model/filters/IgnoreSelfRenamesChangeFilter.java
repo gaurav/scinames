@@ -23,6 +23,8 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
 /**
+ * A filter to eliminate self-renames (from name A to name A). AOU has a lot of these,
+ * since we have entries where the common name changed but the scientific name didn't.
  *
  * @author Gaurav Vaidya <gaurav@ggvaidya.com>
  */
