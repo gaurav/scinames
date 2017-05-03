@@ -164,6 +164,7 @@ public class DataReconciliatorController implements Initializable {
 			
 			case RECONCILE_BY_SPECIES_NAME_CLUSTER:
 				if(namesDataset == ALL)
+					// TODO This is either weird or wrong. Please fix!
 					nameClusters = project.getNameClusterManager().getSpeciesClusters().collect(Collectors.toList());
 				else
 					nameClusters = project.getNameClusterManager().getClusters(namesDataset.getRecognizedNames(project).filter(n -> n.hasSpecificEpithet()).flatMap(n -> n.asBinomial()).distinct().collect(Collectors.toList()));

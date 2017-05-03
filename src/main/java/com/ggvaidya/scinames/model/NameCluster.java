@@ -177,7 +177,7 @@ public class NameCluster {
 			binomialNameByDataset.put(ds, name);
 		});
 		
-		// If the name was added, also add the found-in.
+		// Also add the found-in.
 		foundIn.add(ds);
 	}
 	

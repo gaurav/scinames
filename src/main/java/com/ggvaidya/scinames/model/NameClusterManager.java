@@ -57,6 +57,13 @@ public class NameClusterManager {
 		return clusters.stream();
 	}
 	
+	@Override
+	public String toString() {
+		return "NameClusterManager containing " + clusters.size() + " clusters: " + 
+			clusters.stream().map(cl -> cl.toString()).collect(Collectors.joining(", "));
+	}
+	
+	// TODO: This is either wrong or weird. Please fix!
 	public Stream<NameCluster> getSpeciesClusters() {
 		return getClusters().filter(c -> !c.containsSuperspecificNames());
 	}

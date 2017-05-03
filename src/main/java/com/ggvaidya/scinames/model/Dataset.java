@@ -158,8 +158,7 @@ public class Dataset implements Citable, Comparable<Dataset> {
 			Set<Name> prevNames;
 
 			if(proj.isPresent() && tp.isPresent()) {
-				Project project = proj.orElse(null);
-				prevNames = prevDataset.getRecognizedNames(project).collect(Collectors.toSet());
+				prevNames = prevDataset.getRecognizedNames(proj.get()).collect(Collectors.toSet());
 			} else {
 				prevNames = new HashSet<>();
 			}

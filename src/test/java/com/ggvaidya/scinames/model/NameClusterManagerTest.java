@@ -37,17 +37,25 @@ import com.ggvaidya.scinames.util.SimplifiedDate;
  * @author Gaurav Vaidya <gaurav@ggvaidya.com>
  */
 public class NameClusterManagerTest {
+	Dataset ds1 = new Dataset("ds1", new SimplifiedDate(1930));
+	Dataset ds2 = new Dataset("ds2", new SimplifiedDate(1940));
+	Dataset ds3 = new Dataset("ds3", new SimplifiedDate(1950));
+	Dataset ds4 = new Dataset("ds4", new SimplifiedDate(1960));
+	
 	private NameClusterManager buildNameClusterManager() {
 		NameClusterManager ncm = new NameClusterManager();
-		Dataset ds1 = new Dataset("ds1", SimplifiedDate.MIN);
-		Dataset ds2 = new Dataset("ds2", SimplifiedDate.MIN);
-		Dataset ds3 = new Dataset("ds3", SimplifiedDate.MIN);	
+		
+		ncm.addCluster(new NameCluster(ds1, Name.get("Ornithorhynchus", "anatinus")));
+		ncm.addCluster(new NameCluster(ds1, Name.get("Platypus", "anatinus")));
 		
 		ncm.addCluster(new Synonymy(
 			Name.get("Ornithorhynchus", "anatinus"), 
 			Name.get("Platypus", "anatinus"),
 			ds1
 		));
+		
+		ncm.addCluster(new NameCluster(ds2, Name.get("Ornithorhynchus", "paradoxus")));
+		ncm.addCluster(new NameCluster(ds2, Name.get("Alpha", "beta")));
 		
 		ncm.addCluster(new Synonymy(
 			Name.get("Ornithorhynchus", "paradoxus"),
@@ -64,9 +72,10 @@ public class NameClusterManagerTest {
 	@Test
 	public void testClustering() {
 		NameClusterManager ncm = buildNameClusterManager();
-		Dataset ds4 = new Dataset("ds4", SimplifiedDate.MIN);
-		
+				
 		assertEquals(ncm.getClusters().count(), 2);
+		List<Dataset> earliest = ncm.getClusters().map(cl -> cl.getFoundInSorted().get(0)).collect(Collectors.toList());
+		assertEquals(earliest, Arrays.asList(ds2, ds1));
 		
 		ncm.addCluster(new Synonymy(
 			Name.get("Ornithorhynchus", "paradoxus"),
@@ -88,6 +97,8 @@ public class NameClusterManagerTest {
 			Name.get("Ornithorhynchus", "paradoxus"),
 			Name.get("Alpha", "beta")			
 		)));
+		
+		assertEquals(cluster.getFoundInSorted().get(0), ds1);
 	}
 	
 	@Test

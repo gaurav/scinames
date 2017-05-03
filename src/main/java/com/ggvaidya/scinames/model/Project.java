@@ -345,6 +345,8 @@ public class Project {
 		
 		// Finally, changes in the new dataset should change this database.
 		ds.lastModifiedProperty().addListener((a, b, c) -> lastModified.modified());
+		
+		LOGGER.fine("After adding " + ds + ", name clusters look like this: " + getNameClusterManager().toString());
 	}	
 	
 	/* Constructors */
