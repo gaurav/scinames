@@ -44,7 +44,7 @@ public class IgnoreErrorChangeTypeFilter extends ChangeFilter {
 			return true;
 		
 		if(ch.getType().equals(ChangeType.ERROR)) {
-			// System.err.println(" - ignoreSelfRenames filter ignored: " + ch);
+			// System.err.println(" - ignoreErrorChangeType filter ignored: " + ch);
 			
 			addFilteredChange(ch);
 			return false;
@@ -56,7 +56,7 @@ public class IgnoreErrorChangeTypeFilter extends ChangeFilter {
 	@Override
 	public Element serializeToElement(Document doc) {
 		Element filter = doc.createElement("filter");
-		filter.setAttribute("name", "ignoreSelfRenames");
+		filter.setAttribute("name", "ignoreErrorChangeType");
 		filter.setAttribute("active", isActive() ? "yes" : "no");
 		return filter;
 	}

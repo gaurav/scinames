@@ -71,7 +71,7 @@ public class ChangeFilterFactory {
 			case "ignoreErrorChangeType":
 			{
 				String activeStr = attributes.getNamedItem("active").getNodeValue();
-				return new IgnoreIgnoredFilterChangeFilter(p, activeStr.equalsIgnoreCase("yes"));
+				return new IgnoreErrorChangeTypeFilter(p, activeStr.equalsIgnoreCase("yes"));
 			}
 			case "skipChangesUnlessAddedBefore":
 			{
