@@ -130,6 +130,8 @@ public class DatasetViewAsTabular {
 		
 		// TODO: if we can get an ObservableList over tp.getAllChanges(), then this table
 		// will update dynamically as changes are made. Won't that be something.
+		
+		// Yes, we'd like to get all changes, so we can see which ones have been filtered out.
 		tv.setItems(FXCollections.observableList(timepoint.getAllChanges().collect(Collectors.toList())));
 		tv.getSortOrder().add(colChangeType);
 	}

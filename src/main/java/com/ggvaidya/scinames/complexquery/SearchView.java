@@ -100,6 +100,7 @@ public final class SearchView {
 		return names.stream().flatMap(nameRegexLine -> {
 			String nameRegex = nameRegexLine.replaceAll("^\\s*-\\s*", "");
 		
+			// Yes, we want to use getAllChanges() here, so we can search for names 
 			return project.getDatasets().stream().flatMap(ds -> ds.getAllChanges()).filter(
 				ch -> ch.getAllNames().stream()
 					.anyMatch(name -> 

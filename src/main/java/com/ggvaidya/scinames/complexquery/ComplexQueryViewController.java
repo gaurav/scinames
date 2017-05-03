@@ -361,6 +361,7 @@ public class ComplexQueryViewController implements Initializable {
 	public void updateTableWithChangesUsingNameClusters(Project project, List<NameCluster> nameClusters, List<Dataset> datasets) {
 		Set<Change> changesToDisplay = new HashSet<>();
 		for(NameCluster cluster: nameClusters) {
+			// Yes, we want to use getAllChanges() here, because we'd like to match eliminated changes too.
 			changesToDisplay.addAll(datasets.stream().flatMap(ds -> ds.getAllChanges()).collect(Collectors.toSet()));
 		}
 		
@@ -389,6 +390,7 @@ public class ComplexQueryViewController implements Initializable {
 				ch -> ncm.getClusters(ch.getTo()).stream()
 					.map(cl -> cl.getNames().stream().map(n -> n.getFullName()).collect(Collectors.joining("; ")))
 					.collect(Collectors.joining(" and "))),
+			createTableColumnFromChange("filter_status", ch -> project.getChangeFilter().test(ch) ? "retained" : "eliminated"),
 			createTableColumnFromChange("dataset", ch -> ch.getDataset().getName()),
 			createTableColumnFromChange("citations", ch -> ch.getCitationStream().map(cit -> cit.getCitation()).collect(Collectors.joining("; ")))
 		);

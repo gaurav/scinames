@@ -527,6 +527,13 @@ public class Dataset implements Citable, Comparable<Dataset> {
 		return getImplicitChanges(p).count() + " implicit changes (" + implicit_changes_by_type + ")";
 	}
 
+	/**
+	 * Return all changes associated with this dataset, explicit or implicit. You almost certainly
+	 * want to use getChanges(Project), which will give you all the changes after filtering those
+	 * the project isn't interested in -- so please be careful about using this!
+	 * 
+	 * @return Stream of all changes associated with this dataset.
+	 */
 	public Stream<Change> getAllChanges() {
 		return Stream.concat(explicitChanges.stream(), implicitChanges.stream());
 	}

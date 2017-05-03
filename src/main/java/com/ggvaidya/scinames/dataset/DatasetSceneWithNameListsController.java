@@ -279,6 +279,8 @@ public class DatasetSceneWithNameListsController {
 		
 		// TODO: if we can get an ObservableList over tp.getAllChanges(), then this table
 		// will update dynamically as changes are made. Won't that be something.
+		
+		// Yes, we'd like to get all changes so we can see which ones were eliminated.
 		tv.setItems(FXCollections.observableList(tp.getAllChanges().collect(Collectors.toList())));
 		tv.getSortOrder().add(colChangeType);
 	}
