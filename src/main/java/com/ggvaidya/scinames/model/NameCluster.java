@@ -30,6 +30,7 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.UUID;
 import java.util.logging.Logger;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javafx.beans.property.ReadOnlySetWrapper;
@@ -45,10 +46,16 @@ public class NameCluster {
 	private static final Logger LOGGER = Logger.getLogger(NameCluster.class.getSimpleName());
 	
 	private UUID id = UUID.randomUUID();
-	private boolean containsSuperspecificNames = false;
-	private Map<Dataset, Name> binomialNameByDataset = new HashMap<>();
 	private ObservableSet<Name> names = FXCollections.observableSet(new HashSet<>());
 	private ObservableSet<Dataset> foundIn = FXCollections.observableSet(new TreeSet<>());
+	
+	// Binomial name per dataset; allows people to ask "give me one name this cluster had in this dataset". 
+	private Map<Dataset, Name> binomialNameByDataset = new HashMap<>();
+	
+	// i.e. contains genus-only names.
+	private boolean containsSuperspecificNames = false;
+	
+	/* Accessors */
 	
 	public UUID getId() {
 		return id;
@@ -58,16 +65,39 @@ public class NameCluster {
 		return containsSuperspecificNames;
 	}
 	
+	public void addFoundIn(Dataset tp) {
+		foundIn.add(tp);
+	}
+	
+	public Optional<Name> getBinomialNameForDataset(Dataset ds) {
+		return Optional.ofNullable(binomialNameByDataset.get(ds));
+	}
+	
+	public ObservableSet<Name> getNames() { return new ReadOnlySetWrapper<>(names); }
+	
+	
+	/**
+	 * Attempts to determine if this name cluster is "polytypic". We use a pretty straightforward
+	 * view of this -- either:
+	 * 
+	 * 	- 1. It contains any infraspecific names, or
+	 *  - 2. It contains any lumps.
+	 * 
+	 * @param p
+	 * @return
+	 */
 	public boolean isPolytypic(Project p) {
 		// This cluster is polytypic if:
-		//	- this contains any infraspecific names
+		//	- it contains any infraspecific names
 		if(names.stream().anyMatch(n -> n.hasSubspecificEpithet()))
 			return true;
 		
-		//  - any of the changes involving this cluster involves a lump.
+		//  - OR any of the changes involving this cluster involves a lump.
 		return foundIn.stream()
-			// Get all lumps and splits
-			.flatMap(ds -> ds.getChanges(p).filter(ch -> ch.getType().equals(ChangeType.LUMP) || ch.getType().equals(ChangeType.SPLIT)))
+			// Get all lumps
+			.flatMap(ds -> ds.getChanges(p)
+				.filter(ch -> ch.getType().equals(ChangeType.LUMP))
+			)
 			// Get those associated with names in this cluster.
 			.anyMatch(ch -> ch.getAllNames().stream().anyMatch(n -> names.contains(n)))
 		;
@@ -96,6 +126,13 @@ public class NameCluster {
 		return setOfNames.stream().anyMatch(n -> contains(n));
 	}
 	
+	/**
+	 * Returns a single name to represent this taxon concept. We could theoretically
+	 * choose a name at random, but we try to get the most recent name it had, as 
+	 * hopefully that'll be most useful visually and for synthesis.
+	 * 
+	 * @return A single name that represents this taxon concept.
+	 */
 	public Name getName() {
 		// Try for the most recent name.
 		List<Dataset> foundInSorted = getFoundInSorted();
@@ -106,25 +143,25 @@ public class NameCluster {
 				return binomialNameByDataset.get(mostRecent);
 		}
 		
-		// Otherwise, fallback to just one of the names.
+		// Otherwise, fall back to just one of the names.
 		List<Name> arrayList = new ArrayList<>(getNames());
 		if(arrayList.size() > 0)
 			return arrayList.get(0);
+		
+		// No name could be found.
 		return Name.EMPTY;
 	}
 	
 	/**
 	 * Add a name to this cluster.
 	 * 
-	 * Since this is a NameCluster, we'll add every trinomial name
- as a binomial name, so we record both species-level concepts and
- concepts more specifically.
- 
- Since this is a NameCluster, we also ignore any names without 
- a specific epithet.
+	 * Since this is a NameCluster, we'll add every trinomial name as a binomial name, 
+	 * so we record both species-level concepts and concepts more specifically.
+	 *
+	 * Since this is a NameCluster, we also ignore any names without a specific epithet.
 	 * 
-	 * @param n 
-	 * @param ds 
+	 * @param n Name to add
+	 * @param ds Dataset in which this name was found.
 	 */
 	public void addName(Name n, Dataset ds) {
 		if(!n.hasSpecificEpithet())
@@ -144,21 +181,15 @@ public class NameCluster {
 		foundIn.add(ds);
 	}
 	
-	public void addFoundIn(Dataset tp) {
-		foundIn.add(tp);
-	}
-	
-	public ObservableSet<Name> getNames() {
-		return new ReadOnlySetWrapper(names);
-	}
-	
-	public Optional<Name> getBinomialNameForDataset(Dataset ds) {
-		return Optional.ofNullable(binomialNameByDataset.get(ds));
-	}
-	
-	public boolean containsNameMatching(String nameRegex) {
+	/**
+	 * Look for names matching a particular regular expression.
+	 * 
+	 * @param nameRegex The regular expression to match against.
+	 * @return True if it matches, false otherwise.
+	 */
+	public boolean containsNameMatching(Pattern nameRegex) {
 		LOGGER.fine("Matching '" + nameRegex + "' against cluster " + names);
-		return names.stream().anyMatch(n -> n.getFullName().matches(nameRegex));
+		return names.stream().anyMatch(n -> nameRegex.matcher(n.getFullName()).matches());
 	}
 	
 	public boolean containsNameStartingWith(String startsWith) {
@@ -177,9 +208,17 @@ public class NameCluster {
 		return foundIn.stream().sorted().collect(Collectors.toList());
 	}
 	
+	/* Different ways of adding names */
+	
 	public void addAll(NameCluster cluster) {
 		names.addAll(cluster.getNames());
 		foundIn.addAll(cluster.getFoundIn());
+		
+		// merge the other cluster's "binomialNameByDataset" data.
+		cluster.binomialNameByDataset.forEach((Dataset ds, Name n) -> {
+			// Overwrite our dataset/name info.
+			binomialNameByDataset.put(ds, n);
+		});
 	}
 	
 	public void addNames(Dataset ds, Name... n) {
@@ -190,22 +229,7 @@ public class NameCluster {
 		names.forEach(name -> addName(name, ds));
 	}
 	
-	public NameCluster(Dataset t, Name n) {
-		addName(n, t);
-	}
-	
-	public NameCluster(Dataset t, Name... n) {
-		addNames(t, n);
-	}
-	
-	public NameCluster(Dataset tp, Collection<Name> names) {
-		addNames(tp, names);
-	}
-	
-	public NameCluster() {
-		// Empty!
-	}
-	
+
 	public String getDateRange() {
 		List<Dataset> range = getFoundInSorted();
 		
@@ -227,31 +251,26 @@ public class NameCluster {
 	/**
 	 * Return a list of taxon concepts within this NameCluster.
 	 * 
-	 * So the trick is that you can think about every name cluster as a taxon
- concept (a bunch of names referring to the same "thing"), but sometimes
- a Name Cluster will contain multiple concepts. This code will figure
- out when that happens by looking for lumps or splits associated with
- these names.
- 
- - TODO There will never be a case where a taxon concept spans multiple name concepts.
- Will there?
- 
- - TODO This currently ignores filtering. How can we incorporate that?
- 
- For the purposes of this demo, the role of TaxonConcept will be played
- by NameCluster.
+	 * So the trick is that you can think about every name cluster as a 
+	 * taxon concept (a bunch of names referring to the same "thing"), but 
+	 * sometimes a Name Cluster will contain multiple concepts. This code 
+	 * will figure out when that happens by looking for lumps or splits 
+	 * associated with these names.
 	 * 
-	 * @return 
+	 * - TODO 	There will never be a case where a taxon concept spans multiple 
+	 * 			name concepts. Will there
+	 * - TODO 	This currently ignores filtering. How can we incorporate that?
 	 */
 	public List<TaxonConcept> getTaxonConcepts(Project p) {
 		List<TaxonConcept> concepts = new LinkedList<>();
 		TaxonConcept current = null;
 		
-		// TODO: why are we creating taxon concepts without any name?
+		// We go through all datasets this name cluster is found in.
 		for(Dataset tp: getFoundInSorted()) {
 			if(current == null) {
 				// Start first cluster with this dataset. Note that this
-				// ISN'T necessarily a splump -- it might be an addition.
+				// ISN'T necessarily a splump -- it might be an addition
+				// or a 'recognition'.
 				current = new TaxonConcept(this);
 				current.setStartsWith(tp.getChanges(p)
 					.filter(ch -> containsAny(ch.getTo()))
@@ -259,6 +278,8 @@ public class NameCluster {
 				);
 			}
 			
+			// Find all changes involving this name cluster in this dataset, and
+			// extract all the names in this name cluster used in this one dataset.
 			Set<Name> namesFromThisCluster = new HashSet<>();
 			Stream<Change> changesInvolvingNameCluster = tp.getChanges(p)
 				.filter(ch -> {
@@ -269,12 +290,12 @@ public class NameCluster {
 					return !matchingNames.isEmpty();
 				}
 			);
+			current.addNames(tp, new ArrayList<>(namesFromThisCluster));
 			
+			// Then filter that down to just the lumps and splits.
 			List<Change> splumps = changesInvolvingNameCluster
 				.filter(ch -> ch.getType().equals(ChangeType.LUMP) || ch.getType().equals(ChangeType.SPLIT))
 				.collect(Collectors.toList());
-			
-			current.addNames(tp, new ArrayList(namesFromThisCluster));
 			
 			if(!splumps.isEmpty()) {
 				// Either a lump or a split will generate a new concept, so we switch
@@ -283,7 +304,7 @@ public class NameCluster {
 				concepts.add(current);
 				
 				current = new TaxonConcept(this);
-				current.addNames(tp, new ArrayList(namesFromThisCluster));
+				current.addNames(tp, new ArrayList<>(namesFromThisCluster));
 				current.setStartsWith(splumps);
 			}
 		};
@@ -295,5 +316,23 @@ public class NameCluster {
 		}
 		
 		return concepts;
+	}
+	
+	/* Constructors */
+	
+	public NameCluster(Dataset t, Name n) {
+		addName(n, t);
+	}
+	
+	public NameCluster(Dataset t, Name... n) {
+		addNames(t, n);
+	}
+	
+	public NameCluster(Dataset tp, Collection<Name> names) {
+		addNames(tp, names);
+	}
+	
+	public NameCluster() {
+		// Empty!
 	}
 }

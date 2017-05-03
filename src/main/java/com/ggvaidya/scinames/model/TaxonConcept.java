@@ -37,10 +37,10 @@ public class TaxonConcept extends NameCluster {
 	public NameCluster getNameCluster() { return nameCluster; }
 	
 	/* Starts with/ends with system, so we know how taxon concepts are being delimited */
-	private List<Change> startsWith = new LinkedList();
+	private List<Change> startsWith = new LinkedList<>();
 	public List<Change> getStartsWith() { return (startsWith); }
 	
-	private List<Change> endsWith = new LinkedList();
+	private List<Change> endsWith = new LinkedList<>();
 	public List<Change> getEndsWith() { return (endsWith); }	
 
 	public void setStartsWith(Collection<Change> splumps) {
@@ -56,7 +56,7 @@ public class TaxonConcept extends NameCluster {
 	}
 
 	/**
-	 * Returns true if this cluster appears to be ongoing.
+	 * Returns true if this cluster appears to be ongoing, i.e. if it exists in the last dataset in the current project.
 	 * 
 	 * @param p
 	 * @return 
@@ -72,16 +72,13 @@ public class TaxonConcept extends NameCluster {
 			return true;
 		
 		return false;
-		
-		/*
-		ListIterator<Dataset> datasets = p.getDatasets().listIterator(p.getDatasets().size());
-		while(datasets.hasPrevious()) {
-			Dataset prev = datasets.previous();
-			
-			
-		}*/
 	}
 	
+	/**
+	 * Construct a new taxon concept.
+	 * 
+	 * @param parent The name cluster this taxon concept is a subset of.
+	 */
 	public TaxonConcept(NameCluster parent) {
 		nameCluster = parent;
 	}

@@ -114,18 +114,24 @@ public class NameClusterManager {
 		matchingClusters.forEach(cluster -> {
 			LOGGER.finest("New cluster " + newCluster + " overlaps with existing cluster " + cluster + ", merging.");
 			
+			// Remove each of the names of this cluster from clustersByName, and remove this cluster from the
+			// clusters list.
 			cluster.getNames().forEach(n -> clustersByName.remove(n));
 			clusters.remove(cluster);
 			
+			// Now that we've "unindexed" that cluster, add all of its names and timepoints into
+			// our new merged cluster.
 			newCluster.addAll(cluster);
 		});
 		
-		// Now add in the merged cluster, containing all the other clusters
-		// we've removed to make space for it.
+		// Now index the merged cluster.
 		newCluster.getNames().forEach(n -> clustersByName.put(n, newCluster));
 		clusters.add(newCluster);
 	}
 	
+	/**
+	 * Create a new name cluster manager.
+	 */
 	public NameClusterManager() {
 	}
 }

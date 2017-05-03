@@ -29,20 +29,69 @@ import java.util.stream.Collectors;
 
 import org.junit.jupiter.api.Test;
 
+import com.ggvaidya.scinames.util.SimplifiedDate;
+
 /**
  * Tests for the NameClusterManager class.
  * 
  * @author Gaurav Vaidya <gaurav@ggvaidya.com>
  */
 public class NameClusterManagerTest {
+	private NameClusterManager buildNameClusterManager() {
+		NameClusterManager ncm = new NameClusterManager();
+		Dataset ds1 = new Dataset("ds1", SimplifiedDate.MIN);
+		Dataset ds2 = new Dataset("ds2", SimplifiedDate.MIN);
+		Dataset ds3 = new Dataset("ds3", SimplifiedDate.MIN);	
+		
+		ncm.addCluster(new Synonymy(
+			Name.get("Ornithorhynchus", "anatinus"), 
+			Name.get("Platypus", "anatinus"),
+			ds1
+		));
+		
+		ncm.addCluster(new Synonymy(
+			Name.get("Ornithorhynchus", "paradoxus"),
+			Name.get("Alpha", "beta"),			// Made up name for testing!
+			ds2
+		));
+		
+		return ncm;
+	}
+	
     /**
      * Test clustering using the NameClusterManager.
      */
 	@Test
 	public void testClustering() {
-		Dataset ds = new Dataset();
-		NameClusterManager ncm = new NameClusterManager();
+		NameClusterManager ncm = buildNameClusterManager();
+		Dataset ds4 = new Dataset("ds4", SimplifiedDate.MIN);
 		
+		assertEquals(ncm.getClusters().count(), 2);
 		
+		ncm.addCluster(new Synonymy(
+			Name.get("Ornithorhynchus", "paradoxus"),
+			Name.get("Ornithorhynchus", "anatinus"),
+			ds4
+		));
+
+		assertEquals(ncm.getClusters().count(), 1);
+		
+		Optional<NameCluster> opt = ncm.getCluster(Name.get("Platypus", "anatinus"));
+		assertTrue(opt.isPresent());
+		
+		NameCluster cluster = opt.get();
+		assertEquals(cluster.size(), 4);
+		
+		assertTrue(cluster.getNames().containsAll(Arrays.asList(
+			Name.get("Ornithorhynchus", "anatinus"), 
+			Name.get("Platypus", "anatinus"),
+			Name.get("Ornithorhynchus", "paradoxus"),
+			Name.get("Alpha", "beta")			
+		)));
+	}
+	
+	@Test
+	public void testTaxonConcepts() {
+		// TODO
 	}
 }
