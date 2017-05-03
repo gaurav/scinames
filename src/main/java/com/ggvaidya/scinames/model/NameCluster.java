@@ -187,9 +187,9 @@ public class NameCluster {
 	 * @param nameRegex The regular expression to match against.
 	 * @return True if it matches, false otherwise.
 	 */
-	public boolean containsNameMatching(Pattern nameRegex) {
+	public boolean containsNameMatching(String nameRegex) {
 		LOGGER.fine("Matching '" + nameRegex + "' against cluster " + names);
-		return names.stream().anyMatch(n -> nameRegex.matcher(n.getFullName()).matches());
+		return names.stream().anyMatch(n -> n.getFullName().matches(nameRegex));
 	}
 	
 	public boolean containsNameStartingWith(String startsWith) {
