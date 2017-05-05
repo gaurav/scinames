@@ -130,6 +130,10 @@ public class ProjectView {
 			
 			try {
 				closeCurrentProject();
+				
+				// If we're here, the current project was closed successfully. Time to die.
+				System.exit(0);
+				
 			} catch(IOException e) {
 				// Don't close if the user tried to save, but couldn't!
 				new Alert(Alert.AlertType.ERROR, "Unable to save project to file: " + e)

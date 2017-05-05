@@ -26,6 +26,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.xml.namespace.QName;
@@ -40,6 +41,8 @@ import javax.xml.stream.events.XMLEvent;
  * @author Gaurav Vaidya <gaurav@ggvaidya.com>
  */
 public class ProjectXMLReader {
+	private static final Logger LOGGER = Logger.getLogger(ProjectXMLReader.class.getSimpleName());
+	
 	/**
 	 * Read all attributes from an XMLEvent (must be a StartElement!).
 	 * 
@@ -110,7 +113,7 @@ public class ProjectXMLReader {
 		while(reader.hasNext()) {
 			XMLEvent nextTag = reader.nextTag();
 			
-			// System.err.println(" - tag series '" + tagName + "': " + nextTag);
+			LOGGER.fine(" - tag series '" + tagName + "': " + nextTag);
 			
 			if(!nextTag.isStartElement() && nextTag.isEndElement()) {
 				// We're done with the series!
@@ -215,21 +218,25 @@ public class ProjectXMLReader {
 						Map<String, String> attributes = getAllAttributes(nextTag, "name", "is_checklist", "year", "month", "day", "nameExtractors");
 						SimplifiedDate date = new SimplifiedDate(attributes);
 
-						Dataset dataset = new Dataset(attributes.get("name"), date, attributes.containsKey("is_checklist") && attributes.get("is_checklist").equalsIgnoreCase("yes"));
+						Dataset dataset = new Dataset(
+							attributes.get("name"), 
+							date, 
+							attributes.containsKey("is_checklist") && attributes.get("is_checklist").equalsIgnoreCase("yes")
+						);
 						if(attributes.containsKey("nameExtractors")) {
 							try {
 							    dataset.setNameExtractorsString(attributes.get("nameExtractors"));
 							} catch(NameExtractorParseException ex) {
 								// TODO set up some kind of warnings system
-								System.err.println(" - WARNING: could not set name parser extracter on " + dataset + " to " + attributes.get("nameExtractors") + ", " + ex);
+								LOGGER.warning("WARNING: could not set name parser extracter on " + dataset + " to " + attributes.get("nameExtractors") + ", " + ex);
 							}
 						}
 							
 						readDataset(dataset, reader);
-						// System.err.println(" - added dataset " + dataset);
+						LOGGER.info("Added dataset " + dataset);
 						newProject.addDataset(dataset);
 					}
-					
+						
 					continue;
 			}
 		}
@@ -281,7 +288,7 @@ public class ProjectXMLReader {
 								.collect(Collectors.toList())
 						);
 						
-						// System.err.println("\t - Columns: " + dataset.getColumns());
+						LOGGER.fine("Columns: " + dataset.getColumns());
 						break;
 						
 					case "rows":
