@@ -44,6 +44,7 @@ import com.ggvaidya.scinames.summary.DatasetSimilarityView;
 import com.ggvaidya.scinames.dataset.DatasetView;
 import com.ggvaidya.scinames.summary.ProjectCountsView;
 import com.ggvaidya.scinames.summary.TaxonConceptsView;
+import com.ggvaidya.scinames.ui.BulkChangeEditor;
 import com.ggvaidya.scinames.ui.DataReconciliatorView;
 import com.ggvaidya.scinames.ui.DatasetImporterView;
 import com.ggvaidya.scinames.ui.PreferencesView;
@@ -525,5 +526,11 @@ public class ProjectSceneController {
 	private void reconcileData(ActionEvent evt) {
 		DataReconciliatorView view = new DataReconciliatorView(projectView);
 		view.getStage().show();
+	}
+	
+	@FXML
+	private void displayBulkChangeEditor(ActionEvent evt) {
+		BulkChangeEditor editor = new BulkChangeEditor(projectView);
+		editor.getStage().show();
 	}
 }

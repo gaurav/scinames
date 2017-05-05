@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.AnchorPane?>
+
+<AnchorPane id="AnchorPane" minHeight="400.0" minWidth="500.0" prefHeight="400.0" prefWidth="500.0" xmlns="http://javafx.com/javafx/8.0.111" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.ggvaidya.scinames.ui.BulkChangeEditorController">
+   <children>
+      <Button layoutY="57.0" mnemonicParsing="false" onAction="#findChanges" prefHeight="25.0" prefWidth="798.0" text="Find" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" />
+      <ComboBox fx:id="comboBoxNameIdentifiers" layoutX="200.0" layoutY="29.0" prefHeight="25.0" prefWidth="597.0" AnchorPane.leftAnchor="200.0" AnchorPane.rightAnchor="1.0" AnchorPane.topAnchor="29.0" />
+      <Label layoutY="33.0" text="Column containing name identifiers:" AnchorPane.topAnchor="33.0" />
+      <Label layoutY="5.0" text="Method to use:" />
+      <ComboBox fx:id="comboBoxMethods" layoutX="201.0" layoutY="1.0" prefHeight="25.0" prefWidth="597.0" AnchorPane.leftAnchor="200.0" AnchorPane.rightAnchor="1.0" AnchorPane.topAnchor="1.0" />
+      <TableView fx:id="changesTableView" prefHeight="290.0" prefWidth="800.0" AnchorPane.bottomAnchor="27.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="83.0">
+        <columns>
+          <TableColumn prefWidth="75.0" text="C1" />
+          <TableColumn prefWidth="75.0" text="C2" />
+        </columns>
+      </TableView>
+      <Button mnemonicParsing="false" text="Add selected changes to dataset" AnchorPane.bottomAnchor="1.0" AnchorPane.rightAnchor="0.0" />
+      <Button mnemonicParsing="false" text="Backup current dataset" AnchorPane.bottomAnchor="1.0" AnchorPane.leftAnchor="0.0" />
+      <TextField fx:id="statusTextField" editable="false" layoutX="138.0" layoutY="374.0" prefHeight="25.0" prefWidth="173.0" AnchorPane.bottomAnchor="1.0" AnchorPane.leftAnchor="138.0" AnchorPane.rightAnchor="189.0" />
+   </children>
+</AnchorPane>
