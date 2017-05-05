@@ -62,7 +62,7 @@ import org.apache.commons.csv.CSVPrinter;
 public class DataReconciliatorController implements Initializable {
 	private static final Logger LOGGER = Logger.getLogger(DataReconciliatorController.class.getSimpleName());
 	
-	private static final Dataset ALL = new Dataset("All", SimplifiedDate.MIN);
+	private static final Dataset ALL = new Dataset("All", SimplifiedDate.MIN, false);
 	private static final String RECONCILE_BY_NAME = "Names";
 	private static final String RECONCILE_BY_SPECIES_NAME_CLUSTER = "Species name clusters";
 	private static final String RECONCILE_BY_NAME_CLUSTER = "All name clusters";	

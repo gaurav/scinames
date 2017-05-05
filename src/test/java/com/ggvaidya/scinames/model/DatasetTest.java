@@ -40,9 +40,9 @@ public class DatasetTest {
 	 */
 	@Test
 	public void testSortOrder() {
-		Dataset ds1 = new Dataset("ds1", new SimplifiedDate(1930));
-		Dataset ds2 = new Dataset("ds2", new SimplifiedDate(1940));
-		Dataset ds3 = new Dataset("ds3", new SimplifiedDate(1950));		
+		Dataset ds1 = new Dataset("ds1", new SimplifiedDate(1930), false);
+		Dataset ds2 = new Dataset("ds2", new SimplifiedDate(1940), false);
+		Dataset ds3 = new Dataset("ds3", new SimplifiedDate(1950), false);		
 		
 		assertTrue(ds1.compareTo(ds2) < 0);
 		assertTrue(ds3.compareTo(ds2) > 0);

@@ -37,10 +37,10 @@ import com.ggvaidya.scinames.util.SimplifiedDate;
  * @author Gaurav Vaidya <gaurav@ggvaidya.com>
  */
 public class NameClusterManagerTest {
-	Dataset ds1 = new Dataset("ds1", new SimplifiedDate(1930));
-	Dataset ds2 = new Dataset("ds2", new SimplifiedDate(1940));
-	Dataset ds3 = new Dataset("ds3", new SimplifiedDate(1950));
-	Dataset ds4 = new Dataset("ds4", new SimplifiedDate(1960));
+	Dataset ds1 = new Dataset("ds1", new SimplifiedDate(1930), false);
+	Dataset ds2 = new Dataset("ds2", new SimplifiedDate(1940), false);
+	Dataset ds3 = new Dataset("ds3", new SimplifiedDate(1950), false);
+	Dataset ds4 = new Dataset("ds4", new SimplifiedDate(1960), false);
 	
 	private NameClusterManager buildNameClusterManager() {
 		NameClusterManager ncm = new NameClusterManager();

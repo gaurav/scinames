@@ -76,7 +76,7 @@ public class Dataset implements Citable, Comparable<Dataset> {
 	private String name;
 	private ObjectProperty<SimplifiedDate> dateProperty = new SimpleObjectProperty<>(SimplifiedDate.MIN);
 	private Dataset prevDataset;
-	private BooleanProperty isChecklistProperty = new SimpleBooleanProperty(true);
+	private BooleanProperty isChecklistProperty = new SimpleBooleanProperty(false);
 	private ModificationTimeProperty lastModified = new ModificationTimeProperty();
 	
 	// Data in this dataset.
@@ -389,7 +389,8 @@ public class Dataset implements Citable, Comparable<Dataset> {
 	 */
 	public Stream<Name> getRecognizedNames(Project proj) {
 		// Start with names we explicitly add.
-		Stream<Name> names = getChanges(proj).flatMap(ch -> ch.getToStream());
+		Set<Name> addedNames = getChanges(proj).flatMap(ch -> ch.getToStream()).collect(Collectors.toSet());
+		Stream<Name> names = addedNames.stream();
 		
 		if(isChecklistProperty.get()) {
 			// If this is a checklist, then we use the names we have now.
@@ -404,7 +405,17 @@ public class Dataset implements Citable, Comparable<Dataset> {
 		Set<Name> deletedNames = getChanges(proj)
 			.flatMap(ch -> ch.getFromStream())
 			.collect(Collectors.toSet());
-		return names.filter(n -> !deletedNames.contains(n)).distinct();
+		return names.filter(n -> {
+			// Filter out names that have been deleted, EXCEPT those that
+			// have been explicitly added (such as in a lump or split).
+			if(deletedNames.contains(n)) {
+				if(addedNames.contains(n))
+					return true; // don't filter
+				else
+					return false; // do filter
+			} else 
+				return true; // don't filer
+		}).distinct();
 	}
 	
 	/* Display options: provides information on what happened in this dataset for UI purposes */
@@ -625,9 +636,10 @@ public class Dataset implements Citable, Comparable<Dataset> {
 	}
 	
 	/* Constructor  */
-	public Dataset(String name, SimplifiedDate date) {
+	public Dataset(String name, SimplifiedDate date, boolean isChecklist) {
 		this.name = name;
 		dateProperty.setValue(date);
+		isChecklistProperty.set(isChecklist);
 	}
 	
 	// Blank constructor
@@ -648,7 +660,7 @@ public class Dataset implements Citable, Comparable<Dataset> {
 	 * @throws IOException 
 	 */
 	public static Dataset fromCSV(CSVFormat csvFormat, File csvFile) throws IOException {
-		Dataset dataset = new Dataset(csvFile.getName(), new SimplifiedDate());
+		Dataset dataset = new Dataset(csvFile.getName(), new SimplifiedDate(), true);
 		
 		CSVParser parser = csvFormat.withHeader().parse(new FileReader(csvFile));
 		Map<String, Integer> headerMap = parser.getHeaderMap();
