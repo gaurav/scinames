@@ -317,6 +317,21 @@ public class Project {
 		// existing renames to that effect).
 		ds.getReferencedNames().forEach(n -> nameClusterManager.addCluster(new NameCluster(ds, n)));
 		
+		if(ds.getName().startsWith("aou_1.csv")) {
+			LOGGER.info("aou_1.csv has been loaded: " + ds.getReferencedNames().count());
+			LOGGER.info("Name clusters created: " + nameClusterManager.getClusters().count());
+			LOGGER.info("Is Tringa ptilocnemis referenced? " + 
+				ds.getReferencedNames().filter(n -> n.equals(Name.get("Tringa", "ptilocnemis")))
+					.collect(Collectors.toList())
+			);
+			LOGGER.info("Name clusters created for Tringa ptilocnemis: " + 
+				nameClusterManager.getClusters()
+					.filter(cluster -> cluster.contains(Name.get("Tringa", "ptilocnemis")))
+					.collect(Collectors.toList())
+			);
+			//LOGGER.info("Name cluster for '" + Name.get("Tringa", "ptilocnemis") + "': " + nameClusterManager.getCluster(Name.get("Tringa", "ptilocnemis")));
+		}
+		
 		// Renames lead to synonymies. This is the first time we use getChanges(...), so renames
 		// that are being filtered out will NOT affect name clusters.
 		ds.getChanges(this).filter(ch -> ch.getType().equals(ChangeType.RENAME)).forEach(c ->

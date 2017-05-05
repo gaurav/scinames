@@ -107,10 +107,10 @@ public class NameCluster {
 	public String toString() {
 		if(names.size() < 6)
 			return "Name cluster " + getId() + " containing " + 
-				names.stream().map(n -> n.getFullName()).collect(Collectors.joining(" and ")) +
+				names.stream().map(n -> "'" + n.getFullName() + "'").collect(Collectors.joining(" and ")) +
 				" found between " + getDateRange() + " in " + foundIn.size() + " timepoints";
 		else
-			return "Name cluster " + getId() + " containing " + getName() + " and " + (names.size() - 1) + 
+			return "Name cluster " + getId() + " containing '" + getName() + "' and " + (names.size() - 1) + 
 				" other names between " + getDateRange() + " in " + foundIn.size() + " timepoints";
 	}
 	
@@ -198,6 +198,10 @@ public class NameCluster {
 	}
 	
 	public ObservableSet<Dataset> getFoundIn() {
+		if(contains(Name.get("Tringa", "ptilocnemis"))) {
+			LOGGER.info(" - Name cluster containing 'Tringa ptilocnemis' has foundIn: " + foundIn + ", concept: " + this);
+		}
+		
 		return foundIn;
 	}
 	

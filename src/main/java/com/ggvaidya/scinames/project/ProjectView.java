@@ -132,7 +132,7 @@ public class ProjectView {
 				closeCurrentProject();
 				
 				// If we're here, the current project was closed successfully. Time to die.
-				System.exit(0);
+				Platform.exit();
 				
 			} catch(IOException e) {
 				// Don't close if the user tried to save, but couldn't!

@@ -37,6 +37,9 @@ import javax.xml.stream.events.StartElement;
 import javax.xml.stream.events.XMLEvent;
 
 /**
+ * Read an XML file as a Project. We used to use a SAX parser distributed through our model to
+ * make that happen, but that took too much memory, so now we use an event-based parser to do it
+ * using far less memory. 
  *
  * @author Gaurav Vaidya <gaurav@ggvaidya.com>
  */
@@ -233,7 +236,7 @@ public class ProjectXMLReader {
 						}
 							
 						readDataset(dataset, reader);
-						LOGGER.info("Added dataset " + dataset);
+						LOGGER.info("Added dataset: " + dataset);
 						newProject.addDataset(dataset);
 					}
 						
@@ -363,8 +366,7 @@ public class ProjectXMLReader {
 									String specificEpithet = attrs.get("specificEpithet");
 									if(attrs.containsKey("infraspecificEpithets")) {
 										String infraspecificEpithets = attrs.get("infraspecificEpithets");
-										name = Name.get(genus, specificEpithet);
-										name.setInfraspecificEpithetsFromString(infraspecificEpithets);
+										name = Name.get(genus, specificEpithet, infraspecificEpithets);
 									} else
 										name = Name.get(genus, specificEpithet);
 								} else

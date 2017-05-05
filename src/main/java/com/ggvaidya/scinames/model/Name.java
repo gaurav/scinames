@@ -104,25 +104,27 @@ public class Name implements Comparable<Name> {
 	 * @param otherEpithets The infraspecific epithets to add.
 	 */
 	private void setInfraspecificEpithets(String... otherEpithets) {
+		List<String> filteredOtherEpithets = Stream.of(otherEpithets).filter(epi -> (epi != null && !epi.equals(""))).collect(Collectors.toList());
+		
 		infraspecificEpithets.clear();
-		if(otherEpithets.length > 0) {		
+		if(!filteredOtherEpithets.isEmpty()) {		
 			int x;
-			for(x = 0; x < otherEpithets.length; x += 2) {
-				if(x + 1 == otherEpithets.length) continue;
+			for(x = 0; x < filteredOtherEpithets.size(); x += 2) {
+				if(x + 1 == filteredOtherEpithets.size()) continue;
 				
-				String name = otherEpithets[x];
-				String value = otherEpithets[x + 1];
+				String name = filteredOtherEpithets.get(x);
+				String value = filteredOtherEpithets.get(x + 1);
 				infraspecificEpithets.add(new InfraspecificEpithet(name, value));
 			}
 
-			if(x > otherEpithets.length) {
+			if(x > filteredOtherEpithets.size()) {
 				// This will only happen if we 'jump' over the ending.
-				infraspecificEpithets.add(new InfraspecificEpithet(otherEpithets[otherEpithets.length - 1]));
+				infraspecificEpithets.add(new InfraspecificEpithet(filteredOtherEpithets.get(filteredOtherEpithets.size() - 1)));
 			}
 		}
 	}
 	
-	public void setInfraspecificEpithetsFromString(String str) {
+	private void setInfraspecificEpithetsFromString(String str) {
 		setInfraspecificEpithets(str.split("\\s+"));
 	}	
 	
@@ -172,8 +174,8 @@ public class Name implements Comparable<Name> {
 	
 	public static Name get(String genus, String specificEpithet, String subspecificEpithets) {
 		// This apparently can be called with 'null's! Funky.
-		if(subspecificEpithets == null) {
-			if(specificEpithet == null)
+		if(subspecificEpithets == null || subspecificEpithets.equals("")) {
+			if(specificEpithet == null || specificEpithet.equals(""))
 				return get(genus);
 			else
 				return get(genus, specificEpithet);
@@ -257,7 +259,8 @@ public class Name implements Comparable<Name> {
 			String infraspecificEpithets = Arrays.asList(components)
 				.subList(2, components.length)						// Ignore the first two components, which are
 																	// the genus and specificEpithet.
-				.stream().collect(Collectors.joining(SEPARATOR)); 	// Join with 'SEPARATOR'
+				.stream().collect(Collectors.joining(SEPARATOR)) 	// Join with 'SEPARATOR'
+				.trim();											// Get rid of trailing spaces.
                         
 			return Optional.ofNullable(Name.get(components[0], components[1], infraspecificEpithets));
 			

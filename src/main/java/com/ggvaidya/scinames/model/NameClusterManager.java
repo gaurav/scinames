@@ -102,10 +102,15 @@ public class NameClusterManager {
 	 * @param newCluster The new cluster to add.
 	 */
 	public void addCluster(NameCluster newCluster) {
+		// debugging
+		if(newCluster.contains(Name.get("Tringa", "ptilocnemis"))) {
+			LOGGER.info(" - Cluster for 'Tringa ptilocnemis' query: " + newCluster);
+		}	
+		
 		// Are any of these names already known to us? If so, we need to merge
 		// them.
 		Set<Name> names = newCluster.getNames();
-		
+
 		if(!names.stream().anyMatch(n -> clustersByName.keySet().contains(n))) {
 			LOGGER.finest("New cluster " + newCluster + " has no overlap with existing clusters.");
 			newCluster.getNames().forEach(n -> clustersByName.put(n, newCluster));
@@ -130,6 +135,11 @@ public class NameClusterManager {
 			// our new merged cluster.
 			newCluster.addAll(cluster);
 		});
+		
+		// debugging
+		if(newCluster.contains(Name.get("Tringa", "ptilocnemis"))) {
+			LOGGER.info(" - Cluster for 'Tringa ptilocnemis' result: " + newCluster);
+		}
 		
 		// Now index the merged cluster.
 		newCluster.getNames().forEach(n -> clustersByName.put(n, newCluster));

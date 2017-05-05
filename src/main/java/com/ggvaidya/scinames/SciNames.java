@@ -121,6 +121,8 @@ public class SciNames extends Application {
 	 */
 	@Override
 	public void stop() {
+		LOGGER.info("Stopping application, saving properties.");
+		
 		// Save preferences.
 		try {
 			Properties p = new Properties();
@@ -128,6 +130,7 @@ public class SciNames extends Application {
 				p.setProperty(name, Properties.get(name));
 			}
 			p.store(new FileWriter(getPropertiesFile()), APPNAME);
+			LOGGER.info(p.size() + " properties stored in " + getPropertiesFile());
 		} catch(IOException e) {
 			// Ignore.
 		}

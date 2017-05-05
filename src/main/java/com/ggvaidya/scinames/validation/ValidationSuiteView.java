@@ -115,7 +115,7 @@ public final class ValidationSuiteView {
 		cols.add(col);
 		
 		col = createTableColumnForValidationError("Target", ve -> ve.getTarget().toString());
-		col.setPrefWidth(300.0);
+		col.setPrefWidth(500.0);
 		cols.add(col);
 		
 		// Double-click on rows should take you to the entry.
