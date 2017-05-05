@@ -171,6 +171,14 @@ public class Name implements Comparable<Name> {
 	private static Map<String, Name> namesByBinomial = new HashMap<>(); // TODO delete
 	
 	public static Name get(String genus, String specificEpithet, String subspecificEpithets) {
+		// This apparently can be called with 'null's! Funky.
+		if(subspecificEpithets == null) {
+			if(specificEpithet == null)
+				return get(genus);
+			else
+				return get(genus, specificEpithet);
+		}
+		
         genus = genus.trim();
         specificEpithet = specificEpithet.trim();
         subspecificEpithets = subspecificEpithets.trim();
