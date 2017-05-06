@@ -224,9 +224,13 @@ public class Change {
 		if(names.equals(""))
 			return Stream.empty();
 		
-		return Arrays.asList(names.split("\\s*and\\s*")).stream()
-				.map(s -> s.replaceAll("^\"\\s*", ""))
-				.map(s -> s.replaceAll("\\s*\"$", ""))
+		return Arrays.asList(names.split("\\s+and\\s+")).stream()
+				.map(s -> { 
+					if(s.startsWith("\"") && s.endsWith("\""))
+						return s.substring(1, s.length() - 1);
+					else
+						return s;
+				})
 				.map(s -> Name.getFromFullName(s).orElseThrow(() -> new IllegalStateException("Unable to parse name '" + s + "'")));
 	}
 	

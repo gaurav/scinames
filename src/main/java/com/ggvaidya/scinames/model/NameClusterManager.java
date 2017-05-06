@@ -102,9 +102,9 @@ public class NameClusterManager {
 	 * @param newCluster The new cluster to add.
 	 */
 	public void addCluster(NameCluster newCluster) {
-		// debugging
+		// debugging; leaving in in case I need it.
 		if(newCluster.contains(Name.get("Tringa", "ptilocnemis"))) {
-			LOGGER.info(" - Cluster for 'Tringa ptilocnemis' query: " + newCluster);
+			LOGGER.fine(" - Cluster for 'Tringa ptilocnemis' query: " + newCluster);
 		}	
 		
 		// Are any of these names already known to us? If so, we need to merge
@@ -136,9 +136,9 @@ public class NameClusterManager {
 			newCluster.addAll(cluster);
 		});
 		
-		// debugging
+		// debugging; leaving in just in case I need it.
 		if(newCluster.contains(Name.get("Tringa", "ptilocnemis"))) {
-			LOGGER.info(" - Cluster for 'Tringa ptilocnemis' result: " + newCluster);
+			LOGGER.fine(" - Cluster for 'Tringa ptilocnemis' result: " + newCluster);
 		}
 		
 		// Now index the merged cluster.

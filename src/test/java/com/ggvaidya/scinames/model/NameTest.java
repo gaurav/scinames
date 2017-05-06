@@ -21,11 +21,13 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.junit.jupiter.api.Test;
 
@@ -109,6 +111,14 @@ public class NameTest {
 		assertEquals(
 			names.stream().flatMap(n -> n.asBinomial()).collect(Collectors.toList()),
 			expected
+		);
+	}
+	
+	@Test
+	public void testNameParsingFromAndStrings() {
+		assertEquals(
+			Change.convertAndStringToNames("\"Dryobates arizonae\" and \"Dryobates stricklandi\"").collect(Collectors.toSet()),
+			new HashSet<>(Arrays.asList(Name.get("Dryobates", "arizonae"), Name.get("Dryobates", "stricklandi")))
 		);
 	}
 }

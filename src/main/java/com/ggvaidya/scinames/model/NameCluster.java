@@ -197,9 +197,10 @@ public class NameCluster {
 	}
 	
 	public ObservableSet<Dataset> getFoundIn() {
+		/*
 		if(contains(Name.get("Tringa", "ptilocnemis"))) {
-			LOGGER.info(" - Name cluster containing 'Tringa ptilocnemis' has foundIn: " + foundIn + ", concept: " + this);
-		}
+			LOGGER.fine(" - Name cluster containing 'Tringa ptilocnemis' has foundIn: " + foundIn + ", concept: " + this);
+		}*/
 		
 		return foundIn;
 	}

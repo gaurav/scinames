@@ -313,19 +313,20 @@ public class Project {
 		// existing renames to that effect).
 		ds.getReferencedNames().forEach(n -> nameClusterManager.addCluster(new NameCluster(ds, n)));
 		
+		// Old debugging code, leaving it just in case I need something like this again.
 		if(ds.getName().startsWith("aou_1.csv")) {
-			LOGGER.info("aou_1.csv has been loaded: " + ds.getReferencedNames().count());
-			LOGGER.info("Name clusters created: " + nameClusterManager.getClusters().count());
-			LOGGER.info("Is Tringa ptilocnemis referenced? " + 
+			LOGGER.fine("aou_1.csv has been loaded: " + ds.getReferencedNames().count());
+			LOGGER.fine("Name clusters created: " + nameClusterManager.getClusters().count());
+			LOGGER.fine("Is Tringa ptilocnemis referenced? " + 
 				ds.getReferencedNames().filter(n -> n.equals(Name.get("Tringa", "ptilocnemis")))
 					.collect(Collectors.toList())
 			);
-			LOGGER.info("Name clusters created for Tringa ptilocnemis: " + 
+			LOGGER.fine("Name clusters created for Tringa ptilocnemis: " + 
 				nameClusterManager.getClusters()
 					.filter(cluster -> cluster.contains(Name.get("Tringa", "ptilocnemis")))
 					.collect(Collectors.toList())
 			);
-			//LOGGER.info("Name cluster for '" + Name.get("Tringa", "ptilocnemis") + "': " + nameClusterManager.getCluster(Name.get("Tringa", "ptilocnemis")));
+			LOGGER.fine("Name cluster for '" + Name.get("Tringa", "ptilocnemis") + "': " + nameClusterManager.getCluster(Name.get("Tringa", "ptilocnemis")));
 		}
 		
 		// Renames lead to synonymies. This is the first time we use getChanges(...), so renames
