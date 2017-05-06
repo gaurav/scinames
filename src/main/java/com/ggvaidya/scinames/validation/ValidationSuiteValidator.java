@@ -31,6 +31,7 @@ import java.util.stream.Stream;
  * @author Gaurav Vaidya <gaurav@ggvaidya.com>
  */
 public class ValidationSuiteValidator implements Validator {
+	@SuppressWarnings("rawtypes")
 	@Override
 	public Stream<ValidationError> validate(Project p) {
 		return p.getDatasets().stream().map(

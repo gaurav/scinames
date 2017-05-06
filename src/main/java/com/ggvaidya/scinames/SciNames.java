@@ -72,7 +72,7 @@ public class SciNames extends Application {
          * @return list of properties
          */
 	public static List<Map.Entry<String, String>> getPropertiesAsList() {
-		return new ArrayList(Properties.entrySet());
+		return new ArrayList<>(Properties.entrySet());
 	}
 	
 	/**
@@ -144,8 +144,6 @@ public class SciNames extends Application {
 	 */
 	@Override
 	public void start(Stage primaryStage) {
-		Parameters params = getParameters();
-		
 		// Eventually, we will support command-line parameters.
 		// For now, let's just load up the ProjectView.
 		Scene firstScene;

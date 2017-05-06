@@ -23,16 +23,17 @@
 
 package com.ggvaidya.scinames.complexquery;
 
-import com.ggvaidya.scinames.model.Change;
-import com.ggvaidya.scinames.model.NameCluster;
-import com.ggvaidya.scinames.model.Project;
-import com.ggvaidya.scinames.project.ProjectView;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import com.ggvaidya.scinames.model.Change;
+import com.ggvaidya.scinames.model.Project;
+import com.ggvaidya.scinames.project.ProjectView;
+
 import javafx.scene.Scene;
 import javafx.stage.Stage;
 
@@ -92,7 +93,7 @@ public final class SearchView {
 	}
 	
 	private Stream<Change> getChangesThatMatch(Project project, String query) {
-		Set<String> names = new HashSet(Arrays.asList(query.split("\\s*\\n\\s*")));
+		Set<String> names = new HashSet<>(Arrays.asList(query.split("\\s*\\n\\s*")));
 		
 		LOGGER.info("Names to match against changes: " + names);
 		
@@ -111,6 +112,7 @@ public final class SearchView {
 		});
 	}
 	
+	/*
 	private Stream<NameCluster> getNameClustersThatMatch(Project project, String query) {
 		Set<String> names = new HashSet(Arrays.asList(query.split("\\s*\\n\\s*")));
 		
@@ -127,4 +129,5 @@ public final class SearchView {
 				);
 		}).distinct();
 	}
+	*/
 }

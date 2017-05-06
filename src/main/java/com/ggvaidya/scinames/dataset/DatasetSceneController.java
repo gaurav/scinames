@@ -91,12 +91,9 @@ public class DatasetSceneController {
 		additionalDataCombobox.getSelectionModel().selectedItemProperty().addListener((Observable o) -> additionalDataTypeChanged());
 		additionalDataCombobox.getSelectionModel().select("Data"); // Display the data first.
 		
-		changesTableView.getSelectionModel().getSelectedItems().addListener(new ListChangeListener() {
-			@Override
-			public void onChanged(ListChangeListener.Change c) {
-				additionalDataTypeChanged();
-			}
-		});
+		changesTableView.getSelectionModel().getSelectedItems().addListener(
+			(ListChangeListener<Change>) c -> additionalDataTypeChanged()
+		);
 	}
 	
 	/*
@@ -104,16 +101,8 @@ public class DatasetSceneController {
 	 */
 	@FXML private TableView additionalDataTableView;
 	@FXML private ListView additionalListView;
-	@FXML private ComboBox additionalDataCombobox;
+	@FXML private ComboBox<String> additionalDataCombobox;
 	@FXML private TableView<Change> changesTableView;
-	
-	private void selectChanges(Control target, List<Change> selectedChanges) {
-		updateMainTextArea();
-	}
-
-	private void selectNames(Control target, List<Name> selectedNames) {
-		updateMainTextArea();
-	}
 	
 	private void updateMainTextArea() {
 		// No timepoint, no content.
@@ -184,6 +173,7 @@ public class DatasetSceneController {
 		);*/
 	}
 	
+	/*
 	private void fillTableWithNamesFrom(TableView tv, Dataset tp) {
 		tv.setEditable(false);
 		
@@ -211,14 +201,14 @@ public class DatasetSceneController {
 			tv.setItems(FXCollections.emptyObservableList());
 		}
 		tv.getSortOrder().add(colName);
-	}
+	}*/
 	
-	private void fillTableWithChanges(TableView tv, Dataset tp) {
+	private void fillTableWithChanges(TableView<Change> tv, Dataset tp) {
 		tv.setEditable(true);
 		tv.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
 		tv.getColumns().clear();
 
-		TableColumn<Change, ChangeType> colChangeType = new TableColumn("Type");
+		TableColumn<Change, ChangeType> colChangeType = new TableColumn<>("Type");
 		colChangeType.setCellFactory(ComboBoxTableCell.forTableColumn(
 			new ChangeTypeStringConverter(),
 			ChangeType.ADDITION,
@@ -233,14 +223,14 @@ public class DatasetSceneController {
 		colChangeType.setEditable(true);
 		tv.getColumns().add(colChangeType);
 		
-		TableColumn<Change, ObservableSet<Name>> colChangeFrom = new TableColumn("From");
+		TableColumn<Change, ObservableSet<Name>> colChangeFrom = new TableColumn<>("From");
 		colChangeFrom.setCellFactory(TextFieldTableCell.forTableColumn(new NameSetStringConverter()));
 		colChangeFrom.setCellValueFactory(new PropertyValueFactory<>("from"));
 		colChangeFrom.setPrefWidth(200.0);
 		colChangeFrom.setEditable(true);
 		tv.getColumns().add(colChangeFrom);
 		
-		TableColumn<Change, ObservableSet<Name>> colChangeTo = new TableColumn("To");
+		TableColumn<Change, ObservableSet<Name>> colChangeTo = new TableColumn<>("To");
 		colChangeTo.setCellFactory(TextFieldTableCell.forTableColumn(new NameSetStringConverter()));	
 		colChangeTo.setCellValueFactory(new PropertyValueFactory<>("to"));
 		colChangeTo.setPrefWidth(200.0);
@@ -282,7 +272,7 @@ public class DatasetSceneController {
 		);
 		tv.getColumns().add(colCitations);
 		
-		TableColumn<Change, String> colGenera = new TableColumn("Genera");
+		TableColumn<Change, String> colGenera = new TableColumn<>("Genera");
 		colGenera.setCellValueFactory(
 			(TableColumn.CellDataFeatures<Change, String> features) ->
 				new ReadOnlyStringWrapper(
@@ -291,7 +281,7 @@ public class DatasetSceneController {
 		);
 		tv.getColumns().add(colGenera);
 		
-		TableColumn<Change, String> colSpecificEpithet = new TableColumn("Specific epithet");
+		TableColumn<Change, String> colSpecificEpithet = new TableColumn<>("Specific epithet");
 		colSpecificEpithet.setCellValueFactory(
 			(TableColumn.CellDataFeatures<Change, String> features) ->
 				new ReadOnlyStringWrapper(
@@ -307,10 +297,11 @@ public class DatasetSceneController {
 		tv.getSortOrder().add(colChangeType);
 	}
 	
+	/*
 	private void displayAssociatedData(ActionEvent evt) {
 		DatasetTabularView datasetView = new DatasetTabularView(dataset);
 		datasetView.getStage().show();
-	}
+	}*/
 	
 	private final List<String> additionalDataTypeNames = Arrays.asList(
 		"All recognized names",
@@ -350,9 +341,11 @@ public class DatasetSceneController {
 	
 	private void showCitationsInTable(ListView listView, TableView tableView) {
 		tableView.getItems().clear();
+		
+		// TODO Add a viewer for citations
 	}
 	
-	private void showNamesWithChangesInTable(ListView listView, TableView tableView) {
+	private void showNamesWithChangesInTable(ListView<Name> listView, TableView tableView) {
 		// Clear table.
 		tableView.editableProperty().set(false);
 		tableView.getColumns().clear();
@@ -363,7 +356,7 @@ public class DatasetSceneController {
 		
 		// Put them into the treeView.
 		listView.getItems().setAll(names.sorted().collect(Collectors.toSet()));
-		listView.getSelectionModel().getSelectedItems().addListener((ListChangeListener.Change change) -> {
+		listView.getSelectionModel().getSelectedItems().addListener((ListChangeListener<Name>) change -> {
 			/*
 			 * Displays all data associated with this Name.
 			 */
@@ -380,10 +373,12 @@ public class DatasetSceneController {
 			
 			// Columns 
 			
+			// TODO provide this output
+			
 		});
 	}
 	
-	private void showNamesWithDataInTable(ListView listView, TableView tableView) {
+	private void showNamesWithDataInTable(ListView<Name> listView, TableView tableView) {
 		// Clear table.
 		tableView.editableProperty().set(false);
 		tableView.getColumns().clear();
@@ -395,7 +390,7 @@ public class DatasetSceneController {
 		// Put them into the treeView.
 		listView.getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
 		listView.getItems().setAll(names.sorted().collect(Collectors.toSet()));
-		listView.getSelectionModel().getSelectedItems().addListener((ListChangeListener.Change change) -> {
+		listView.getSelectionModel().getSelectedItems().addListener((ListChangeListener<Name>) change -> {
 			/*
 			 * Displays all data associated with this Name.
 			 */
@@ -414,10 +409,12 @@ public class DatasetSceneController {
 			
 			// Columns 
 			
+			// TODO make this work at some point
+			
 		});
 	}
 	
-	private void showAllRecognizedNames(ListView listView, TableView tableView) {
+	private void showAllRecognizedNames(ListView<Name> listView, TableView<Name> tableView) {
 		// No project view? Don't do nothing.
 		if(datasetView.getProjectView() == null)
 			return;
@@ -431,11 +428,11 @@ public class DatasetSceneController {
 		// Setup table.
 		tableView.editableProperty().set(false);
 		
-		ObservableList<TableColumn> cols = tableView.getColumns();
+		ObservableList<TableColumn<Name, ?>> cols = tableView.getColumns();
 		cols.clear();
 		
 		// Set up columns.
-		TableColumn<Name, String> colFullName = new TableColumn("Name");
+		TableColumn<Name, String> colFullName = new TableColumn<>("Name");
 		colFullName.setCellValueFactory((TableColumn.CellDataFeatures<Name, String> features) -> {
 			Name name = features.getValue();
 					
@@ -446,7 +443,7 @@ public class DatasetSceneController {
 		
 		NameClusterManager ncm = project.getNameClusterManager();
 		
-		TableColumn<Name, String> colNameCluster = new TableColumn("Name cluster");
+		TableColumn<Name, String> colNameCluster = new TableColumn<>("Name cluster");
 		colNameCluster.setCellValueFactory((TableColumn.CellDataFeatures<Name, String> features) -> {
 			Name name = features.getValue();
 					
@@ -460,7 +457,7 @@ public class DatasetSceneController {
 		colNameCluster.setPrefWidth(100.0);
 		cols.add(colNameCluster);
 		
-		TableColumn<Name, String> colNameClusterNames = new TableColumn("Name cluster names");
+		TableColumn<Name, String> colNameClusterNames = new TableColumn<>("Name cluster names");
 		colNameCluster.setCellValueFactory((TableColumn.CellDataFeatures<Name, String> features) -> {
 			Name name = features.getValue();
 			
@@ -490,7 +487,7 @@ public class DatasetSceneController {
 		tableView.setPlaceholder(new Label("No names recognized in this dataset."));
 	}
 	
-	private void showDataInTable(ListView listView, TableView tableView) {
+	private void showDataInTable(ListView<String> listView, TableView<DatasetRow> tableView) {
 		// How did we get here without a dataset?
 		if(dataset == null)
 			return;
@@ -505,11 +502,11 @@ public class DatasetSceneController {
 		// Setup table.
 		tableView.editableProperty().set(false);
 		
-		ObservableList<TableColumn> cols = tableView.getColumns();
+		ObservableList<TableColumn<DatasetRow, ?>> cols = tableView.getColumns();
 		cols.clear();
 		
 		// Set up columns.
-		TableColumn<DatasetRow, String> colRowName = new TableColumn("Name");
+		TableColumn<DatasetRow, String> colRowName = new TableColumn<>("Name");
 		colRowName.setCellValueFactory((TableColumn.CellDataFeatures<DatasetRow, String> features) -> {
 			DatasetRow row = features.getValue();
 			Set<Name> names = dataset.getNamesInRow(row);
@@ -526,7 +523,7 @@ public class DatasetSceneController {
 		// Create a column for every column here.
 		dataset.getColumns().forEach((DatasetColumn col) -> {
 			String colName = col.getName();
-			TableColumn<DatasetRow, String> colColumn = new TableColumn(colName);
+			TableColumn<DatasetRow, String> colColumn = new TableColumn<>(colName);
 			colColumn.setCellValueFactory((TableColumn.CellDataFeatures<DatasetRow, String> features) -> {
 				DatasetRow row = features.getValue();
 				String val = row.get(colName);

@@ -23,16 +23,15 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.ListIterator;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.UUID;
 import java.util.logging.Logger;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
 import javafx.beans.property.ReadOnlySetWrapper;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableSet;
@@ -261,9 +260,10 @@ public class NameCluster {
 	 * will figure out when that happens by looking for lumps or splits 
 	 * associated with these names.
 	 * 
-	 * - TODO 	There will never be a case where a taxon concept spans multiple 
-	 * 			name concepts. Will there
-	 * - TODO 	This currently ignores filtering. How can we incorporate that?
+	 * A NameCluster is therefore our equivalent of a "nominal concept"!
+	 * 
+	 * Note that this incorporates filtering.
+	 * 
 	 */
 	public List<TaxonConcept> getTaxonConcepts(Project p) {
 		List<TaxonConcept> concepts = new LinkedList<>();
@@ -275,11 +275,19 @@ public class NameCluster {
 				// Start first cluster with this dataset. Note that this
 				// ISN'T necessarily a splump -- it might be an addition
 				// or a 'recognition'.
-				current = new TaxonConcept(this);
-				current.setStartsWith(tp.getChanges(p)
+				
+				// However, let's make sure that initial event isn't 
+				// filtered out!
+				List<Change> changes = tp.getChanges(p)
 					.filter(ch -> containsAny(ch.getTo()))
-					.collect(Collectors.toList())
-				);
+					.collect(Collectors.toList());
+				
+				if(changes.isEmpty()) {
+					continue;
+				} else {
+					current = new TaxonConcept(this);
+					current.setStartsWith(changes);
+				}
 			}
 			
 			// Find all changes involving this name cluster in this dataset, and

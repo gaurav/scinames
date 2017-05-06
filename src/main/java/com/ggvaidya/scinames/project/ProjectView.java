@@ -19,6 +19,14 @@ package com.ggvaidya.scinames.project;
 import java.io.File;
 import java.io.IOException;
 import java.time.Instant;
+import java.util.logging.Logger;
+
+import com.ggvaidya.scinames.SciNames;
+import com.ggvaidya.scinames.dataset.DatasetView;
+import com.ggvaidya.scinames.model.Change;
+import com.ggvaidya.scinames.model.Dataset;
+import com.ggvaidya.scinames.model.Project;
+
 import javafx.application.Platform;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
@@ -31,19 +39,12 @@ import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.TextField;
-import javafx.scene.layout.AnchorPane;
-import javafx.stage.Stage;
-import javafx.stage.WindowEvent;
-import com.ggvaidya.scinames.SciNames;
-import com.ggvaidya.scinames.dataset.DatasetView;
-import com.ggvaidya.scinames.model.Change;
-import com.ggvaidya.scinames.model.Dataset;
-import com.ggvaidya.scinames.model.Project;
-import java.util.logging.Logger;
 import javafx.scene.input.DragEvent;
 import javafx.scene.input.Dragboard;
 import javafx.scene.input.TransferMode;
-import javafx.scene.layout.VBox;
+import javafx.scene.layout.AnchorPane;
+import javafx.stage.Stage;
+import javafx.stage.WindowEvent;
 
 /**
  * Provides a view (in tandem with ProjectSceneController) on a particular Project.

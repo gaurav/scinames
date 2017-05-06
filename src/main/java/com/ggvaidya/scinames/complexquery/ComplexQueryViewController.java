@@ -22,6 +22,28 @@
 
 package com.ggvaidya.scinames.complexquery;
 
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.StringWriter;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.ResourceBundle;
+import java.util.Set;
+import java.util.function.Function;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+import org.apache.commons.csv.CSVFormat;
+import org.apache.commons.csv.CSVPrinter;
+
 import com.ggvaidya.scinames.dataset.DatasetView;
 import com.ggvaidya.scinames.model.Change;
 import com.ggvaidya.scinames.model.Dataset;
@@ -36,25 +58,7 @@ import com.ggvaidya.scinames.project.ProjectView;
 import com.ggvaidya.scinames.tabulardata.TabularDataViewController;
 import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.Table;
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.StringWriter;
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.logging.Logger;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.ResourceBundle;
-import java.util.Set;
-import java.util.function.Function;
-import java.util.logging.Level;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
+
 import javafx.beans.property.ReadOnlyStringWrapper;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
@@ -81,8 +85,6 @@ import javafx.scene.layout.BackgroundFill;
 import javafx.scene.layout.CornerRadii;
 import javafx.scene.paint.Paint;
 import javafx.stage.FileChooser;
-import org.apache.commons.csv.CSVFormat;
-import org.apache.commons.csv.CSVPrinter;
 
 /**
  * A ComplexQueryView is like a TabularDataView: it does a lot of the work,
@@ -159,8 +161,6 @@ public class ComplexQueryViewController implements Initializable {
 	
 	@FXML
 	private void executeQuery() {
-		String query = queryTextArea.getText();
-		
 		for(Function<ComplexQueryViewController, String> listener: listeners) {
 			setQueryStatus(listener.apply(this));
 		}

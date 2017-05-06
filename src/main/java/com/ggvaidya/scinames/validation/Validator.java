@@ -32,5 +32,7 @@ import java.util.stream.Stream;
  */
 public interface Validator {
 	public String getName();
+	
+	@SuppressWarnings("rawtypes")
 	public Stream<ValidationError> validate(Project p);
 }

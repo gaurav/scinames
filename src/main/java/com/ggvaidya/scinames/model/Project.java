@@ -94,7 +94,7 @@ public class Project {
 	private ObjectProperty<ChangeFilter> changeFilterProperty = new SimpleObjectProperty<ChangeFilter>(ChangeFilterFactory.getNullChangeFilter());
 	private NameClusterManager nameClusterManager = new NameClusterManager();
 	private ObservableSet<ChangeType> changeTypes = FXCollections.observableSet(new HashSet<>());
-	private ListProperty<Dataset> datasets = new SimpleListProperty<>(FXCollections.observableList(new LinkedList()));
+	private ListProperty<Dataset> datasets = new SimpleListProperty<>(FXCollections.observableList(new LinkedList<Dataset>()));
 	private ModificationTimeProperty lastModified = new ModificationTimeProperty();
 	
 	{
@@ -202,7 +202,6 @@ public class Project {
 			changeFilterProperty.get().addChangeFilter(cf);
 	}
 	
-	// TODO memoize until lastModified.
 	/**
 	 * Returns a list of dataset rows across all datasets for a particular name.
 	 * 
@@ -225,7 +224,7 @@ public class Project {
 			
 			rowsForTP.forEach(r -> {
 				if(!results.containsKey(r))
-					results.put(r, new HashSet());
+					results.put(r, new HashSet<>());
 				
 				results.get(r).add(tp);
 			});
@@ -245,15 +244,12 @@ public class Project {
 		final Map<DatasetColumn, Set<String>> results = new HashMap<>();
 		
 		for(DatasetRow row: rowsForName.keySet()) {
-			for(Dataset tp: rowsForName.get(row)) {
-				// Look up Column/String pair.
-				for(DatasetColumn col: row.getColumns()) {
-					String value = row.get(col);
-					
-					if(!results.containsKey(col))
-						results.put(col, new HashSet<>());
-					results.get(col).add(value);
-				}
+			for(DatasetColumn col: row.getColumns()) {
+				String value = row.get(col);
+				
+				if(!results.containsKey(col))
+					results.put(col, new HashSet<>());
+				results.get(col).add(value);
 			}
 		}
 		

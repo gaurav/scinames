@@ -17,14 +17,11 @@
 package com.ggvaidya.scinames.model;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
-import java.util.function.Consumer;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import org.junit.jupiter.api.Test;

@@ -16,7 +16,6 @@
  */
 package com.ggvaidya.scinames.model;
 
-import com.google.common.collect.Lists;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -33,7 +32,6 @@ import java.util.stream.Stream;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
-import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.xml.sax.SAXException;
 
@@ -128,7 +126,7 @@ public class Name implements Comparable<Name> {
 		setInfraspecificEpithets(str.split("\\s+"));
 	}	
 	
-	private static Set<String> specificEpithetsThatArentLowercase = new HashSet(Arrays.asList(
+	private static Set<String> specificEpithetsThatArentLowercase = new HashSet<>(Arrays.asList(
 		"sp",
 		"spp",
 		"sp.",

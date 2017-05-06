@@ -17,12 +17,6 @@
 package com.ggvaidya.scinames.model;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-
-import java.util.Optional;
-import java.util.function.Consumer;
-import java.util.function.Function;
 
 import org.junit.jupiter.api.Test;
 

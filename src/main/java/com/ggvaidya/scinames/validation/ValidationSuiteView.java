@@ -50,7 +50,7 @@ public final class ValidationSuiteView {
 	private Scene scene;
 	private ProjectView projectView;
 	private TabularDataViewController controller;
-	private List<Validator> validators = new ArrayList();
+	private List<Validator> validators = new ArrayList<>();
 	
 	public Stage getStage() { return stage; }
 
@@ -78,6 +78,7 @@ public final class ValidationSuiteView {
 		return col;
 	}*/
 	
+	@SuppressWarnings("rawtypes")
 	private TableColumn<ValidationError, String> createTableColumnForValidationError(String colName, Callback<ValidationError, String> valueFunc) {
 		TableColumn<ValidationError, String> col = new TableColumn<>(colName);
 		col.setCellValueFactory((param) -> new ReadOnlyStringWrapper(valueFunc.call(param.getValue())));
@@ -92,6 +93,7 @@ public final class ValidationSuiteView {
 		// Setup table.
 		controller.getTableEditableProperty().set(false);
 		//controller.setTableColumnResizeProperty(TableView.CONSTRAINED_RESIZE_POLICY);
+		@SuppressWarnings("rawtypes")
 		ObservableList<TableColumn> cols = controller.getTableColumnsProperty();
 		cols.clear();
 		
@@ -110,6 +112,7 @@ public final class ValidationSuiteView {
 				return "(none)";
 		}));
 		
+		@SuppressWarnings("rawtypes")
 		TableColumn<ValidationError, String> col = createTableColumnForValidationError("Message", ve -> ve.getMessage());
 		col.setPrefWidth(300.0);
 		cols.add(col);
@@ -122,6 +125,7 @@ public final class ValidationSuiteView {
 		controller.getTableView().setOnMouseClicked(evt -> {
 			if(evt.getButton() == MouseButton.PRIMARY && evt.getClickCount() == 2) {
 				// Double-click!
+				@SuppressWarnings("rawtypes")
 				ValidationError ve = (ValidationError) controller.getTableView().getSelectionModel().getSelectedItem();
 				projectView.openDetailedView(ve.getTarget());
 				

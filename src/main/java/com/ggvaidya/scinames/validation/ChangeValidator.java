@@ -21,13 +21,6 @@
  */
 package com.ggvaidya.scinames.validation;
 
-import com.ggvaidya.scinames.model.Change;
-import com.ggvaidya.scinames.model.ChangeType;
-import com.ggvaidya.scinames.model.Dataset;
-import com.ggvaidya.scinames.model.Name;
-import com.ggvaidya.scinames.model.NameCluster;
-import com.ggvaidya.scinames.model.Project;
-
 import java.nio.ByteBuffer;
 import java.nio.charset.CharacterCodingException;
 import java.nio.charset.Charset;
@@ -35,7 +28,6 @@ import java.nio.charset.CharsetDecoder;
 import java.nio.charset.CharsetEncoder;
 import java.nio.charset.CodingErrorAction;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -44,12 +36,20 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import com.ggvaidya.scinames.model.Change;
+import com.ggvaidya.scinames.model.ChangeType;
+import com.ggvaidya.scinames.model.Dataset;
+import com.ggvaidya.scinames.model.Name;
+import com.ggvaidya.scinames.model.NameCluster;
+import com.ggvaidya.scinames.model.Project;
+
 /**
  * Validate individual changes.
  * 
  * @author Gaurav Vaidya <gaurav@ggvaidya.com>
  */
 public class ChangeValidator implements Validator {
+	@SuppressWarnings("rawtypes")
 	@Override
 	public Stream<ValidationError> validate(Project p) {
 		List<ValidationError> errors = new LinkedList<>();
@@ -64,7 +64,7 @@ public class ChangeValidator implements Validator {
 		return errors.stream();
 	}
 	
-	private Stream<ValidationError> getEncodingErrors(Project p) {
+	private Stream<ValidationError<Change>> getEncodingErrors(Project p) {
 		CharsetDecoder utfDecoder = Charset.forName("UTF8").newDecoder()
 			.onMalformedInput(CodingErrorAction.REPORT)
 			.onUnmappableCharacter(CodingErrorAction.REPORT);
@@ -73,7 +73,7 @@ public class ChangeValidator implements Validator {
 		
 		return p.getChanges().flatMap(ch -> {
 			String str = ch.toString();
-			List<ValidationError> errors = new LinkedList<>();
+			List<ValidationError<Change>> errors = new LinkedList<>();
 			
 			try {
 				utfDecoder.decode(ByteBuffer.wrap(str.getBytes(Charset.forName("UTF8"))));
@@ -90,7 +90,7 @@ public class ChangeValidator implements Validator {
 		});
 	}
 	
-	private Stream<ValidationError> getIncorrectAdditionsAndDeletions(Project p) {
+	private Stream<ValidationError<Change>> getIncorrectAdditionsAndDeletions(Project p) {
 		return p.getChanges()
 			.filter(ch -> {
 				if(ch.getType().equals(ChangeType.ADDITION)) {
@@ -103,7 +103,7 @@ public class ChangeValidator implements Validator {
 			.map(ch -> new ValidationError<Change>(this, p, "Incorrect addition or deletion", ch));
 	}
 	
-	private Stream<ValidationError> getIncorrectLumpsAndSplits(Project p) {
+	private Stream<ValidationError<Change>> getIncorrectLumpsAndSplits(Project p) {
 		return p.getChanges()
 			.filter(ch -> {
 				if(ch.getType().equals(ChangeType.LUMP)) {
@@ -116,7 +116,7 @@ public class ChangeValidator implements Validator {
 			.map(ch -> new ValidationError<Change>(this, p, "Incorrect lump or split", ch));
 	}
 	
-	private Stream<ValidationError> checkFromWasPreviouslyRecognized(Project p) {
+	private Stream<ValidationError<Change>> checkFromWasPreviouslyRecognized(Project p) {
 		return p.getChanges()
 			.filter(ch -> {
 				Dataset prev = ch.getDataset().getPreviousDataset();
@@ -131,13 +131,13 @@ public class ChangeValidator implements Validator {
 			.map(ch -> new ValidationError<Change>(this, p, "'From' not previously recognized", ch));
 	}
 	
-	private Stream<ValidationError> changesOfNonRecognizedTypes(Project p) {
+	private Stream<ValidationError<Change>> changesOfNonRecognizedTypes(Project p) {
 		return p.getChanges()
 			.filter(ch -> !ChangeType.RECOGNIZED_TYPES.contains(ch.getType()))
 			.map(ch -> new ValidationError<Change>(this, p, "Change type '" + ch.getType().toString() + "' not recognized", ch));	
 	}
 	
-	private Stream<ValidationError> checkForDuplicateNameClustersOnSameSide(Project p) {
+	private Stream<ValidationError<Change>> checkForDuplicateNameClustersOnSameSide(Project p) {
 		return p.getChanges()
 			.flatMap(ch -> Stream.concat(
 				checkNameClusters(p, ch, "from", ch.getFrom()), 
@@ -152,7 +152,7 @@ public class ChangeValidator implements Validator {
 	 * @param sets
 	 * @return
 	 */
-	private Stream<ValidationError> checkNameClusters(Project p, Change ch, String nameSetName, Set<Name> names) {
+	private Stream<ValidationError<Change>> checkNameClusters(Project p, Change ch, String nameSetName, Set<Name> names) {
 		Map<NameCluster, Name> clustersSeen = new HashMap<>();
 		
 		return names.stream().flatMap(name -> {
@@ -163,7 +163,7 @@ public class ChangeValidator implements Validator {
 				);
 			else {
 				NameCluster cluster = optCluster.get();
-				Stream<ValidationError> errors = Stream.empty();
+				Stream<ValidationError<Change>> errors = Stream.empty();
 				
 				if(clustersSeen.containsKey(cluster)) {
 					errors = Stream.concat(errors, Stream.of(

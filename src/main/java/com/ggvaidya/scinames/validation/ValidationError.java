@@ -22,13 +22,11 @@
 
 package com.ggvaidya.scinames.validation;
 
+import java.util.Optional;
+
 import com.ggvaidya.scinames.model.Change;
 import com.ggvaidya.scinames.model.Dataset;
 import com.ggvaidya.scinames.model.Project;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Optional;
-import java.util.stream.Stream;
 
 /**
  * An instance of an error reported by a validator. This will be displayed

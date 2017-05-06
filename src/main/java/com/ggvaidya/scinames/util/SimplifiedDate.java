@@ -40,7 +40,7 @@ import org.w3c.dom.Node;
  * 
  * @author Gaurav Vaidya <gaurav@ggvaidya.com>
  */
-public class SimplifiedDate implements Comparable {
+public class SimplifiedDate implements Comparable<SimplifiedDate> {
 	private final int year;
 	private final int month;
 	private final int day;
@@ -94,26 +94,17 @@ public class SimplifiedDate implements Comparable {
 		}
 	}
 	
-	/**
+	/*
 	 * Compare this simplified date with another object. We try to cast it
 	 * as a Year, LocalDate or SimplifiedDate; if none of that works, we
 	 * throw a ClassCastException.
 	 */
-	@Override
-	public int compareTo(Object o) throws ClassCastException {
-		if(Year.class.isAssignableFrom(o.getClass()))
-			return compareTo((Year)o);
-		
-		if(LocalDate.class.isAssignableFrom(o.getClass()))
-			return compareTo((LocalDate)o);
-		
-		return compareTo((SimplifiedDate)o);
-	}
 	
 	public int compareTo(Year year) {
 		return getLocalDate().compareTo(year.atDay(1));
 	}
 	
+	@Override
 	public int compareTo(SimplifiedDate sd) {
 		return getLocalDate().compareTo(sd.getLocalDate());
 	}	

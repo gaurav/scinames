@@ -17,22 +17,17 @@
 package com.ggvaidya.scinames.model;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.Arrays;
 import java.util.HashSet;
-import java.util.List;
-import java.util.Optional;
 import java.util.Set;
-import java.util.function.Consumer;
-import java.util.function.Function;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.junit.jupiter.api.Test;
 
+import com.ggvaidya.scinames.model.filters.IgnoreErrorChangeTypeFilter;
 import com.ggvaidya.scinames.util.SimplifiedDate;
 
 /**
@@ -43,10 +38,11 @@ import com.ggvaidya.scinames.util.SimplifiedDate;
 public class TaxonConceptTest {
 	public static final Logger LOGGER = Logger.getLogger(TaxonConceptTest.class.getSimpleName());
 	
-	Dataset ds1 = new Dataset("ds1", new SimplifiedDate(1930), false);	
-	Dataset ds2 = new Dataset("ds2", new SimplifiedDate(1940), false);	
-	Dataset ds3 = new Dataset("ds3", new SimplifiedDate(1950), false);	
-	Dataset ds4 = new Dataset("ds4", new SimplifiedDate(1960), false);
+	Dataset ds10 = new Dataset("ds10", new SimplifiedDate(1930), false);
+	Dataset ds15 = new Dataset("ds15", new SimplifiedDate(1935), false);
+	Dataset ds20 = new Dataset("ds20", new SimplifiedDate(1940), false);	
+	Dataset ds30 = new Dataset("ds30", new SimplifiedDate(1950), false);	
+	Dataset ds40 = new Dataset("ds40", new SimplifiedDate(1960), false);
 	
 	private Stream<Change> streamNamesToAdditions(Dataset ds, Name... names) {
 		return Arrays.asList(names).stream().map(n -> new Change(
@@ -57,56 +53,59 @@ public class TaxonConceptTest {
 		));
 	}
 	
-	private Change rename(Dataset ds, Name from, Name to) {
-		return new Change(
-			ds,
-			ChangeType.RENAME,
-			Stream.of(from),
-			Stream.of(to)
-		);
-	}
-	
 	private Project buildProject() {
 		Project project = new Project();
 			
-		ds1.explicitChangesProperty().addAll(
-			streamNamesToAdditions(ds1,
+		ds10.explicitChangesProperty().addAll(
+			streamNamesToAdditions(ds10,
 				Name.get("Branta", "canadensis"),
-				Name.get("Branta", "canadensis", "hutchinsii"),
+				Name.get("Branta", "hutchinsii"),
 				Name.get("Platypus", "anatinus")
 			).collect(Collectors.toList())
 		);
-		project.addDataset(ds1);
+		project.addDataset(ds10);
 		
-		project.addDataset(ds2);
+		ds15.explicitChangesProperty().addAll(
+			new Change(ds15, ChangeType.LUMP,
+				Stream.of(Name.get("Branta", "canadensis"), Name.get("Branta", "hutchinsii")),
+				Stream.of(Name.get("Branta", "canadensis"), Name.get("Branta", "canadensis", "hutchinsii"))
+			)
+		);
+		project.addDataset(ds15);
 		
-		ds3.explicitChangesProperty().addAll(
-			Stream.concat(streamNamesToAdditions(ds3,
+		project.addDataset(ds20);
+		
+		ds30.explicitChangesProperty().addAll(
+			Stream.concat(streamNamesToAdditions(ds30,
 				Name.get("Ornithorhynchus", "paradoxus")
 			), Stream.of(
-				new Change(ds3, ChangeType.RENAME, 
+				new Change(ds30, ChangeType.RENAME, 
 					Stream.of(Name.get("Platypus", "anatinus")), 
 					Stream.of(Name.get("Ornithorhynchus", "anatinus"))
 				),
-				new Change(ds3, ChangeType.DELETION, Stream.of(Name.get("Branta", "canadensis", "hutchinsii")), Stream.empty()),
-				new Change(ds3, ChangeType.SPLIT, Stream.of(Name.get("Branta", "canadensis")), Stream.of(
+				new Change(ds30, ChangeType.DELETION, Stream.of(Name.get("Branta", "canadensis", "hutchinsii")), Stream.empty()),
+				new Change(ds30, ChangeType.ERROR, Stream.of(Name.get("Branta", "canadensis")), Stream.of(
 					Name.get("Branta", "canadensis"),
 					Name.get("Branta", "hutchinsii")
 				))
 			)).collect(Collectors.toList())
 		);
-		project.addDataset(ds3);
+		project.addDataset(ds30);
 		
-		ds4.explicitChangesProperty().addAll(
-			Stream.concat(streamNamesToAdditions(ds4
+		ds40.explicitChangesProperty().addAll(
+			Stream.concat(streamNamesToAdditions(ds40
 			), Stream.of(
-				new Change(ds4, ChangeType.LUMP, 
+				new Change(ds40, ChangeType.LUMP, 
 					Stream.of(Name.get("Ornithorhynchus", "paradoxus"), Name.get("Ornithorhynchus", "anatinus")),
 					Stream.of(Name.get("Ornithorhynchus", "anatinus"))
-				)
+				),
+				new Change(ds40, ChangeType.SPLIT, Stream.of(Name.get("Branta", "canadensis")), Stream.of(
+						Name.get("Branta", "canadensis"),
+						Name.get("Branta", "hutchinsii")
+					))
 			)).collect(Collectors.toList())
 		);
-		project.addDataset(ds4);
+		project.addDataset(ds40);
 		
 		return project;
 	}
@@ -118,49 +117,50 @@ public class TaxonConceptTest {
 	}
 	
     /**
-     * Test identifying taxon concepts.
+     * Test whether the right changes and recognized names show up.
      */
 	@Test
-	public void testTaxonConceptCreation() {
+	public void testChangesAffectingRecognizedNamesOverTime() {
 		Project project = buildProject();
+		project.addChangeFilter(new IgnoreErrorChangeTypeFilter(project, true));
 		
 		assertEquals(4, project.getDatasets().size());
 		
 		Dataset last = project.getLastDataset().get();
-		assertEquals(last, ds4);
+		assertEquals(last, ds40);
 
-		LOGGER.fine("ds1: " + ds1.getAllChanges().map(ch -> ch.toString()).collect(Collectors.joining("\n - ")));		
-		assertEquals(3, ds1.getAllChanges().count());
+		LOGGER.fine("ds10: " + ds10.getAllChanges().map(ch -> ch.toString()).collect(Collectors.joining("\n - ")));		
+		assertEquals(3, ds10.getAllChanges().count());
 		assertEquals(setOfNames(
 			Name.get("Branta", "canadensis"),
 			Name.get("Branta", "canadensis", "hutchinsii"),
 			Name.get("Platypus", "anatinus")
-		), ds1.getRecognizedNames(project).collect(Collectors.toSet()));
+		), ds10.getRecognizedNames(project).collect(Collectors.toSet()));
 		
-		LOGGER.fine("ds2: " + ds2.getAllChanges().map(ch -> ch.toString()).collect(Collectors.joining("\n - ")));		
-		assertEquals(0, ds2.getAllChanges().count());
+		LOGGER.fine("ds20: " + ds20.getAllChanges().map(ch -> ch.toString()).collect(Collectors.joining("\n - ")));		
+		assertEquals(0, ds20.getAllChanges().count());
 		assertEquals(setOfNames(
 			Name.get("Branta", "canadensis"),
 			Name.get("Branta", "canadensis", "hutchinsii"),
 			Name.get("Platypus", "anatinus")
-		), ds2.getRecognizedNames(project).collect(Collectors.toSet()));
+		), ds20.getRecognizedNames(project).collect(Collectors.toSet()));
 		
-		LOGGER.fine("ds3: " + ds3.getAllChanges().map(ch -> ch.toString()).collect(Collectors.joining("\n - ")));
-		assertEquals(4, ds3.getAllChanges().count());	
+		LOGGER.fine("ds30: " + ds30.getAllChanges().map(ch -> ch.toString()).collect(Collectors.joining("\n - ")));
+		assertEquals(4, ds30.getAllChanges().count());	
 		assertEquals(setOfNames(
 			Name.get("Branta", "canadensis"),
 			Name.get("Branta", "hutchinsii"),			
 			Name.get("Ornithorhynchus", "anatinus"),
 			Name.get("Ornithorhynchus", "paradoxus")
-		), ds3.getRecognizedNames(project).collect(Collectors.toSet()));
+		), ds30.getRecognizedNames(project).collect(Collectors.toSet()));
 		
-		LOGGER.fine("ds4: " + ds4.getAllChanges().map(ch -> ch.toString()).collect(Collectors.joining("\n - ")));
-		assertEquals(1, ds4.getAllChanges().count());
+		LOGGER.fine("ds40: " + ds40.getAllChanges().map(ch -> ch.toString()).collect(Collectors.joining("\n - ")));
+		assertEquals(1, ds40.getAllChanges().count());
 		assertEquals(setOfNames(
 			Name.get("Branta", "canadensis"),
 			Name.get("Branta", "hutchinsii"),			
 			Name.get("Ornithorhynchus", "anatinus")
-		), ds4.getRecognizedNames(project).collect(Collectors.toSet()));
+		), ds40.getRecognizedNames(project).collect(Collectors.toSet()));
 		
 		assertEquals(
 			setOfNames(
@@ -170,5 +170,12 @@ public class TaxonConceptTest {
 			),
 			last.getRecognizedNames(project).collect(Collectors.toSet())
 		);
+	}
+	
+    /**
+     * Test identifying taxon concepts from sets of lumps and splits.
+     */
+	@Test
+	public void testTaxonConceptIdentification() {
 	}
 }

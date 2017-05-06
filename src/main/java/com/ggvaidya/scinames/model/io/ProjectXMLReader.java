@@ -5,19 +5,6 @@
  */
 package com.ggvaidya.scinames.model.io;
 
-import com.ggvaidya.scinames.model.Change;
-import com.ggvaidya.scinames.model.filters.ChangeFilterFactory;
-import com.ggvaidya.scinames.model.Citation;
-import com.ggvaidya.scinames.model.Dataset;
-import com.ggvaidya.scinames.model.Name;
-import com.ggvaidya.scinames.model.Project;
-import com.ggvaidya.scinames.model.Tag;
-import com.ggvaidya.scinames.model.ChangeType;
-import com.ggvaidya.scinames.model.Dataset;
-import com.ggvaidya.scinames.model.DatasetColumn;
-import com.ggvaidya.scinames.model.DatasetRow;
-import com.ggvaidya.scinames.model.rowextractors.NameExtractorParseException;
-import com.ggvaidya.scinames.util.SimplifiedDate;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -29,12 +16,26 @@ import java.util.Set;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
 import javax.xml.namespace.QName;
 import javax.xml.stream.XMLEventReader;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.events.Attribute;
 import javax.xml.stream.events.StartElement;
 import javax.xml.stream.events.XMLEvent;
+
+import com.ggvaidya.scinames.model.Change;
+import com.ggvaidya.scinames.model.ChangeType;
+import com.ggvaidya.scinames.model.Citation;
+import com.ggvaidya.scinames.model.Dataset;
+import com.ggvaidya.scinames.model.DatasetColumn;
+import com.ggvaidya.scinames.model.DatasetRow;
+import com.ggvaidya.scinames.model.Name;
+import com.ggvaidya.scinames.model.Project;
+import com.ggvaidya.scinames.model.Tag;
+import com.ggvaidya.scinames.model.filters.ChangeFilterFactory;
+import com.ggvaidya.scinames.model.rowextractors.NameExtractorParseException;
+import com.ggvaidya.scinames.util.SimplifiedDate;
 
 /**
  * Read an XML file as a Project. We used to use a SAX parser distributed through our model to

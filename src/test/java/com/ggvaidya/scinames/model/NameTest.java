@@ -45,19 +45,11 @@ public class NameTest {
             assertEquals(expectedFullName, n.getFullName());
         }
         
-        private void testProperty(Name n, String desc, Function<Name, Boolean> test) {
-            assertTrue(test.apply(n), desc);
-        }
-    
         private void testProperty(Optional<Name> opt, String desc, Function<Name, Boolean> test) {
             assertTrue(opt.isPresent());
             assertTrue(test.apply(opt.get()), desc);
         }
         
-        private void testAssertion(Name n, Consumer<Name> test) {
-            test.accept(n);
-        }
-    
         private void testAssertion(Optional<Name> opt, Consumer<Name> test) {
             assertTrue(opt.isPresent());
             test.accept(opt.get());
