@@ -16,10 +16,10 @@
  */
 package com.ggvaidya.scinames.ui;
 
-import com.ggvaidya.scinames.model.Change;
-import com.ggvaidya.scinames.model.Dataset;
-import com.ggvaidya.scinames.project.ProjectView;
 import java.io.IOException;
+
+import com.ggvaidya.scinames.project.ProjectView;
+
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
 import javafx.scene.layout.AnchorPane;

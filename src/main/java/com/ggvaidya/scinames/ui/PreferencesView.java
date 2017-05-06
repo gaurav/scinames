@@ -70,19 +70,19 @@ public final class PreferencesView {
 		cols.clear();
 		
 		// Set up columns.
-		TableColumn<Map.Entry<String, String>, String> colPropertyName = new TableColumn("Property");
+		TableColumn<Map.Entry<String, String>, String> colPropertyName = new TableColumn<>("Property");
 		colPropertyName.setCellValueFactory((TableColumn.CellDataFeatures<Map.Entry<String, String>, String> features) -> {
-			Map.Entry value = features.getValue();
+			Map.Entry<String, String> value = features.getValue();
 			return new ReadOnlyStringWrapper(value.getKey().toString());
 		});
 		colPropertyName.setSortType(TableColumn.SortType.ASCENDING);
 		colPropertyName.setPrefWidth(40.0);
 		cols.add(colPropertyName);
 		
-		TableColumn<Map.Entry<String, String>, String> colValue = new TableColumn("Value");
+		TableColumn<Map.Entry<String, String>, String> colValue = new TableColumn<>("Value");
 		// colValue.setCellFactory(TextFieldTableCell.forTableColumn());
 		colValue.setCellValueFactory((TableColumn.CellDataFeatures<Map.Entry<String, String>, String> features) -> {
-			Map.Entry value = features.getValue();
+			Map.Entry<String, String> value = features.getValue();
 			return new ReadOnlyStringWrapper(value.getValue().toString());
 		});
 		colValue.setPrefWidth(400.0);

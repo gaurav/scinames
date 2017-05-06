@@ -16,46 +16,27 @@
  */
 package com.ggvaidya.scinames.ui;
 
-import com.ggvaidya.scinames.model.Change;
-import com.ggvaidya.scinames.model.filters.ChangeFilter;
-import com.ggvaidya.scinames.model.Name;
-import com.ggvaidya.scinames.model.NameCluster;
-import com.ggvaidya.scinames.model.NameClusterManager;
-import com.ggvaidya.scinames.model.Dataset;
-import com.ggvaidya.scinames.model.DatasetColumn;
-import com.ggvaidya.scinames.model.DatasetRow;
-import com.ggvaidya.scinames.model.Project;
-import com.ggvaidya.scinames.model.ChangeType;
-import com.ggvaidya.scinames.model.change.ChangeTypeStringConverter;
-import com.ggvaidya.scinames.model.change.NameSetStringConverter;
-import com.ggvaidya.scinames.summary.DatasetTabularView;
-
-import java.awt.event.MouseEvent;
 import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
-import javafx.beans.InvalidationListener;
-import javafx.beans.Observable;
+import com.ggvaidya.scinames.model.Change;
+import com.ggvaidya.scinames.model.ChangeType;
+import com.ggvaidya.scinames.model.DatasetColumn;
+import com.ggvaidya.scinames.model.Name;
+import com.ggvaidya.scinames.model.Project;
+import com.ggvaidya.scinames.model.change.ChangeTypeStringConverter;
+import com.ggvaidya.scinames.model.change.NameSetStringConverter;
+import com.ggvaidya.scinames.model.filters.ChangeFilter;
+
 import javafx.beans.property.ReadOnlyStringWrapper;
 import javafx.collections.FXCollections;
-import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 import javafx.collections.ObservableSet;
-import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.ComboBox;
-import javafx.scene.control.Control;
-import javafx.scene.control.Label;
-import javafx.scene.control.ListView;
 import javafx.scene.control.SelectionMode;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
@@ -79,6 +60,7 @@ public class BulkChangeEditorController {
 	public BulkChangeEditorController() {}
 
 	public void setBulkChangeEditor(BulkChangeEditor bce) {
+		bulkChangeEditor = bce;
 		project = bce.getProjectView().getProject();
 		
 		List<DatasetColumn> columns = project.getDatasets().stream().flatMap(ds -> ds.getColumns().stream()).distinct().collect(Collectors.toList());
@@ -164,7 +146,7 @@ public class BulkChangeEditorController {
 		changesTableView.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
 		changesTableView.getColumns().clear();
 
-		TableColumn<PotentialChange, ChangeType> colChangeType = new TableColumn("Type");
+		TableColumn<PotentialChange, ChangeType> colChangeType = new TableColumn<>("Type");
 		colChangeType.setCellFactory(ComboBoxTableCell.forTableColumn(
 			new ChangeTypeStringConverter(),
 			ChangeType.ADDITION,
@@ -179,14 +161,14 @@ public class BulkChangeEditorController {
 		colChangeType.setEditable(true);
 		changesTableView.getColumns().add(colChangeType);
 		
-		TableColumn<PotentialChange, ObservableSet<Name>> colChangeFrom = new TableColumn("From");
+		TableColumn<PotentialChange, ObservableSet<Name>> colChangeFrom = new TableColumn<>("From");
 		colChangeFrom.setCellFactory(TextFieldTableCell.forTableColumn(new NameSetStringConverter()));
 		colChangeFrom.setCellValueFactory(new PropertyValueFactory<>("from"));
 		colChangeFrom.setPrefWidth(200.0);
 		colChangeFrom.setEditable(true);
 		changesTableView.getColumns().add(colChangeFrom);
 		
-		TableColumn<PotentialChange, ObservableSet<Name>> colChangeTo = new TableColumn("To");
+		TableColumn<PotentialChange, ObservableSet<Name>> colChangeTo = new TableColumn<>("To");
 		colChangeTo.setCellFactory(TextFieldTableCell.forTableColumn(new NameSetStringConverter()));	
 		colChangeTo.setCellValueFactory(new PropertyValueFactory<>("to"));
 		colChangeTo.setPrefWidth(200.0);
@@ -228,7 +210,7 @@ public class BulkChangeEditorController {
 		);
 		changesTableView.getColumns().add(colCitations);
 		
-		TableColumn<PotentialChange, String> colGenera = new TableColumn("Genera");
+		TableColumn<PotentialChange, String> colGenera = new TableColumn<>("Genera");
 		colGenera.setCellValueFactory(
 			(TableColumn.CellDataFeatures<PotentialChange, String> features) ->
 				new ReadOnlyStringWrapper(
@@ -237,7 +219,7 @@ public class BulkChangeEditorController {
 		);
 		changesTableView.getColumns().add(colGenera);
 		
-		TableColumn<PotentialChange, String> colSpecificEpithet = new TableColumn("Specific epithet");
+		TableColumn<PotentialChange, String> colSpecificEpithet = new TableColumn<>("Specific epithet");
 		colSpecificEpithet.setCellValueFactory(
 			(TableColumn.CellDataFeatures<PotentialChange, String> features) ->
 				new ReadOnlyStringWrapper(

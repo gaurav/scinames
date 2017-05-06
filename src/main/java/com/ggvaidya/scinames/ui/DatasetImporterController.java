@@ -95,6 +95,7 @@ public class DatasetImporterController implements Initializable {
 		}
 	}
 	
+	/*
 	private TableColumn<DatasetColumn, String> createColumnForDatasetColumn(String colName, Function<DatasetColumn, String> valFunc) {
 		TableColumn<DatasetColumn, String> column = new TableColumn<>(colName);
 		column.cellValueFactoryProperty().set(
@@ -103,7 +104,7 @@ public class DatasetImporterController implements Initializable {
 		column.setPrefWidth(100.0);
 		column.setEditable(false);
 		return column;
-	}
+	}*/
 	
 	private String currentNameExtractor = null;
 	private void reloadTextDelimitedFile() {

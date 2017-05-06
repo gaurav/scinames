@@ -5,24 +5,11 @@
  */
 package com.ggvaidya.scinames.ui;
 
-import com.ggvaidya.scinames.model.Change;
-import com.ggvaidya.scinames.model.Dataset;
-import com.ggvaidya.scinames.model.DatasetColumn;
-import com.ggvaidya.scinames.model.DatasetRow;
-import com.ggvaidya.scinames.model.Name;
-import com.ggvaidya.scinames.model.NameCluster;
-import com.ggvaidya.scinames.model.Project;
-import com.ggvaidya.scinames.model.TaxonConcept;
-import com.ggvaidya.scinames.project.ProjectView;
-import com.ggvaidya.scinames.util.SimplifiedDate;
-import com.google.common.collect.HashBasedTable;
-import com.google.common.collect.Table;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.net.URL;
-import java.util.logging.Logger;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -33,8 +20,24 @@ import java.util.Map;
 import java.util.ResourceBundle;
 import java.util.Set;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import org.apache.commons.csv.CSVFormat;
+import org.apache.commons.csv.CSVPrinter;
+
+import com.ggvaidya.scinames.model.Dataset;
+import com.ggvaidya.scinames.model.DatasetColumn;
+import com.ggvaidya.scinames.model.DatasetRow;
+import com.ggvaidya.scinames.model.Name;
+import com.ggvaidya.scinames.model.NameCluster;
+import com.ggvaidya.scinames.model.Project;
+import com.ggvaidya.scinames.model.TaxonConcept;
+import com.ggvaidya.scinames.util.SimplifiedDate;
+import com.google.common.collect.HashBasedTable;
+import com.google.common.collect.Table;
+
 import javafx.beans.property.ReadOnlyStringWrapper;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
@@ -51,8 +54,6 @@ import javafx.scene.control.TextField;
 import javafx.scene.input.Clipboard;
 import javafx.scene.input.DataFormat;
 import javafx.stage.FileChooser;
-import org.apache.commons.csv.CSVFormat;
-import org.apache.commons.csv.CSVPrinter;
 
 /**
  * FXML Controller class
@@ -75,14 +76,14 @@ public class DataReconciliatorController implements Initializable {
 		// Fill in the comboboxes.
 		Project p = drv.getProjectView().getProject();
 		
-		ArrayList<Dataset> ds_useNamesFrom = new ArrayList(p.getDatasets());
+		ArrayList<Dataset> ds_useNamesFrom = new ArrayList<>(p.getDatasets());
 		ds_useNamesFrom.add(0, ALL); // Hee.
 		ObservableList<Dataset> useNamesFrom = FXCollections.observableList(ds_useNamesFrom);
 		useNamesFromComboBox.setItems(useNamesFrom);
 		useNamesFromComboBox.getSelectionModel().select(0);
 		useNamesFromComboBox.onActionProperty().set((evt) -> reconcileData());
 		
-		ArrayList<Dataset> ds_includeDataFrom = new ArrayList(p.getDatasets());
+		ArrayList<Dataset> ds_includeDataFrom = new ArrayList<>(p.getDatasets());
 		ds_includeDataFrom.add(0, ALL); // Hee.
 		includeDataFromComboBox.setItems(FXCollections.observableList(ds_includeDataFrom));
 		includeDataFromComboBox.getSelectionModel().select(0);
@@ -144,7 +145,7 @@ public class DataReconciliatorController implements Initializable {
 	}
 	
 	private Set<String> getOneElementSet(String str) {
-		HashSet hs = new HashSet<>();
+		HashSet<String> hs = new HashSet<>();
 		hs.add(str);
 		return hs;
 	}
@@ -356,7 +357,7 @@ public class DataReconciliatorController implements Initializable {
 								colName = "datasets." + colName;
 
 							if(!precalc.contains(cluster, colName))
-								precalc.put(cluster, colName, new HashSet());
+								precalc.put(cluster, colName, new HashSet<>());
 
 							for(DatasetRow row: rowsByCols.get(cols)) {
 								if(!row.hasColumn(col)) continue;

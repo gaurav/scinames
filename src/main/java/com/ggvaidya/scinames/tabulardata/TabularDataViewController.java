@@ -107,6 +107,7 @@ public class TabularDataViewController {
 	public StringProperty getHeaderTextProperty() { return headerTextField.textProperty(); }
 	public BooleanProperty getHeaderTextEditableProperty() { return headerTextField.editableProperty(); }
 	
+	@SuppressWarnings("rawtypes")
 	@FXML
 	private TableView tableView;
 	
@@ -121,9 +122,11 @@ public class TabularDataViewController {
 	public ObservableList<TableColumn> getTableColumnsProperty() { return tableView.getColumns(); }
 	public BooleanProperty getTableEditableProperty() { return tableView.editableProperty(); }
 	public ObjectProperty<ObservableList> getTableItemsProperty() { return tableView.itemsProperty(); }
-	public void setTableColumnResizeProperty(Callback<TableView.ResizeFeatures, Boolean> resizePolicy) { tableView.setColumnResizePolicy(resizePolicy); }
+	public void setTableColumnResizeProperty(Callback<TableView.ResizeFeatures, Boolean> resizePolicy) { 
+		tableView.setColumnResizePolicy(resizePolicy); 
+	}
 	
-	// TODO delete eventually?
+	@SuppressWarnings("rawtypes")
 	public TableView getTableView() { return tableView; }
 	
 	/* Exports */
