@@ -16,19 +16,6 @@
  */
 package com.ggvaidya.scinames.dataset;
 
-import com.ggvaidya.scinames.model.Change;
-import com.ggvaidya.scinames.model.filters.ChangeFilter;
-import com.ggvaidya.scinames.model.Name;
-import com.ggvaidya.scinames.model.NameCluster;
-import com.ggvaidya.scinames.model.NameClusterManager;
-import com.ggvaidya.scinames.model.Dataset;
-import com.ggvaidya.scinames.model.DatasetColumn;
-import com.ggvaidya.scinames.model.DatasetRow;
-import com.ggvaidya.scinames.model.Project;
-import com.ggvaidya.scinames.model.ChangeType;
-import com.ggvaidya.scinames.model.change.ChangeTypeStringConverter;
-import com.ggvaidya.scinames.model.change.NameSetStringConverter;
-import com.ggvaidya.scinames.summary.DatasetTabularView;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
@@ -40,16 +27,28 @@ import java.util.Set;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import com.ggvaidya.scinames.model.Change;
+import com.ggvaidya.scinames.model.ChangeType;
+import com.ggvaidya.scinames.model.Dataset;
+import com.ggvaidya.scinames.model.DatasetColumn;
+import com.ggvaidya.scinames.model.DatasetRow;
+import com.ggvaidya.scinames.model.Name;
+import com.ggvaidya.scinames.model.NameCluster;
+import com.ggvaidya.scinames.model.NameClusterManager;
+import com.ggvaidya.scinames.model.Project;
+import com.ggvaidya.scinames.model.change.ChangeTypeStringConverter;
+import com.ggvaidya.scinames.model.change.NameSetStringConverter;
+import com.ggvaidya.scinames.model.filters.ChangeFilter;
+
 import javafx.beans.Observable;
 import javafx.beans.property.ReadOnlyStringWrapper;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 import javafx.collections.ObservableSet;
-import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.ComboBox;
-import javafx.scene.control.Control;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
 import javafx.scene.control.SelectionMode;
@@ -99,7 +98,9 @@ public class DatasetSceneController {
 	/*
 	 * User interface.
 	 */
+	@SuppressWarnings("rawtypes")
 	@FXML private TableView additionalDataTableView;
+	@SuppressWarnings("rawtypes")
 	@FXML private ListView additionalListView;
 	@FXML private ComboBox<String> additionalDataCombobox;
 	@FXML private TableView<Change> changesTableView;
@@ -314,7 +315,9 @@ public class DatasetSceneController {
 	private void additionalDataTypeChanged() {
 		String selected = (String) additionalDataCombobox.getSelectionModel().getSelectedItem();
 		
+		@SuppressWarnings("rawtypes")
 		ListView listView = additionalListView;
+		@SuppressWarnings("rawtypes")
 		TableView tableView = additionalDataTableView;
 				
 		switch(selected) {

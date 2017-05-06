@@ -16,11 +16,18 @@
  */
 package com.ggvaidya.scinames.model;
 
-import com.ggvaidya.scinames.util.SimplifiedDate;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.HashMap;
-import java.util.Map;
+
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.xml.sax.SAXException;
+
+import com.ggvaidya.scinames.util.ModificationTimeProperty;
+import com.ggvaidya.scinames.util.SimplifiedDate;
+
 import javafx.beans.property.MapProperty;
 import javafx.beans.property.SetProperty;
 import javafx.beans.property.SimpleMapProperty;
@@ -28,12 +35,6 @@ import javafx.beans.property.SimpleSetProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableMap;
 import javafx.collections.ObservableSet;
-import com.ggvaidya.scinames.util.ModificationTimeProperty;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
-import org.xml.sax.SAXException;
 
 /**
  * A citationText references a publication. It consists of a citationText text and

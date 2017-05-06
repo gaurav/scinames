@@ -16,18 +16,10 @@
  */
 package com.ggvaidya.scinames.model;
 
-import com.ggvaidya.scinames.model.filters.ChangeFilter;
-import com.ggvaidya.scinames.model.filters.ChangeFilterFactory;
-import com.ggvaidya.scinames.model.rowextractors.NameExtractor;
-import com.ggvaidya.scinames.model.rowextractors.NameExtractorFactory;
-import com.ggvaidya.scinames.model.rowextractors.NameExtractorParseException;
-import com.ggvaidya.scinames.util.ModificationTimeProperty;
-import com.ggvaidya.scinames.util.SimplifiedDate;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.LineNumberReader;
-import java.util.logging.Logger;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -36,8 +28,21 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import org.apache.commons.csv.CSVFormat;
+import org.apache.commons.csv.CSVParser;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+
+import com.ggvaidya.scinames.model.rowextractors.NameExtractor;
+import com.ggvaidya.scinames.model.rowextractors.NameExtractorFactory;
+import com.ggvaidya.scinames.model.rowextractors.NameExtractorParseException;
+import com.ggvaidya.scinames.util.ModificationTimeProperty;
+import com.ggvaidya.scinames.util.SimplifiedDate;
+
 import javafx.beans.Observable;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.ObjectProperty;
@@ -49,10 +54,6 @@ import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
-import org.apache.commons.csv.CSVFormat;
-import org.apache.commons.csv.CSVParser;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
 
 /**
  * A Dataset includes names and other data tied to those names.
@@ -258,7 +259,7 @@ public class Dataset implements Citable, Comparable<Dataset> {
 			rowsByName = new HashMap<>();
 			
 			for(DatasetRow row: rows) {
-				Set<Name> names = new HashSet();
+				Set<Name> names = new HashSet<>();
 				if(getNameExtractors() != null && getNameExtractors().size() > 0)
 					names = NameExtractorFactory.extractNamesUsingExtractors(getNameExtractors(), row);
 				namesByRow.put(row, names);
@@ -299,7 +300,7 @@ public class Dataset implements Citable, Comparable<Dataset> {
 		if(namesByRow.containsKey(row))
 			return namesByRow.get(row);
 		else
-			return new HashSet();
+			return new HashSet<>();
 	}
 
 	/**
@@ -433,16 +434,16 @@ public class Dataset implements Citable, Comparable<Dataset> {
 	 * 
 	 * @param tv The TableView to populate.
 	 */
-	public void displayInTableView(TableView tv) {
+	public void displayInTableView(TableView<DatasetRow> tv) {
 		// Setup table.
 		tv.setEditable(false);
 		//controller.setTableColumnResizeProperty(TableView.CONSTRAINED_RESIZE_POLICY);
-		ObservableList<TableColumn> cols = tv.getColumns();
+		ObservableList<TableColumn<DatasetRow, ?>> cols = tv.getColumns();
 		cols.clear();
 		// We need to precalculate.
 		ObservableList<DatasetRow> rows = this.rowsProperty();
 		// Set up columns.
-		TableColumn<DatasetRow, String> colRowName = new TableColumn("Name");
+		TableColumn<DatasetRow, String> colRowName = new TableColumn<>("Name");
 		colRowName.setCellValueFactory((TableColumn.CellDataFeatures<DatasetRow, String> features) -> {
 			DatasetRow row = features.getValue();
 			Set<Name> names = getNamesInRow(row);
@@ -457,7 +458,7 @@ public class Dataset implements Citable, Comparable<Dataset> {
 		// Create a column for every column here.
 		this.getColumns().forEach((DatasetColumn col) -> {
 			String colName = col.getName();
-			TableColumn<DatasetRow, String> colColumn = new TableColumn(colName);
+			TableColumn<DatasetRow, String> colColumn = new TableColumn<>(colName);
 			colColumn.setCellValueFactory((TableColumn.CellDataFeatures<DatasetRow, String> features) -> {
 				DatasetRow row = features.getValue();
 				String val = row.get(colName);

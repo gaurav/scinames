@@ -66,13 +66,14 @@ public class DatasetViewAsTabular {
 	}
 	
 	private void init() {
-		TableView tv = controller.getTableView();
+		@SuppressWarnings("unchecked")
+		TableView<Change> tv = controller.getTableView();
 		
 		tv.setEditable(true);
 		tv.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
 		tv.getColumns().clear();
 
-		TableColumn<Change, ChangeType> colChangeType = new TableColumn("Type");
+		TableColumn<Change, ChangeType> colChangeType = new TableColumn<>("Type");
 		colChangeType.setCellFactory(ComboBoxTableCell.forTableColumn(
 			new ChangeTypeStringConverter(),
 			ChangeType.ADDITION,
@@ -86,14 +87,14 @@ public class DatasetViewAsTabular {
 		colChangeType.setEditable(true);
 		tv.getColumns().add(colChangeType);
 		
-		TableColumn<Change, ObservableSet<Name>> colChangeFrom = new TableColumn("From");
+		TableColumn<Change, ObservableSet<Name>> colChangeFrom = new TableColumn<>("From");
 		colChangeFrom.setCellFactory(TextFieldTableCell.forTableColumn(new NameSetStringConverter()));
 		colChangeFrom.setCellValueFactory(new PropertyValueFactory<>("from"));
 		colChangeFrom.setPrefWidth(200.0);
 		colChangeFrom.setEditable(true);
 		tv.getColumns().add(colChangeFrom);
 		
-		TableColumn<Change, ObservableSet<Name>> colChangeTo = new TableColumn("To");
+		TableColumn<Change, ObservableSet<Name>> colChangeTo = new TableColumn<>("To");
 		colChangeTo.setCellFactory(TextFieldTableCell.forTableColumn(new NameSetStringConverter()));	
 		colChangeTo.setCellValueFactory(new PropertyValueFactory<>("to"));
 		colChangeTo.setPrefWidth(200.0);
@@ -110,7 +111,7 @@ public class DatasetViewAsTabular {
 		);
 		tv.getColumns().add(colFiltered);
 		
-		TableColumn<Change, String> colGenera = new TableColumn("Genera");
+		TableColumn<Change, String> colGenera = new TableColumn<>("Genera");
 		colGenera.setCellValueFactory(
 			(TableColumn.CellDataFeatures<Change, String> features) ->
 				new ReadOnlyStringWrapper(
@@ -119,7 +120,7 @@ public class DatasetViewAsTabular {
 		);
 		tv.getColumns().add(colGenera);
 		
-		TableColumn<Change, String> colSpecificEpithet = new TableColumn("Specific epithet");
+		TableColumn<Change, String> colSpecificEpithet = new TableColumn<>("Specific epithet");
 		colSpecificEpithet.setCellValueFactory(
 			(TableColumn.CellDataFeatures<Change, String> features) ->
 				new ReadOnlyStringWrapper(

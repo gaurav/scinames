@@ -56,7 +56,8 @@ import javafx.scene.input.DataFormat;
 import javafx.stage.FileChooser;
 
 /**
- * FXML Controller class
+ * FXML Controller class for a data reconciliator, which provides different streams
+ * of recognized names, name clusters and  from within the system 
  *
  * @author Gaurav Vaidya <gaurav@ggvaidya.com>
  */

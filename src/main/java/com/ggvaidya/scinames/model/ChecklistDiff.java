@@ -56,18 +56,22 @@ public class ChecklistDiff {
 		// Read header line.
 		String header = r.readLine();
 		Matcher m = pTaxDiffFirstLine.matcher(header);
-		if(!m.matches())
+		if(!m.matches()) {
+			r.close();
 			throw new IOException("Header line '" + header + "' doesn't match TaxDiff header!");
-		
+		}
+			
 		String nameStr = m.group(1);
 		String yearStr = m.group(2);
 		
 		Dataset checklistDiff = new Dataset(nameStr, new SimplifiedDate(Integer.parseInt(yearStr), 0, 0), false);
 		String line;
 		int MARK_READ_AHEAD_LIMIT = 1024 * 1024;
-		if(!r.markSupported())
+		if(!r.markSupported()) {
+			r.close();
 			throw new RuntimeException("ChecklistDiff.fromTaxDiffFile requires a Reader than supports marks.");
-		
+		}
+			
 		while((line = r.readLine()) != null) {
 			// Every line can be one of two things:
 			// (1) A new action, which we will encode as a Change.
@@ -201,6 +205,7 @@ public class ChecklistDiff {
 					r.mark(MARK_READ_AHEAD_LIMIT);
 				}
 				
+				r.close();
 				checklistDiff.explicitChangesProperty().add(ch);
 			}
 			

@@ -21,7 +21,6 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.LineNumberReader;
-import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -52,6 +51,7 @@ public class Checklist {
 		try {
 			checklist.setNameExtractorsString("genusAndEpithets(genus, specificEpithet, subspecificEpithet)");
 		} catch(NameExtractorParseException ex) {
+			r.close();
 			throw new RuntimeException("Checklist name extractor string could not be parsed: " + ex);
 		}
 		
@@ -71,6 +71,7 @@ public class Checklist {
 				species = m.group(3);
 				subspecies = m.group(4);
 			} else {
+				r.close();
 				throw new IOException("Could not parse line '" + line + "'");
 			}
 			
@@ -92,6 +93,7 @@ public class Checklist {
 			checklist.rowsProperty().add(row);
 		}
 		
+		r.close();
 		return checklist;
 	}
 }
