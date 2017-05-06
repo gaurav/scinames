@@ -16,33 +16,23 @@
  */
 package com.ggvaidya.scinames.project;
 
-import com.ggvaidya.scinames.SciNames;
-import com.ggvaidya.scinames.complexquery.SearchView;
 import java.io.File;
 import java.io.IOException;
-import javafx.beans.value.ObservableValue;
-import javafx.event.ActionEvent;
-import javafx.fxml.FXML;
-import javafx.scene.control.Alert;
-import javafx.scene.control.Menu;
-import javafx.scene.control.MenuBar;
-import javafx.scene.control.MenuItem;
-import javafx.scene.control.TableColumn;
-import javafx.scene.control.TableView;
-import javafx.scene.control.TextField;
-import javafx.scene.control.cell.PropertyValueFactory;
-import javafx.scene.control.cell.TextFieldTableCell;
-import javafx.stage.FileChooser;
-import com.ggvaidya.scinames.model.Project;
+import java.time.format.DateTimeParseException;
+import java.util.Optional;
+import java.util.logging.Logger;
+
+import com.ggvaidya.scinames.SciNames;
+import com.ggvaidya.scinames.complexquery.SearchView;
 import com.ggvaidya.scinames.model.Dataset;
-import com.ggvaidya.scinames.summary.ChangesListView;
+import com.ggvaidya.scinames.model.Project;
 import com.ggvaidya.scinames.summary.ChangeFiltersView;
+import com.ggvaidya.scinames.summary.ChangesListView;
+import com.ggvaidya.scinames.summary.DatasetSimilarityView;
 import com.ggvaidya.scinames.summary.LumpsAndSplitsView;
 import com.ggvaidya.scinames.summary.NameClustersView;
-import com.ggvaidya.scinames.summary.SpeciesNamesView;
-import com.ggvaidya.scinames.summary.DatasetSimilarityView;
-import com.ggvaidya.scinames.dataset.DatasetView;
 import com.ggvaidya.scinames.summary.ProjectCountsView;
+import com.ggvaidya.scinames.summary.SpeciesNamesView;
 import com.ggvaidya.scinames.summary.TaxonConceptsView;
 import com.ggvaidya.scinames.ui.BulkChangeEditor;
 import com.ggvaidya.scinames.ui.DataReconciliatorView;
@@ -50,14 +40,25 @@ import com.ggvaidya.scinames.ui.DatasetImporterView;
 import com.ggvaidya.scinames.ui.PreferencesView;
 import com.ggvaidya.scinames.util.SimplifiedDate;
 import com.ggvaidya.scinames.validation.ValidationSuiteView;
-import java.time.format.DateTimeParseException;
-import java.util.Optional;
-import java.util.logging.Logger;
+
 import javafx.beans.property.ReadOnlyStringWrapper;
+import javafx.beans.value.ObservableValue;
 import javafx.collections.ObservableList;
+import javafx.event.ActionEvent;
+import javafx.fxml.FXML;
+import javafx.scene.control.Alert;
+import javafx.scene.control.Menu;
+import javafx.scene.control.MenuBar;
+import javafx.scene.control.MenuItem;
 import javafx.scene.control.ProgressBar;
+import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableColumn.CellDataFeatures;
 import javafx.scene.control.TableRow;
+import javafx.scene.control.TableView;
+import javafx.scene.control.TextField;
+import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.control.cell.TextFieldTableCell;
+import javafx.stage.FileChooser;
 import javafx.stage.Modality;
 import javafx.util.StringConverter;
 
@@ -189,7 +190,7 @@ public class ProjectSceneController {
 		// Set up timepointTable columns.
 		TableColumn<Dataset, String> nameCol = new TableColumn<>("Checklist Name");
 		nameCol.setCellFactory(TextFieldTableCell.forTableColumn());
-		nameCol.setCellValueFactory(new PropertyValueFactory("name"));
+		nameCol.setCellValueFactory(new PropertyValueFactory<>("name"));
 		nameCol.setPrefWidth(150);
 		nameCol.setEditable(true);
 		
@@ -213,7 +214,7 @@ public class ProjectSceneController {
 				}
 			}
 		}));
-		dateCol.setCellValueFactory(new PropertyValueFactory("date"));
+		dateCol.setCellValueFactory(new PropertyValueFactory<>("date"));
 		dateCol.setPrefWidth(100);
 		dateCol.setEditable(true);
 

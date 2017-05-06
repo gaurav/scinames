@@ -30,6 +30,7 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
+import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -45,21 +46,23 @@ import java.util.stream.Collectors;
  * @author Gaurav Vaidya <gaurav@ggvaidya.com>
  */
 public class NameExtractorFactory {
+	public static final Logger LOGGER = Logger.getLogger(NameExtractorFactory.class.getSimpleName());
+	
 	public static Set<Name> extractNamesUsingExtractors(List<NameExtractor> extractors, DatasetRow row) {
 		return extractNamesUsingExtractors(extractors, row, false);
 	}
 	
 	public static Set<Name> extractNamesUsingExtractors(List<NameExtractor> extractors, DatasetRow row, boolean findAllNames) {
 		Set<Name> names = new HashSet<>();
-		// long startApplyName = System.nanoTime();
+		long startApplyName = System.nanoTime();
 		
 		for(NameExtractor extractor: extractors) {
 			names.addAll(extractor.extractRow(row));
 			if(!names.isEmpty() && !findAllNames) {
-				// System.err.println(" - extractNamesUsingExtractors() extracted " + names.size() + " in " + (System.nanoTime() - startApplyName)/1e6d + " seconds.");
+				LOGGER.fine("extractNamesUsingExtractors() extracted " + names.size() + " in " + (System.nanoTime() - startApplyName)/1e6d + " seconds.");
 				return names;
-			//} else {
-				// System.err.println("   - Name extractor " + extractor + " failed, falling back to next.");
+			} else {
+				LOGGER.fine("Name extractor " + extractor + " failed, falling back to next.");
 			}
 		}
 				
@@ -68,7 +71,7 @@ public class NameExtractorFactory {
 	}
 	
 	public static List<NameExtractor> getExtractors(String parse) throws NameExtractorParseException {
-		LinkedList<NameExtractor> list = new LinkedList();
+		LinkedList<NameExtractor> list = new LinkedList<>();
 		
 		if(parse == null || parse.equals(""))
 			return list;
@@ -107,8 +110,8 @@ public class NameExtractorFactory {
 						return extractor.applyFunction(Name::getFromFullName, 0, row);
 					} catch(NameExtractorParseException ex) {
 						// TODO: create some kind of logging mechanism.
-						System.err.println(" - Error during name parsing: " + ex);
-						return new HashSet();
+						LOGGER.severe("Error during name parsing: " + ex);
+						return new HashSet<>();
 					}
 				}
 			);
@@ -161,7 +164,7 @@ public class NameExtractorFactory {
 		try {
 			return getExtractors(getDefaultExtractorsAsString());
 		} catch(NameExtractorParseException ex) {
-			return new LinkedList();
+			return new LinkedList<>();
 		}
 	}
 	

@@ -23,25 +23,24 @@
 
 package com.ggvaidya.scinames.summary;
 
-import com.ggvaidya.scinames.model.Change;
-import com.ggvaidya.scinames.model.NameCluster;
-import com.ggvaidya.scinames.model.NameClusterManager;
-import com.ggvaidya.scinames.model.Dataset;
-import com.ggvaidya.scinames.project.ProjectView;
-import com.ggvaidya.scinames.tabulardata.TabularDataViewController;
-import com.google.common.collect.HashBasedTable;
-import com.google.common.collect.Sets;
-import com.google.common.collect.Table;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
+
+import com.ggvaidya.scinames.model.Dataset;
+import com.ggvaidya.scinames.model.NameCluster;
+import com.ggvaidya.scinames.model.NameClusterManager;
+import com.ggvaidya.scinames.project.ProjectView;
+import com.ggvaidya.scinames.tabulardata.TabularDataViewController;
+import com.google.common.collect.HashBasedTable;
+import com.google.common.collect.Sets;
+import com.google.common.collect.Table;
+
 import javafx.beans.property.ReadOnlyStringWrapper;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
-import javafx.collections.transformation.SortedList;
 import javafx.scene.Scene;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.cell.PropertyValueFactory;
@@ -84,7 +83,7 @@ public final class DatasetSimilarityView {
 		cols.clear();
 		
 		// Set up columns.
-		TableColumn<Dataset, String> colTimepointName = new TableColumn("Timepoint");
+		TableColumn<Dataset, String> colTimepointName = new TableColumn<>("Timepoint");
 		colTimepointName.setCellValueFactory(new PropertyValueFactory<>("name"));
 		colTimepointName.setPrefWidth(100.0);
 		cols.add(colTimepointName);
@@ -139,7 +138,7 @@ public final class DatasetSimilarityView {
 		
 		// Create a column for every timepoint here.
 		projectView.getProject().getDatasets().forEach((Dataset colTP) -> {
-			TableColumn<Dataset, String> colTimepoint = new TableColumn(colTP.getName());
+			TableColumn<Dataset, String> colTimepoint = new TableColumn<>(colTP.getName());
 			colTimepoint.setCellValueFactory((TableColumn.CellDataFeatures<Dataset, String> features) -> {
 				Dataset tp = features.getValue();
 				

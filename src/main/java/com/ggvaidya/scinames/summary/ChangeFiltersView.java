@@ -79,17 +79,17 @@ public final class ChangeFiltersView {
 		cols.clear();
 		
 		// Set up columns.
-		TableColumn<ChangeFilter, String> colFilterDesc = new TableColumn("Filter");
+		TableColumn<ChangeFilter, String> colFilterDesc = new TableColumn<>("Filter");
 		colFilterDesc.setCellValueFactory(new PropertyValueFactory<>("Description"));
 		colFilterDesc.setPrefWidth(40.0);
 		cols.add(colFilterDesc);
 
-		TableColumn<ChangeFilter, String> colCounts = new TableColumn("Count");
+		TableColumn<ChangeFilter, String> colCounts = new TableColumn<>("Count");
 		colCounts.setCellValueFactory(new PropertyValueFactory<>("ChangesFilteredCount"));
 		colCounts.setPrefWidth(20.0);
 		cols.add(colCounts);
 		
-		TableColumn<ChangeFilter, String> colBreakdown = new TableColumn("Breakdown");
+		TableColumn<ChangeFilter, String> colBreakdown = new TableColumn<>("Breakdown");
 		colBreakdown.setCellValueFactory(new PropertyValueFactory<>("ChangesFilteredByType"));
 		colBreakdown.setEditable(true);
 		colBreakdown.setPrefWidth(100.0);

@@ -95,13 +95,13 @@ public final class ChangesListView {
 		cols.clear();
 		
 		// Set up columns.
-		TableColumn<Change, String> colChangeType = new TableColumn("Type");
+		TableColumn<Change, String> colChangeType = new TableColumn<>("Type");
 		colChangeType.setCellValueFactory(new PropertyValueFactory<>("type"));
 		//colChangeType.setSortType(TableColumn.SortType.ASCENDING);
 		colChangeType.setPrefWidth(40.0);
 		cols.add(colChangeType);
 		
-		TableColumn<Change, String> colChangeFrom = new TableColumn("From");
+		TableColumn<Change, String> colChangeFrom = new TableColumn<>("From");
 		colChangeFrom.setCellValueFactory(
 			(TableColumn.CellDataFeatures<Change, String> features) -> 
 				new ReadOnlyStringWrapper(
@@ -113,7 +113,7 @@ public final class ChangesListView {
 		colChangeFrom.setPrefWidth(200.0);
 		cols.add(colChangeFrom);
 		
-		TableColumn<Change, String> colChangeTo = new TableColumn("To");
+		TableColumn<Change, String> colChangeTo = new TableColumn<>("To");
 		colChangeTo.setCellValueFactory(
 			(TableColumn.CellDataFeatures<Change, String> features) -> 
 				new ReadOnlyStringWrapper(
@@ -125,7 +125,7 @@ public final class ChangesListView {
 		colChangeTo.setPrefWidth(200.0);
 		cols.add(colChangeTo);
 		
-		TableColumn<Change, String> colDate = new TableColumn("Date");
+		TableColumn<Change, String> colDate = new TableColumn<>("Date");
 		colDate.setCellValueFactory(
 			(TableColumn.CellDataFeatures<Change, String> features) -> 
 				new ReadOnlyStringWrapper(

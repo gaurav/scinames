@@ -23,18 +23,17 @@
 
 package com.ggvaidya.scinames.summary;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 import com.ggvaidya.scinames.model.Change;
 import com.ggvaidya.scinames.model.ChangeType;
-import com.ggvaidya.scinames.model.NameCluster;
-import com.ggvaidya.scinames.model.NameClusterManager;
 import com.ggvaidya.scinames.model.Project;
 import com.ggvaidya.scinames.project.ProjectView;
 import com.ggvaidya.scinames.tabulardata.TabularDataViewController;
 import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.Table;
-import java.util.List;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
+
 import javafx.beans.property.ReadOnlyStringWrapper;
 import javafx.beans.property.StringProperty;
 import javafx.collections.FXCollections;
@@ -42,9 +41,7 @@ import javafx.collections.ObservableList;
 import javafx.collections.transformation.SortedList;
 import javafx.scene.Scene;
 import javafx.scene.control.TableColumn;
-import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.stage.Stage;
-import javafx.util.Callback;
 
 /**
  * A LumpsAndSplitsView displays all the lumps and splits within a project.
@@ -77,12 +74,13 @@ public final class LumpsAndSplitsView {
 		stage.setScene(scene);
 	}
 	
+	/*
 	private TableColumn<Change, String> createTableColumnForChange(String colName, double prefWidth, Callback<Change, String> valueFunc) {
 		TableColumn<Change, String> col = new TableColumn<>(colName);
 		col.setCellValueFactory((param) -> new ReadOnlyStringWrapper(valueFunc.call(param.getValue())));
 		col.setPrefWidth(prefWidth);
 		return col;
-	}
+	}*/
 	
 	private TableColumn<Change, String> createTableColumnForTable(String colName, double prefWidth, Table<Change, String, String> precalc) {
 		TableColumn<Change, String> col = new TableColumn<>(colName);
@@ -104,7 +102,7 @@ public final class LumpsAndSplitsView {
 		controller.getHeaderTextProperty().addListener((c, a, b) -> { init(); });		
 		
 		// Load up name cluster manager.
-		NameClusterManager nameClusterManager = projectView.getProject().getNameClusterManager();
+		// NameClusterManager nameClusterManager = projectView.getProject().getNameClusterManager();
 		
 		// Setup table.
 		controller.getTableEditableProperty().set(false);

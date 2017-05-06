@@ -83,7 +83,7 @@ public final class SpeciesNamesView {
 		cols.clear();
 		
 		// Set up columns.
-		TableColumn<Name, String> colPropertyName = new TableColumn("Species name");
+		TableColumn<Name, String> colPropertyName = new TableColumn<>("Species name");
 		colPropertyName.setCellValueFactory(new PropertyValueFactory<>("binomialName"));
 		colPropertyName.setSortType(TableColumn.SortType.ASCENDING);
 		colPropertyName.setPrefWidth(40.0);
@@ -92,7 +92,7 @@ public final class SpeciesNamesView {
 		// One column per timepoint.
 		ObservableMap<Name, List<Dataset>> timepointsByName = projectView.getProject().timepointsByNameProperty();
 		for(Dataset tp: projectView.getProject().datasetsProperty()) {
-			TableColumn<Name, String> colTimepoint = new TableColumn(tp.getName());
+			TableColumn<Name, String> colTimepoint = new TableColumn<>(tp.getName());
 			colTimepoint.setCellValueFactory((TableColumn.CellDataFeatures<Name, String> features) -> {
 				Name n = features.getValue();
 				return new ReadOnlyStringWrapper((timepointsByName.get(n).contains(tp) ? "YES" : ""));

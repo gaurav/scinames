@@ -24,10 +24,16 @@
 package com.ggvaidya.scinames.model.rowextractors;
 
 /**
+ * An exception that represents an error while parsing names.
  *
  * @author Gaurav Vaidya <gaurav@ggvaidya.com>
  */
 public class NameExtractorParseException extends Exception {
+	/**
+	 * Eclipse tells me this is helpful?
+	 */
+	private static final long serialVersionUID = 3537194534430183079L;
+
 	public NameExtractorParseException(String s) {
 		super(s);
 	}

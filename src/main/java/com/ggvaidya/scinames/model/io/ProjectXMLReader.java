@@ -60,6 +60,7 @@ public class ProjectXMLReader {
 		Set<String> allowed = new HashSet<>(Arrays.asList(allowedAttrs));
 		Map<String, String> attrs = new HashMap<>();
 		
+		@SuppressWarnings("unchecked")
 		Iterator<Attribute> iter = elem.asStartElement().getAttributes();
 		while(iter.hasNext()) {
 			Attribute attr = iter.next();
@@ -285,10 +286,7 @@ public class ProjectXMLReader {
 						dataset.setColumns(
 							tagSeries.stream()
 								.map(keyValue -> keyValue.getAttributes())
-								.map(colData -> {
-									// TODO: more sophisticated things!
-									return DatasetColumn.of(colData.getOrDefault("name", "(unnamed)"));
-								})
+								.map(colData -> DatasetColumn.of(colData.getOrDefault("name", "(unnamed)")))
 								.collect(Collectors.toList())
 						);
 						

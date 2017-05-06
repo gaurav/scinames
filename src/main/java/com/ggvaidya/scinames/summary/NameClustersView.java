@@ -81,30 +81,30 @@ public final class NameClustersView {
 		cols.clear();
 		
 		// Set up columns.
-		TableColumn<NameCluster, String> colClusterName = new TableColumn("Name");
+		TableColumn<NameCluster, String> colClusterName = new TableColumn<>("Name");
 		colClusterName.setCellValueFactory(new PropertyValueFactory<>("name"));
 		colClusterName.setSortType(TableColumn.SortType.ASCENDING);
 		colClusterName.setPrefWidth(100.0);
 		cols.add(colClusterName);
 		
-		TableColumn<NameCluster, String> colClusterList = new TableColumn("Cluster");
+		TableColumn<NameCluster, String> colClusterList = new TableColumn<>("Cluster");
 		colClusterList.setCellValueFactory(new PropertyValueFactory<>("names"));
 		colClusterList.setPrefWidth(200.0);
 		cols.add(colClusterList);
 		
-		TableColumn<NameCluster, String> colDateRange = new TableColumn("Dates");
+		TableColumn<NameCluster, String> colDateRange = new TableColumn<>("Dates");
 		colDateRange.setCellValueFactory((TableColumn.CellDataFeatures<NameCluster, String> features) -> new ReadOnlyStringWrapper(features.getValue().getDateRange())
 		);
 		colClusterList.setPrefWidth(100.0);
 		cols.add(colDateRange);
 		
-		TableColumn<NameCluster, String> colTaxonConcepts = new TableColumn("Taxon Concepts");
+		TableColumn<NameCluster, String> colTaxonConcepts = new TableColumn<>("Taxon Concepts");
 		colTaxonConcepts.setCellValueFactory(new PropertyValueFactory<>("TaxonConcepts"));
 		colTaxonConcepts.setPrefWidth(200.0);
 		cols.add(colTaxonConcepts);
 		
 		for(ChangeType type: FXCollections.observableArrayList(projectView.getProject().changeTypesProperty()).sorted()) {
-			TableColumn<NameCluster, String> colChangesByType = new TableColumn(type.getType());
+			TableColumn<NameCluster, String> colChangesByType = new TableColumn<>(type.getType());
 			colChangesByType.setCellValueFactory((TableColumn.CellDataFeatures<NameCluster, String> features) -> {
 				NameCluster cluster = features.getValue();
 				long numberOfChanges = projectView.getProject().getDatasets().stream()

@@ -242,6 +242,7 @@ public class ProjectView {
 	 * @param o
 	 */
 	public void openDetailedView(Object obj) {
+		@SuppressWarnings("rawtypes")
 		Class objClass = obj.getClass();
 		if(Dataset.class.isAssignableFrom(objClass))
 			openDetailedView((Dataset)obj);
