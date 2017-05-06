@@ -78,6 +78,7 @@ public class DatasetSceneController {
 		// Reinitialize UI to the selected timepoint.
 		updateMainTextArea();
 		fillTableWithChanges(changesTableView, dataset);
+		additionalDataTypeChanged();
 	}
 	
 	/**
@@ -88,7 +89,8 @@ public class DatasetSceneController {
 		
 		additionalDataCombobox.getItems().setAll(additionalDataTypeNames);
 		additionalDataCombobox.getSelectionModel().selectedItemProperty().addListener((Observable o) -> additionalDataTypeChanged());
-		additionalDataCombobox.getSelectionModel().select("Data"); // Display the data first.
+		// additionalDataCombobox.getSelectionModel().select("Data"); // Display the data first.
+		additionalDataCombobox.getSelectionModel().select(0);
 		
 		changesTableView.getSelectionModel().getSelectedItems().addListener(
 			(ListChangeListener<Change>) c -> additionalDataTypeChanged()
@@ -419,7 +421,7 @@ public class DatasetSceneController {
 	
 	private void showAllRecognizedNames(ListView<Name> listView, TableView<Name> tableView) {
 		// No project view? Don't do nothing.
-		if(datasetView.getProjectView() == null)
+		if(datasetView == null || datasetView.getProjectView() == null)
 			return;
 		
 		// List view should be all recognized names.

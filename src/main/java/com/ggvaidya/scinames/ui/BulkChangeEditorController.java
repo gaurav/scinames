@@ -22,17 +22,19 @@ import java.util.List;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
-import com.ggvaidya.scinames.model.Change;
 import com.ggvaidya.scinames.model.ChangeType;
 import com.ggvaidya.scinames.model.DatasetColumn;
 import com.ggvaidya.scinames.model.Name;
 import com.ggvaidya.scinames.model.Project;
 import com.ggvaidya.scinames.model.change.ChangeTypeStringConverter;
 import com.ggvaidya.scinames.model.change.NameSetStringConverter;
+import com.ggvaidya.scinames.model.change.PotentialChange;
+import com.ggvaidya.scinames.model.change.RenamesByIdChangeGenerator;
 import com.ggvaidya.scinames.model.filters.ChangeFilter;
 
 import javafx.beans.property.ReadOnlyStringWrapper;
 import javafx.collections.FXCollections;
+import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 import javafx.collections.ObservableSet;
 import javafx.fxml.FXML;
@@ -75,7 +77,7 @@ public class BulkChangeEditorController {
 		});
 		
 		setupChangesTableView();
-		findChanges();
+		// findChanges();
 	}
 	
 	/**
@@ -88,6 +90,14 @@ public class BulkChangeEditorController {
 			if(ms.getClickCount() == 2 && ms.getButton().equals(MouseButton.PRIMARY)) {
 				selectChange(changesTableView.getSelectionModel().getSelectedItem());
 			}
+		});
+		
+		foundChanges.addListener((ListChangeListener) evt -> {
+			statusTextField.setText(
+				foundChanges.size() + " changes generated from " 
+				+ foundChanges.stream().map(ch -> ch.getDataset()).distinct().count()
+				+ " datasets"
+			);
 		});
 	}
 	
@@ -109,11 +119,6 @@ public class BulkChangeEditorController {
 		"Find changes using species name changes"
 	));
 	
-	class PotentialChange extends Change {
-		public PotentialChange(Change ch) {
-			super(null, ch.getType(), ch.getFromStream(), ch.getToStream());
-		}
-	}
 	private ObservableList<PotentialChange> foundChanges = FXCollections.observableList(new LinkedList<>());
 	
 	@FXML
@@ -128,6 +133,11 @@ public class BulkChangeEditorController {
 		
 		switch(method) {
 			case "Find changes using a name identifier field":
+				foundChanges.setAll(
+					new RenamesByIdChangeGenerator(comboBoxNameIdentifiers.getSelectionModel().getSelectedItem())
+						.generate(project)
+						.collect(Collectors.toList())
+				);
 				break;
 				
 			case "Find changes using subspecific names":
@@ -174,6 +184,11 @@ public class BulkChangeEditorController {
 		colChangeTo.setPrefWidth(200.0);
 		colChangeTo.setEditable(true);
 		changesTableView.getColumns().add(colChangeTo);
+		
+		TableColumn<PotentialChange, String> colChangeDataset = new TableColumn<>("Dataset");
+		colChangeDataset.setCellValueFactory(new PropertyValueFactory<>("dataset"));
+		colChangeDataset.setPrefWidth(100.0);
+		changesTableView.getColumns().add(colChangeDataset);
 		
 		ChangeFilter cf = project.getChangeFilter();
 		TableColumn<PotentialChange, String> colFiltered = new TableColumn<>("Eliminated by filter?");

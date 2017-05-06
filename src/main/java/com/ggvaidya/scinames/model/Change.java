@@ -30,6 +30,7 @@ import org.xml.sax.SAXException;
 
 import com.ggvaidya.scinames.util.ModificationTimeProperty;
 
+import javafx.beans.InvalidationListener;
 import javafx.beans.property.MapProperty;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SetProperty;
@@ -38,6 +39,7 @@ import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleSetProperty;
 import javafx.beans.property.StringProperty;
 import javafx.beans.property.StringPropertyBase;
+import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableMap;
@@ -202,14 +204,28 @@ public class Change {
 	 * @param type Change type, ideally one of the Change.* constants.
 	 * @param from Stream of 'from' Names
 	 * @param to Stream of 'to' Names
+	 * @param registerToDataset Should we let the dataset know when we change?
 	 */
-	public Change(Dataset d, ChangeType type, Stream<Name> from, Stream<Name> to) {
+	public Change(Dataset d, ChangeType type, Stream<Name> from, Stream<Name> to, boolean registerToDataset) {
 		dataset = d;
 		this.typeProperty.setValue(type);
 		this.from.addAll(from.collect(Collectors.toSet()));
 		this.to.addAll(to.collect(Collectors.toSet()));
 		
-		this.lastModified.addListener((a, b, c) -> dataset.onChangeChanged(d.getProject(), this));
+		if(registerToDataset)
+			registerToDataset();
+	}
+	
+	private ChangeListener registerToDatasetListener = (a, b, c) -> dataset.onChangeChanged(dataset.getProject(), this);
+	public void registerToDataset() {
+		this.lastModified.addListener(registerToDatasetListener);
+	}
+	public void unregisterFromDataset() {
+		this.lastModified.removeListener(registerToDatasetListener);
+	}
+	
+	public Change(Dataset d, ChangeType type, Stream<Name> from, Stream<Name> to) {
+		this(d, type, from, to, true);
 	}
 	
 	/**
