@@ -63,7 +63,15 @@ public class NameClusterManager {
 			clusters.stream().map(cl -> cl.toString()).collect(Collectors.joining(", "));
 	}
 	
-	// TODO: This is either wrong or weird. Please fix!
+	/**
+	 * Returns all clusters except for superspecific clusters (i.e. genus names). So
+	 * it's eliminating everything that isn't *atleast* a binomial name; we include
+	 * subspecies, but because of the way NameCluster works right now, all subspecies
+	 * are also converted to their binomial form, so we effectively end up with cluster
+	 * of binomial names (and optionally subspecific names).
+	 * 
+	 * @return Stream of name clusters (except for higher taxonomy).
+	 */
 	public Stream<NameCluster> getSpeciesClusters() {
 		return getClusters().filter(c -> !c.containsSuperspecificNames());
 	}

@@ -166,7 +166,6 @@ public class DataReconciliatorController implements Initializable {
 			
 			case RECONCILE_BY_SPECIES_NAME_CLUSTER:
 				if(namesDataset == ALL)
-					// TODO This is either weird or wrong. Please fix!
 					nameClusters = project.getNameClusterManager().getSpeciesClusters().collect(Collectors.toList());
 				else
 					nameClusters = project.getNameClusterManager().getClusters(namesDataset.getRecognizedNames(project).filter(n -> n.hasSpecificEpithet()).flatMap(n -> n.asBinomial()).distinct().collect(Collectors.toList()));
@@ -174,6 +173,7 @@ public class DataReconciliatorController implements Initializable {
 				break;
 				
 			case RECONCILE_BY_NAME_CLUSTER:
+				// Note that this includes genus name clusters!
 				if(namesDataset == ALL)
 					nameClusters = project.getNameClusterManager().getClusters().collect(Collectors.toList());
 				else
@@ -187,7 +187,7 @@ public class DataReconciliatorController implements Initializable {
 				else
 					nameClusters = project.getNameClusterManager().getClusters(
 						namesDataset.getRecognizedNames(project).filter(n -> n.hasSpecificEpithet())
-						.flatMap(n -> n.asBinomial()).distinct()
+						.distinct()
 						.collect(Collectors.toList())
 					).stream().flatMap(cl -> cl.getTaxonConcepts(project).stream()).collect(Collectors.toList());
 				
@@ -239,6 +239,7 @@ public class DataReconciliatorController implements Initializable {
 		existingColNames.add("first_added_dataset");
 		existingColNames.add("first_added_year");	
 		
+		// Recognized names in the names dataset.
 		Set<Name> recognizedNamesInDataset = namesDataset.getRecognizedNames(project).collect(Collectors.toSet());
 		
 		for(NameCluster cluster: nameClusters) {
