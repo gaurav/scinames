@@ -117,8 +117,9 @@ public class NameCluster {
 		return names.size();
 	}
 	
+	// Since we are species name clusters.
 	public boolean contains(Name n) {
-		return names.contains(n);
+		return names.contains(n) || n.asBinomial().anyMatch(n2 -> names.contains(n2));
 	}
 	
 	public boolean containsAny(Collection<Name> setOfNames) {
@@ -271,7 +272,7 @@ public class NameCluster {
 		TaxonConcept current = null;
 		
 		// We go through all datasets this name cluster is found in.
-		for(Dataset tp: getFoundInSorted()) {
+		for(Dataset ds: getFoundInSorted()) {
 			if(current == null) {
 				// Start first cluster with this dataset. Note that this
 				// ISN'T necessarily a splump -- it might be an addition
@@ -279,8 +280,8 @@ public class NameCluster {
 				
 				// However, let's make sure that initial event isn't 
 				// filtered out!
-				List<Change> changes = tp.getChanges(p)
-					.filter(ch -> containsAny(ch.getTo()))
+				List<Change> changes = ds.getChanges(p)
+					.filter(ch -> ch.getAllNames().stream().anyMatch(n -> contains(n)))
 					.collect(Collectors.toList());
 				
 				if(changes.isEmpty()) {
@@ -288,25 +289,30 @@ public class NameCluster {
 				} else {
 					current = new TaxonConcept(this);
 					current.setStartsWith(changes);
+					
+					//if(contains(Name.get("Junco", "hyemalis")))
+					//	LOGGER.info(" - New empty taxon concept started in dataset " + ds + ": " + current);
+					
 				}
 			}
 			
 			// Find all changes involving this name cluster in this dataset, and
 			// extract all the names in this name cluster used in this one dataset.
-			Set<Name> namesFromThisCluster = new HashSet<>();
-			Stream<Change> changesInvolvingNameCluster = tp.getChanges(p)
-				.filter(ch -> {
-					Set<Name> matchingNames = ch.getAllNames().stream()
-						.filter(n -> names.contains(n))
-						.collect(Collectors.toSet());
-					namesFromThisCluster.addAll(matchingNames);
-					return !matchingNames.isEmpty();
-				}
-			);
-			current.addNames(tp, new ArrayList<>(namesFromThisCluster));
+			Set<Name> namesFromThisDataset = ds.getChanges(p)
+				.flatMap(ch -> ch.getAllNames().stream()
+					.filter(n -> contains(n))
+				)
+				.collect(Collectors.toSet());
+			current.addNames(ds, new ArrayList<>(namesFromThisDataset));
+			
+			//if(contains(Name.get("Junco", "hyemalis")))
+			//	LOGGER.info(" - Added names to " + current + " for " + ds + ": " + namesFromThisDataset);
 			
 			// Then filter that down to just the lumps and splits.
-			List<Change> splumps = changesInvolvingNameCluster
+			List<Change> splumps = ds.getChanges(p)
+				.filter(ch -> ch.getAllNames().stream().anyMatch(
+					n -> contains(n)
+				))
 				.filter(ch -> ch.getType().equals(ChangeType.LUMP) || ch.getType().equals(ChangeType.SPLIT))
 				.collect(Collectors.toList());
 			
@@ -317,7 +323,7 @@ public class NameCluster {
 				concepts.add(current);
 				
 				current = new TaxonConcept(this);
-				current.addNames(tp, new ArrayList<>(namesFromThisCluster));
+				current.addNames(ds, new ArrayList<>(namesFromThisDataset));
 				current.setStartsWith(splumps);
 			}
 		};
@@ -327,6 +333,9 @@ public class NameCluster {
 			current.setEndsWith(null);
 			concepts.add(current);
 		}
+		
+		//if(contains(Name.get("Junco", "hyemalis")))
+		//	LOGGER.info(" - Taxon concepts for 'Junco hyemalis':\n" + concepts.stream().map(c -> c.toString()).collect(Collectors.joining("\n - ")));
 		
 		return concepts;
 	}

@@ -34,6 +34,8 @@ import java.util.List;
  */
 public class TaxonConcept extends NameCluster {
 	private NameCluster nameCluster;
+	
+	/** Return the name cluster this taxon concept is a subset of. */
 	public NameCluster getNameCluster() { return nameCluster; }
 	
 	/* Starts with/ends with system, so we know how taxon concepts are being delimited */

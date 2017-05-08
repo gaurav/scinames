@@ -58,31 +58,38 @@ if(FLAG_PRE1982) { get_filename <- function(fn) { return(paste("graphs/pre1982_s
 
 
 ##################################
-#### PART 3: ALL LUMPS/SPLITS ####
+#### PART 1: ALL LUMPS/SPLITS ####
 ##################################
 
 all_splumps <- read.csv("../splumps/list-all.csv")
 summary(all_splumps$type)
-# lump: 123
-# splits: 186
+# lump: 127
+# splits: 188
 
 all_name_clusters <- read.csv("../currently_recognized/list-2127.csv")
 nrow(all_name_clusters)
 # - 2127 name clusters
 sum(all_name_clusters$taxon_concept_count)
-#  - 2,583 taxon concepts
+#  - 2,594 taxon concepts
 
-# - 3116 taxon concepts from all checklists according to reconcilor in app
+# - 2594 taxon concepts from all checklists according to reconcilor in app
 
 project_stats_all <- read.csv("../project_stats/list-all.csv")
 nrow(project_stats_all)
+# 66 checklists, including duplicates of aou_5_34 and others
 data.frame(project_stats_all$dataset, project_stats_all$binomial_count)
-# Verify counts at aou_5_33, 5_34 and 6
+# - aou_5_33: 859
+# - aou_5_34: 941
+# - aou_6: 1912
+
+#####################################
+#### OTHER INTRODUCTORY MATERIAL ####
+#####################################
 
 splumps <- read.csv("../splumps/list.csv")
 summary(splumps$type)
-# lump: 117
-# splits: 85
+# lump: 121
+# splits: 92
 
 project_stats <- read.csv("../project_stats/list.csv")
 nrow(project_stats)
@@ -96,92 +103,32 @@ binomial_count_by_year <- tapply(
 )
 sort(binomial_count_by_year)
 
-######################################
-#### PART 1: Count latest species ####
-######################################
+##############################
+#### PART 2: LUMPS/SPLITS ####
+##############################
 
-latest_aou <- read.csv('../latest_aou_checklist/NACC_list_species_latest.csv')
-latest_aou$species_lc <- tolower(latest_aou$species)
-LATEST_AOU_COUNT <- length(latest_aou$id)
-LATEST_AOU_COUNT
-# - 2127
+# Load splumps
+splumps <- read.csv("../splumps/list.csv")
 
-#### Identify when currently recognized species were described ####
+# How many splumps in total?
+summary(splumps$type)
+# lump: 121
+# split: 92
 
-original_descs <- read.csv('../original_descriptions/original_descriptions.csv')
-nrow(original_descs)
-# - 2127
-summary(original_descs$year)
-# - min: 1758, max: 2011
-sum(is.na(original_descs$year))
-# - 0
-original_descs$species_lc <- tolower(original_descs$species)
+lumps <- splumps[splumps$type == "lump",]
+nrow(lumps)
+# - 121 lumps
 
-latest_aou_with_descriptions <- merge(latest_aou, original_descs, by = "species_lc", all.x = TRUE)
-nrow(latest_aou_with_descriptions)
-# - 2127
+splits <- splumps[splumps$type == "split",]
+nrow(splits)
+# - 92 splits
 
-# How many blank years?
-sum(is.na(latest_aou_with_descriptions$year))
-# = 0
-sum((latest_aou_with_descriptions$year == ""))
-# = 0
+# Quick histogram to show relative coverage
+hist(splumps$year)
+hist(splumps[splumps$type == "lump",]$year, add=T, col="red")
 
-# Divide by decade
-description_years_by_decade = tapply(latest_aou_with_descriptions$year, floor(latest_aou_with_descriptions$year / 10) * 10, length)
-description_years_by_decade
-rev(description_years_by_decade)
-cumsum(rev(description_years_by_decade))
-cumsum(rev(table(latest_aou_with_descriptions$year)))
-# - 2127 in total
-169/2127
-# - 169 since 1889 (7.95%) 
-
-198/2127
-# - 198 since 1885 (9.3%) 
-
-101/2127
-# - 101 since 1900 (4.75%)
-225/2127
-# - 225 since 1880 (10.587%)
-round(14/2127*100, 2)
-# - 14 since 1950 (0.66%)
-
-# What are the proportions of the species in this study?
-name_clusters <- read.csv("../currently_recognized/list.csv")
-nrow(name_clusters)
-# - 975? not 976?
-
-name_clusters$species_lc <- tolower(name_clusters$species)
-name_clusters$name_lc <- tolower(name_clusters$name)
-
-# This is broken; don't use without fixing!
-if(0) {
-    name_clusters_with_desc <- merge(name_clusters, original_descs, by.x = "name_lc", by.y = "species_lc", all.x = TRUE)
-    nrow(name_clusters_with_desc)
-    # - still 974
-    
-    # Any NAs?
-    nrow(name_clusters_with_desc)
-    summary(name_clusters_with_desc$year)
-    # - 919 
-    
-    # For-now answer
-    summary(name_clusters_with_desc$year)
-    name_clusters_years_without_na <- name_clusters_with_desc[which(!is.na(name_clusters_with_desc$year)),]
-    nrow(name_clusters_years_without_na)
-    # - 948
-    
-    cumsum(table(name_clusters_years_without_na$year))
-    cumsum(rev(table(name_clusters_years_without_na$year)))
-    
-    # Proportion before 1900
-    round(21/948 * 100, 2)
-    # - 2.22%
-}
-    
 #####################################
-#### PART 2: Additions/deletions ####
+#### PART 3: Additions/deletions ####
 #####################################
 
 # Note: if we ever actually use these numbers anywhere, 
@@ -194,37 +141,13 @@ if(0) {
 supplement_counts <- read.csv("../project_stats/list.csv")
 
 sum(supplement_counts$count_added)
-# - 1241 added
+# - 1174 added
 sum(supplement_counts$count_deleted)
-# - 364 deleted
+# - 372 deleted
 sum(supplement_counts$count_lump)
-# - 117 lumps
+# - 121 lumps
 sum(supplement_counts$count_split)
-# - 85 splits
-
-##############################
-#### PART 4: LUMPS/SPLITS ####
-##############################
-
-# Load splumps
-splumps <- read.csv("../splumps/list.csv")
-
-# How many splumps in total?
-summary(splumps$type)
-# lump: 117
-# split: 85
-
-lumps <- splumps[splumps$type == "lump",]
-nrow(lumps)
-# - 117 lumps
-
-splits <- splumps[splumps$type == "split",]
-nrow(splits)
-# - 85 splits
-
-# Quick histogram to show relative coverage
-hist(splumps$year)
-hist(splumps[splumps$type == "lump",]$year, add=T, col="red")
+# - 92 splits
 
 # How many checklists do we have?
 data.frame(supplement_counts$dataset, supplement_counts$year)
@@ -256,11 +179,17 @@ zoo_lumps <- zoo(lumps_by_year, years)
 zoo_splits <- zoo(splits_by_year, years)
 
 length(zoo_splumps)
+# - 64
 sum(zoo_splumps)
+# - 213
 length(zoo_lumps)
+# - 64
 sum(zoo_lumps)
+# - 121
 length(zoo_splits)
+# - 64
 sum(zoo_splits)
+# - 92
 
 # Can we compensate for the number of recognized species in each case?
 summary(supplement_counts$binomial_count)
@@ -270,8 +199,8 @@ binomial_count_by_year <- tapply(
     max
 )
 sort(binomial_count_by_year)
-# min: 769 in 1982
-# max: 976 in 2015
+# min: 771 in 1886
+# max: 1046 in 2016
 zoo_binomial_count_by_year <- zoo(binomial_count_by_year, names(binomial_count_by_year))
 
 # Checklists with zero splumps
@@ -343,7 +272,7 @@ lagged <- c(0, lag(zoo_splumps, k=-1))
 lagged
 plot(log(zoo_splumps), log(lagged))
 cor.test(zoo_splumps, lagged)
-# Yes, yes they do (r = 0.361, p < 0.01)
+# Yes, yes they do (r = 0.3442, p < 0.01)
 # (I suspect this is just because so many of them are small Poisson-y numbers, 
 # so 1 -> 1 happens a lot)
 
@@ -356,6 +285,7 @@ par(mfrow=c(3, 1), cex=overall_cex)
 
 zoo_splumps
 zoo_lumps + zoo_splits
+sum(zoo_lumps + zoo_splits)
 
 # splumps_by_year
 zoo_splumps
@@ -389,7 +319,7 @@ plot(gap_analysis$splumps ~ gap_analysis$gap,
 gap_model_splumps <- lm(gap_analysis$splumps ~ gap_analysis$gap)
 summary(gap_model_splumps)
 # - p < 0.0001
-# - adjR2 = 0.6019
+# - adjR2 = 0.63
 abline(gap_model_splumps, lty=2)
 
 # Plot 2. Lumps
@@ -401,7 +331,7 @@ plot(gap_analysis$lumps ~ gap_analysis$gap,
 gap_model_lump <- lm(gap_analysis$lumps ~ gap_analysis$gap)
 summary(gap_model_lump)
 # - p < 0.0001
-# - adjR2 = 0.6239
+# - adjR2 = 0.65
 abline(gap_model_lump, lty=2)
 
 # Plot 3. Splumps
@@ -412,14 +342,131 @@ plot(gap_analysis$splits ~ gap_analysis$gap,
 )
 gap_model_splits <- lm(gap_analysis$splits ~ gap_analysis$gap)
 summary(gap_model_splits)
-# - p = 0.21 > 0.05
-# - multR2 = 0.02566
-# - adjR2 = 0.00969
+# - p = 0.217 > 0.05
+# - multR2 = 0.02485
+# - adjR2 = 0.008868
 abline(gap_model_splits, lty=2)
 
 # Done! Reset par.
 dev.off()
 par(mfrow=c(1, 1), cex=overall_cex)
+
+######################################
+#### PART 4: Count latest species ####
+######################################
+
+latest_aou <- read.csv('../latest_aou_checklist/NACC_list_species_latest.csv')
+latest_aou$species_lc <- tolower(latest_aou$species)
+LATEST_AOU_COUNT <- length(latest_aou$id)
+LATEST_AOU_COUNT
+# - 2127
+
+#### Identify when currently recognized species were described ####
+
+original_descs <- read.csv('../original_descriptions/original_descriptions.csv')
+nrow(original_descs)
+# - 2127
+summary(original_descs$year)
+# - min: 1758, max: 2011
+sum(is.na(original_descs$year))
+# - 0
+original_descs$species_lc <- tolower(original_descs$species)
+
+latest_aou_with_descriptions <- merge(latest_aou, original_descs, by = "species_lc", all.x = TRUE)
+nrow(latest_aou_with_descriptions)
+# - 2127
+
+# How many blank years?
+sum(is.na(latest_aou_with_descriptions$year))
+# = 0
+sum((latest_aou_with_descriptions$year == ""))
+# = 0
+
+# Divide by decade
+description_years_by_decade = tapply(latest_aou_with_descriptions$year, floor(latest_aou_with_descriptions$year / 10) * 10, length)
+description_years_by_decade
+rev(description_years_by_decade)
+cumsum(rev(description_years_by_decade))
+cumsum(rev(table(latest_aou_with_descriptions$year)))
+# - 2127 in total
+
+# Described since 1950
+round(14/2127 * 100, 2)
+# - 0.66%
+
+round(101/2127 * 100, 2)
+# - 101 since 1900 (4.75%)
+
+169/2127
+# - 169 since 1889 (7.95%) 
+
+round(198/2127 * 100, 2)
+# - 198 since 1885 (9.3%) 
+
+101/2127
+# - 101 since 1900 (4.75%)
+225/2127
+# - 225 since 1880 (10.587%)
+round(14/2127*100, 2)
+# - 14 since 1950 (0.66%)
+
+# What are the proportions of the species in this study?
+name_clusters <- read.csv("../currently_recognized/list.csv")
+nrow(name_clusters)
+# - 1046 name clusters
+
+sum(name_clusters$taxon_concept_count)
+# - 1202 taxon concepts
+
+name_clusters$species_lc <- tolower(name_clusters$species)
+name_clusters$name_lc <- tolower(name_clusters$name)
+
+# This is broken; don't use without fixing!
+if(0) {
+    name_clusters_with_desc <- merge(name_clusters, original_descs, by.x = "name_lc", by.y = "species_lc", all.x = TRUE)
+    nrow(name_clusters_with_desc)
+    # - still 974
+    
+    # Any NAs?
+    nrow(name_clusters_with_desc)
+    summary(name_clusters_with_desc$year)
+    # - 919 
+    
+    # For-now answer
+    summary(name_clusters_with_desc$year)
+    name_clusters_years_without_na <- name_clusters_with_desc[which(!is.na(name_clusters_with_desc$year)),]
+    nrow(name_clusters_years_without_na)
+    # - 948
+    
+    cumsum(table(name_clusters_years_without_na$year))
+    cumsum(rev(table(name_clusters_years_without_na$year)))
+    
+    # Proportion before 1900
+    round(21/948 * 100, 2)
+    # - 2.22%
+}
+
+#####################################
+#### PART 5: Additions/deletions ####
+#####################################
+
+# Note: if we ever actually use these numbers anywhere, 
+# remember that this INCLUDES NACC_latest -- so the 
+# additions and deletions are inflated here!
+
+# Note: it also includes aou_1.txt, so that's an awful
+# lot of additions right there huh.
+
+supplement_counts <- read.csv("../project_stats/list.csv")
+
+sum(supplement_counts$count_added)
+# - 1174 added
+sum(supplement_counts$count_deleted)
+# - 372 deleted
+sum(supplement_counts$count_lump)
+# - 121 lumps
+sum(supplement_counts$count_split)
+# - 92 splits
 
 #############################################
 #### PART 5: PER-DECADE LUMPS AND SPLITS ####
@@ -481,38 +528,42 @@ par(cex=overall_cex)
 #### Where do lumping and splitting spike?
 splumps_by_checklist <- tapply(
     splumps$id,
-    splumps$year,
+    splumps$dataset,
     length
 )
 sort(splumps_by_checklist)
 
 lumps_by_checklist <- tapply(
     lumps$id,
-    lumps$year,
+    lumps$dataset,
     length
 )
 sort(lumps_by_checklist)
+table(lumps$year)
 
 splits_by_checklist <- tapply(
     splits$id,
-    splits$year,
+    splits$dataset,
     length
 )
 sort(splits_by_checklist)
+table(splits$dataset)
 
 # What proportion of splits take place after 1982?
 sum(splits_by_year)
-# - 85 splits
+# - 92 splits
 splits_by_year[names(splits_by_year) >= 1982]
 sum(splits_by_year[names(splits_by_year) >= 1982])
-# - 64 splits
+# - 70 splits
 pc_splits_after_1982 <- sum(splits_by_year[names(splits_by_year) >= 1982])/sum(splits_by_year) * 100
 round(pc_splits_after_1982, 2)
-# - 75.29%
+# - 76.09%
+70/92
+
 sum(splits_by_year[names(splits_by_year) >= 1980])
-# - 64 splits
+# - 70 splits
 round(100 - pc_splits_after_1982, 2)
-# - missing: 24.71%
+# - missing: 23.91%
 
 ################################
 #### PART 6: TAXON CONCEPTS ####
@@ -523,26 +574,52 @@ round(100 - pc_splits_after_1982, 2)
 # data reconciliation service!
 taxon_concepts <- read.csv("../taxon_concepts/list.csv")
 nrow(taxon_concepts)
-# - 1193 circumscriptions
+# - 1205 circumscriptions
 
 length(table(taxon_concepts$name_cluster_id))
-# - 974 from name clusters
+# - 862 from name clusters
 
-name_clusters <- read.csv("../currently_recognized/list.csv")
-nrow(name_clusters)
-# - 974 from name clusters
+name_clusters_all <- read.csv("../currently_recognized/list.csv")
+nrow(name_clusters_all)
+table(name_clusters_all$id)
+# - 1045 from name clusters
+
+# ANY DUPLICATES?
+which(table(name_clusters_all$id) > 1)
+# - 0 -- hooray!
+# name_clusters[name_clusters$id == "71bcdf15-7b5e-4d52-9689-d7dbcab29147",]
 
 # Okay, thanks to the wonder of SciNames, we already have the counts ...
-summary(name_clusters$taxon_concept_count)
-#   1.000   1.000   1.000   1.229   1.000   5.000
+summary(name_clusters_all$taxon_concept_count)
+#   0.000   1.000   1.000   1.153   1.000   5.000
+
+# Wait, zeros?
+nrow(name_clusters_all[name_clusters_all$taxon_concept_count == 0,])
+# - 183 zeros
+
+name_clusters_all[name_clusters_all$taxon_concept_count == 0,]$name
+# - It looks like these are all names that have been eliminated by the filter,
+#   but are still recognized because they were introduced (mainly in aou_5_34)
+
+# So let's eliminate them!
+name_clusters <- name_clusters_all[name_clusters_all$taxon_concept_count > 0,]
+
+# How many name clusters do we have now? Lemme guess ...
+nrow(name_clusters)
+# - 862! woo!
+
 sum(is.na(name_clusters$taxon_concept_count))
 # - 0 NAs
 sum(name_clusters$taxon_concept_count)
-# - 1193 taxon concepts
+# - 1205 taxon concepts
 sort(name_clusters$taxon_concept_count)
 name_clusters[which.max(name_clusters$taxon_concept_count),]
-# Nope, back to Rallus crepitans
+# Junco hyemalis with *six* taxon concepts? Better recheck.
 name_clusters[name_clusters$taxon_concept_count == max(name_clusters$taxon_concept_count),]
+name_clusters[name_clusters$taxon_concept_count == max(name_clusters$taxon_concept_count),]$taxon_concept_count
+
+# Why is Junco hyemalis so high?
+name_clusters_all[name_clusters_all$taxon_concept_count == 6,]
 
 # ... but we should be able to find it from the other table, too.
 
@@ -554,15 +631,21 @@ taxon_concepts_per_name <- tapply(
 )
 taxon_concepts_per_name
 sum(taxon_concepts_per_name)
-# - 1193 taxon concepts
+# - 1205 taxon concepts
 
-taxon_concepts_per_name[which.max(taxon_concepts_per_name)] <- NA
+# What's the max?
+max(taxon_concepts_per_name)
+
 # - Get rid of "(not found in dataset)", which is the highest.
+taxon_concepts_per_name[which.max(taxon_concepts_per_name)] <- NA
 taxon_concepts_per_name[which.max(taxon_concepts_per_name)]
-# - Rallus crepitans: 4 (hallelujah!)
+# - Junco hyemalis: 5 (hallelujah!)
+
 summary(taxon_concepts_per_name)
 #   Min. 1st Qu.  Median    Mean 3rd Qu.    Max.    NA's 
-#  1.000   1.000   1.000   1.241   1.000   8.000       1 
+#   1.000   1.000   1.000   1.373   2.000   5.000       1 
+summary(name_clusters$taxon_concept_count)
+#   1.000   1.000   1.000   1.398   2.000   6.000 
 
 # That one NA is "(not found in dataset)", which is totally expected when we're looking up taxon concepts.
 

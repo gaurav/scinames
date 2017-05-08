@@ -168,7 +168,12 @@ public class DataReconciliatorController implements Initializable {
 				if(namesDataset == ALL)
 					nameClusters = project.getNameClusterManager().getSpeciesClusters().collect(Collectors.toList());
 				else
-					nameClusters = project.getNameClusterManager().getClusters(namesDataset.getRecognizedNames(project).filter(n -> n.hasSpecificEpithet()).flatMap(n -> n.asBinomial()).distinct().collect(Collectors.toList()));
+					nameClusters = project.getNameClusterManager().getClusters(
+							namesDataset.getRecognizedNames(project)
+								.filter(n -> n.hasSpecificEpithet())
+								.flatMap(n -> n.asBinomial())
+								.distinct().collect(Collectors.toList())
+						);
 				
 				break;
 				
@@ -177,18 +182,22 @@ public class DataReconciliatorController implements Initializable {
 				if(namesDataset == ALL)
 					nameClusters = project.getNameClusterManager().getClusters().collect(Collectors.toList());
 				else
-					nameClusters = project.getNameClusterManager().getClusters(namesDataset.getRecognizedNames(project).collect(Collectors.toList()));
+					nameClusters = project.getNameClusterManager().getClusters(
+						namesDataset.getRecognizedNames(project).collect(Collectors.toList())
+					);
 				
 				break;	
 				
 			case RECONCILE_BY_SPECIES_TAXON_CONCEPT:
 				if(namesDataset == ALL)
-					nameClusters = project.getNameClusterManager().getSpeciesClusters().flatMap(cl -> cl.getTaxonConcepts(project).stream()).collect(Collectors.toList());
+					nameClusters = project.getNameClusterManager().getSpeciesClusters().flatMap(
+						cl -> cl.getTaxonConcepts(project).stream()).collect(Collectors.toList());
 				else
 					nameClusters = project.getNameClusterManager().getClusters(
-						namesDataset.getRecognizedNames(project).filter(n -> n.hasSpecificEpithet())
-						.distinct()
-						.collect(Collectors.toList())
+						namesDataset.getRecognizedNames(project)
+							.filter(n -> n.hasSpecificEpithet())
+							.flatMap(n -> n.asBinomial())
+							.distinct().collect(Collectors.toList())
 					).stream().flatMap(cl -> cl.getTaxonConcepts(project).stream()).collect(Collectors.toList());
 				
 				flag_nameClustersAreTaxonConcepts = true;

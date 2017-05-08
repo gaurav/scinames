@@ -27,6 +27,7 @@ import java.util.stream.Stream;
 
 import org.junit.jupiter.api.Test;
 
+import com.ggvaidya.scinames.model.filters.ChangeFilterFactory;
 import com.ggvaidya.scinames.model.filters.IgnoreErrorChangeTypeFilter;
 import com.ggvaidya.scinames.util.SimplifiedDate;
 
@@ -55,6 +56,7 @@ public class TaxonConceptTest {
 	
 	private Project buildProject() {
 		Project project = new Project();
+		project.getChangeFilter().addChangeFilter(new IgnoreErrorChangeTypeFilter(project, true));
 			
 		ds10.explicitChangesProperty().addAll(
 			streamNamesToAdditions(ds10,
@@ -122,20 +124,19 @@ public class TaxonConceptTest {
 	@Test
 	public void testChangesAffectingRecognizedNamesOverTime() {
 		Project project = buildProject();
-		project.addChangeFilter(new IgnoreErrorChangeTypeFilter(project, true));
 		
-		assertEquals(4, project.getDatasets().size());
+		assertEquals(5, project.getDatasets().size());
 		
 		Dataset last = project.getLastDataset().get();
 		assertEquals(last, ds40);
 
-		LOGGER.fine("ds10: " + ds10.getAllChanges().map(ch -> ch.toString()).collect(Collectors.joining("\n - ")));		
-		assertEquals(3, ds10.getAllChanges().count());
+		LOGGER.fine("ds15: " + ds15.getAllChanges().map(ch -> ch.toString()).collect(Collectors.joining("\n - ")));		
+		assertEquals(1, ds15.getAllChanges().count());
 		assertEquals(setOfNames(
 			Name.get("Branta", "canadensis"),
 			Name.get("Branta", "canadensis", "hutchinsii"),
 			Name.get("Platypus", "anatinus")
-		), ds10.getRecognizedNames(project).collect(Collectors.toSet()));
+		), ds15.getRecognizedNames(project).collect(Collectors.toSet()));
 		
 		LOGGER.fine("ds20: " + ds20.getAllChanges().map(ch -> ch.toString()).collect(Collectors.joining("\n - ")));		
 		assertEquals(0, ds20.getAllChanges().count());
@@ -147,15 +148,15 @@ public class TaxonConceptTest {
 		
 		LOGGER.fine("ds30: " + ds30.getAllChanges().map(ch -> ch.toString()).collect(Collectors.joining("\n - ")));
 		assertEquals(4, ds30.getAllChanges().count());	
+		assertEquals(3, ds30.getChanges(project).count());	
 		assertEquals(setOfNames(
-			Name.get("Branta", "canadensis"),
-			Name.get("Branta", "hutchinsii"),			
+			Name.get("Branta", "canadensis"),		
 			Name.get("Ornithorhynchus", "anatinus"),
 			Name.get("Ornithorhynchus", "paradoxus")
 		), ds30.getRecognizedNames(project).collect(Collectors.toSet()));
 		
 		LOGGER.fine("ds40: " + ds40.getAllChanges().map(ch -> ch.toString()).collect(Collectors.joining("\n - ")));
-		assertEquals(1, ds40.getAllChanges().count());
+		assertEquals(2, ds40.getAllChanges().count());
 		assertEquals(setOfNames(
 			Name.get("Branta", "canadensis"),
 			Name.get("Branta", "hutchinsii"),			

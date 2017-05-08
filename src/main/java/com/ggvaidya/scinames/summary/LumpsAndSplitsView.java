@@ -127,7 +127,7 @@ public final class LumpsAndSplitsView {
 			precalc.put(change, "type", change.getType().toString());
 			precalc.put(change, "from", change.getFromStream().map(n -> n.getFullName()).collect(Collectors.joining(", ")));
 			precalc.put(change, "to", change.getToStream().map(n -> n.getFullName()).collect(Collectors.joining(", ")));
-			precalc.put(change, "date", change.getDataset().getName() + " (" + change.getDataset().getDate().toString() + ")");
+			precalc.put(change, "dataset", change.getDataset().getName() + " (" + change.getDataset().getDate().toString() + ")");
 			precalc.put(change, "year", change.getDataset().getDate().getYearAsString());
 			precalc.put(change, "change", change.toString());
 			precalc.put(change, "reversions", project.getChangesReversing(change)
@@ -170,7 +170,7 @@ public final class LumpsAndSplitsView {
 		cols.add(createTableColumnForTable("type", 40.0, precalc));
 		cols.add(createTableColumnForTable("from", 200.0, precalc));
 		cols.add(createTableColumnForTable("to", 200.0, precalc));
-		cols.add(createTableColumnForTable("date", 100.0, precalc));
+		cols.add(createTableColumnForTable("dataset", 100.0, precalc));
 		cols.add(createTableColumnForTable("year", 100.0, precalc));
 		
 		// Identify reversions, classified as:
