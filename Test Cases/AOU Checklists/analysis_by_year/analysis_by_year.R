@@ -63,24 +63,24 @@ if(FLAG_PRE1982) { get_filename <- function(fn) { return(paste("graphs/pre1982_s
 
 all_splumps <- read.csv("../splumps/list-all.csv")
 summary(all_splumps$type)
-# lump: 127
-# splits: 188
+# lump: 128
+# splits: 189
 
 all_name_clusters <- read.csv("../currently_recognized/list-2127.csv")
 nrow(all_name_clusters)
 # - 2127 name clusters
 sum(all_name_clusters$taxon_concept_count)
-#  - 2,594 taxon concepts
+#  - 2,597 taxon concepts
 
-# - 2594 taxon concepts from all checklists according to reconcilor in app
+# - 3087 taxon concepts without pre1982 filtering
 
 project_stats_all <- read.csv("../project_stats/list-all.csv")
 nrow(project_stats_all)
 # 66 checklists, including duplicates of aou_5_34 and others
 data.frame(project_stats_all$dataset, project_stats_all$binomial_count)
-# - aou_5_33: 859
-# - aou_5_34: 941
-# - aou_6: 1912
+# - aou_5_33: 860
+# - aou_5_34: 940
+# - aou_6: 1911
 
 #####################################
 #### OTHER INTRODUCTORY MATERIAL ####
@@ -88,8 +88,8 @@ data.frame(project_stats_all$dataset, project_stats_all$binomial_count)
 
 splumps <- read.csv("../splumps/list.csv")
 summary(splumps$type)
-# lump: 121
-# splits: 92
+# lump: 122
+# splits: 93
 
 project_stats <- read.csv("../project_stats/list.csv")
 nrow(project_stats)
@@ -112,16 +112,16 @@ splumps <- read.csv("../splumps/list.csv")
 
 # How many splumps in total?
 summary(splumps$type)
-# lump: 121
-# split: 92
+# lump: 122
+# split: 93
 
 lumps <- splumps[splumps$type == "lump",]
 nrow(lumps)
-# - 121 lumps
+# - 122 lumps
 
 splits <- splumps[splumps$type == "split",]
 nrow(splits)
-# - 92 splits
+# - 93 splits
 
 # Quick histogram to show relative coverage
 hist(splumps$year)
@@ -141,13 +141,13 @@ hist(splumps[splumps$type == "lump",]$year, add=T, col="red")
 supplement_counts <- read.csv("../project_stats/list.csv")
 
 sum(supplement_counts$count_added)
-# - 1174 added
+# - 1173 added
 sum(supplement_counts$count_deleted)
 # - 372 deleted
 sum(supplement_counts$count_lump)
-# - 121 lumps
+# - 122 lumps
 sum(supplement_counts$count_split)
-# - 92 splits
+# - 93 splits
 
 # How many checklists do we have?
 data.frame(supplement_counts$dataset, supplement_counts$year)
@@ -181,15 +181,15 @@ zoo_splits <- zoo(splits_by_year, years)
 length(zoo_splumps)
 # - 64
 sum(zoo_splumps)
-# - 213
+# - 215
 length(zoo_lumps)
 # - 64
 sum(zoo_lumps)
-# - 121
+# - 122
 length(zoo_splits)
 # - 64
 sum(zoo_splits)
-# - 92
+# - 93
 
 # Can we compensate for the number of recognized species in each case?
 summary(supplement_counts$binomial_count)
@@ -200,7 +200,7 @@ binomial_count_by_year <- tapply(
 )
 sort(binomial_count_by_year)
 # min: 771 in 1886
-# max: 1046 in 2016
+# max: 1045 in 2016
 zoo_binomial_count_by_year <- zoo(binomial_count_by_year, names(binomial_count_by_year))
 
 # Checklists with zero splumps
@@ -272,7 +272,7 @@ lagged <- c(0, lag(zoo_splumps, k=-1))
 lagged
 plot(log(zoo_splumps), log(lagged))
 cor.test(zoo_splumps, lagged)
-# Yes, yes they do (r = 0.3442, p < 0.01)
+# Yes, yes they do (r = 0.346, p < 0.01)
 # (I suspect this is just because so many of them are small Poisson-y numbers, 
 # so 1 -> 1 happens a lot)
 
@@ -319,7 +319,7 @@ plot(gap_analysis$splumps ~ gap_analysis$gap,
 gap_model_splumps <- lm(gap_analysis$splumps ~ gap_analysis$gap)
 summary(gap_model_splumps)
 # - p < 0.0001
-# - adjR2 = 0.63
+# - adjR2 = 0.64
 abline(gap_model_splumps, lty=2)
 
 # Plot 2. Lumps
@@ -331,7 +331,7 @@ plot(gap_analysis$lumps ~ gap_analysis$gap,
 gap_model_lump <- lm(gap_analysis$lumps ~ gap_analysis$gap)
 summary(gap_model_lump)
 # - p < 0.0001
-# - adjR2 = 0.65
+# - adjR2 = 0.67
 abline(gap_model_lump, lty=2)
 
 # Plot 3. Splumps
@@ -342,9 +342,9 @@ plot(gap_analysis$splits ~ gap_analysis$gap,
 )
 gap_model_splits <- lm(gap_analysis$splits ~ gap_analysis$gap)
 summary(gap_model_splits)
-# - p = 0.217 > 0.05
-# - multR2 = 0.02485
-# - adjR2 = 0.008868
+# - p = 0.167 > 0.05
+# - multR2 = 0.031
+# - adjR2 = 0.015
 abline(gap_model_splits, lty=2)
 
 # Done! Reset par.
@@ -397,26 +397,19 @@ round(14/2127 * 100, 2)
 round(101/2127 * 100, 2)
 # - 101 since 1900 (4.75%)
 
-169/2127
+round(169/2127 * 100, 2)
 # - 169 since 1889 (7.95%) 
 
 round(198/2127 * 100, 2)
-# - 198 since 1885 (9.3%) 
-
-101/2127
-# - 101 since 1900 (4.75%)
-225/2127
-# - 225 since 1880 (10.587%)
-round(14/2127*100, 2)
-# - 14 since 1950 (0.66%)
+# - 198 since 1885 (9.31%) 
 
 # What are the proportions of the species in this study?
 name_clusters <- read.csv("../currently_recognized/list.csv")
 nrow(name_clusters)
-# - 1046 name clusters
+# - 1045 name clusters
 
 sum(name_clusters$taxon_concept_count)
-# - 1202 taxon concepts
+# - 1205 taxon concepts
 
 name_clusters$species_lc <- tolower(name_clusters$species)
 name_clusters$name_lc <- tolower(name_clusters$name)
@@ -460,13 +453,13 @@ if(0) {
 supplement_counts <- read.csv("../project_stats/list.csv")
 
 sum(supplement_counts$count_added)
-# - 1174 added
+# - 1173 added
 sum(supplement_counts$count_deleted)
 # - 372 deleted
 sum(supplement_counts$count_lump)
-# - 121 lumps
+# - 122 lumps
 sum(supplement_counts$count_split)
-# - 92 splits
+# - 93 splits
 
 #############################################
 #### PART 5: PER-DECADE LUMPS AND SPLITS ####
@@ -551,14 +544,14 @@ table(splits$dataset)
 
 # What proportion of splits take place after 1982?
 sum(splits_by_year)
-# - 92 splits
+# - 93 splits
 splits_by_year[names(splits_by_year) >= 1982]
 sum(splits_by_year[names(splits_by_year) >= 1982])
 # - 70 splits
 pc_splits_after_1982 <- sum(splits_by_year[names(splits_by_year) >= 1982])/sum(splits_by_year) * 100
 round(pc_splits_after_1982, 2)
-# - 76.09%
-70/92
+# - 75.27%
+70/93
 
 sum(splits_by_year[names(splits_by_year) >= 1980])
 # - 70 splits
@@ -625,8 +618,8 @@ name_clusters_all[name_clusters_all$taxon_concept_count == 6,]
 
 # How many taxon concepts per name?
 taxon_concepts_per_name <- tapply(
-    taxon_concepts$name, 
-    factor(taxon_concepts$name),
+    taxon_concepts$name_cluster_id, 
+    factor(taxon_concepts$name_cluster_id),
     length
 )
 taxon_concepts_per_name
@@ -637,101 +630,214 @@ sum(taxon_concepts_per_name)
 max(taxon_concepts_per_name)
 
 # - Get rid of "(not found in dataset)", which is the highest.
-taxon_concepts_per_name[which.max(taxon_concepts_per_name)] <- NA
+# taxon_concepts_per_name[which.max(taxon_concepts_per_name)] <- NA
 taxon_concepts_per_name[which.max(taxon_concepts_per_name)]
-# - Junco hyemalis: 5 (hallelujah!)
+# - 6 ()
+taxon_concepts[taxon_concepts$name_cluster_id == "f1ce9f45-cedb-4f10-a85f-09c348421ab6",]
+#    - And yes, it's Junco hyemalis!
 
 summary(taxon_concepts_per_name)
-#   Min. 1st Qu.  Median    Mean 3rd Qu.    Max.    NA's 
-#   1.000   1.000   1.000   1.373   2.000   5.000       1 
+#   Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+#   1.000   1.000   1.000   1.398   2.000   6.000
 summary(name_clusters$taxon_concept_count)
-#   1.000   1.000   1.000   1.398   2.000   6.000 
+#   1.000   1.000   1.000   1.398   2.000   6.000
 
-# That one NA is "(not found in dataset)", which is totally expected when we're looking up taxon concepts.
-
-# For now, the name_clusters$taxon_concept_count is close enough, so let's go
-# for that!
 name_clusters$taxon_concept_count
 sum(name_clusters$taxon_concept_count)
-# - 1193 taxon concepts
+# - 1205 taxon concepts
 
 # How many currently recognized species have been corrected more than once?
 # (We call this the "correction rate" in the paper.)
 
 total_recognized_name_clusters = nrow(name_clusters)
 total_recognized_name_clusters
-# - 974 name clusters
+# - 862 name clusters
 
-count_name_clusters_one_or_more <- sum(name_clusters$taxon_concept_count > 1)
-count_name_clusters_one_or_more
-# - 160 name clusters
-correction_rate <- count_name_clusters_one_or_more / total_recognized_name_clusters
+count_name_clusters_exactly_one <- sum(name_clusters$taxon_concept_count == 1)
+count_name_clusters_exactly_one
+# - 631
+stability <- count_name_clusters_exactly_one / total_recognized_name_clusters
+round(stability * 100, 2)
+
+count_name_clusters_more_than_one <- sum(name_clusters$taxon_concept_count > 1)
+count_name_clusters_more_than_one
+# - 231 name clusters
+correction_rate <- count_name_clusters_more_than_one / total_recognized_name_clusters
 round(correction_rate * 100, 2)
-# - 16.43
+# - 26.8
 
-count_name_clusters_two_or_more <- sum(name_clusters$taxon_concept_count > 2)
+count_name_clusters_exactly_two <- sum(name_clusters$taxon_concept_count == 2)
+count_name_clusters_exactly_two
+# - 140
+single_correction <- count_name_clusters_exactly_two / total_recognized_name_clusters
+round(single_correction * 100, 2)
+# - 16.24%
+
+count_name_clusters_two_or_more <- sum(name_clusters$taxon_concept_count >= 2)
 count_name_clusters_two_or_more
-# - 51 name clusters
+# - 231 name clusters
 recorrection_rate <- count_name_clusters_two_or_more / total_recognized_name_clusters
 round(recorrection_rate * 100, 2)
-# - 5.24%
+# - 26.8%
+
+count_name_clusters_more_than_two <- sum(name_clusters$taxon_concept_count > 2)
+count_name_clusters_more_than_two
+# - 91 name clusters
+recorrection_rate <- count_name_clusters_two_or_more / total_recognized_name_clusters
+round(recorrection_rate * 100, 2)
+# - 10.56%
 
 # Let's reload splumps just to make debugging easier.
 splumps <- read.csv("../splumps/list.csv")
 
 # Question N. How many lumps or splits have been reverted?
 nrow(splumps)
-# - 202
+# - 215
 summary(splumps$type)
-# - lump: 117
-# - splits: 85
+# - lump: 122
+# - splits: 93
 
 lumps <- splumps[splumps$type == "lump",]
 splits <- splumps[splumps$type == "split",]
 
 nrow(lumps)
-# - 117
+# - 122
 nrow(splits)
-# - 85
+# - 93
 
 # Perfect reversions, man, I don't know.
-(splumps$perfect_reversion_count == 1)
+(splumps$perfect_reversion_count >= 1)
 
 sum(lumps$reversion_count >= 1)
-# - 38 lumps
+# - 44 lumps
 reversion_pc_lumps = sum(lumps$reversion_count >= 1)/nrow(lumps)
 round(reversion_pc_lumps * 100, 2)
-# - lumps: 32.48%
+# - lumps: 36.07%
 
 sum(splits$reversion_count >= 1)
 # - 35 splits
 reversion_pc_splits = sum(splits$reversion_count >= 1)/nrow(splits)
 round(reversion_pc_splits * 100, 2)
-# - splits: 41.18%
+# - splits: 44.09%
 
 sum(lumps$perfect_reversion_count >= 1)
-# - 18 lumps
+# - 24 lumps
 perfect_reversion_pc_lumps = sum(lumps$perfect_reversion_count >= 1)/nrow(lumps)
 round(perfect_reversion_pc_lumps * 100, 2)
-# - 15.38%
+# - 19.67%
 
 sum(splits$perfect_reversion_count >= 1)
-# - 19 splits
+# - 24 splits
 perfect_reversion_pc_splits = sum(splits$perfect_reversion_count >= 1)/nrow(splits)
 round(perfect_reversion_pc_splits * 100, 2)
-# - 22.35%
+# - 25.81%
 
 sum(splumps$reversion_count >= 1)
-# - 73 splumps
+# - 85 splumps
 reversion_pc_splumps = sum(splumps$reversion_count >= 1)/nrow(splumps)
 round(reversion_pc_splumps * 100, 2)
-# - splits: 36.14%
+# - splits: 39.53%
 
 sum(splumps$perfect_reversion_count >= 1)
-# - 37 splumps
+# - 48 splumps
 perfect_reversion_pc_splumps = sum(splumps$perfect_reversion_count >= 1)/nrow(splumps)
 round(perfect_reversion_pc_splumps * 100, 2)
-# - 18.32%
+# - 22.33%
+
+#############################
+#### CHANGE TRAJECTORIES ####
+#############################
+
+trajectories <- table(name_clusters$trajectory_lumps_splits)
+sum(trajectories)
+# - 862 name clusters
+
+# TODO cleanup changes here
+
+df_trajectories <- data.frame(trajectories)
+df_trajectories
+
+df_trajectories[df_trajectories$Var1 == "",]
+# - 631 never corrected
+round(631/sum(trajectories) * 100, 2)
+# - 73.2%
+
+(sum(trajectories) - 631)
+# - 231 corrected
+
+# first split: 
+1 + 3 + 3 + 93 + 6 + 1 + 1 + 7 + 1 + 1 + 1
+# - 118 splits first
+118/sum(trajectories)
+
+# split only
+1 + 3 + 93 + 1
+# - 97 splits only
+97/118
+
+# split -> lump
+6 + 1 + 1 + 7 + 1
+(6 + 1 + 1 + 7 + 1)/118
+
+# - 16 split -> lump
+
+# split -> lump only
+6 + 1
+7/118
+
+# split -> split
+1
+1/118
+
+# split -> lump -> split
+7
+
+# split -> lump -> lump -> split
+2
+
+# first lumped
+45 + 7 + 2 + 1 + 1 + 54 + 3 + 3
+# - 116 lumps first
+116/sum(trajectories)
+
+# lump only
+45
+45/116
+
+# lump -> lump
+7 + 2 + 1 + 1
+(7 + 2 + 1 + 1)/116
+
+# lump -> lump only
+7
+
+# lump -> split
+54 + 3 + 3
+(54 + 3 + 3)/116
+
+# lump -> split only
+54
+
+# lump -> lump -> split
+2 + 1 + 1
+
+# lump -> lump -> split only
+2
+
+# lump -> lump -> split -> lump -> split
+1 
+
+# lump -> lump -> split -> split
+1
+
+# lump -> lump -> split -> lump -> split
+1
+
+# lump -> lump -> split -> split
+1
+
+# Changes not fully represented in two steps (i.e. something -> something -> ...)
+2 + 1+1+3+1+1+7
 
 ##############################################################
 #### How many lumps and splits revert earlier reversions? ####
@@ -889,6 +995,9 @@ if(0) {
 lumps_with_perfect_reversions <- lumps[lumps$perfect_reversion_count >= 1,]
 lumps_with_perfect_reversions
 nrow(lumps_with_perfect_reversions)
+# - 24
+round(nrow(lumps_with_perfect_reversions)/nrow(lumps) * 100, 2)
+# - 19.67%
 
 perfect_lumps <- factor(lumps_with_perfect_reversions$perfect_reversions_summary)
 table(perfect_lumps)
@@ -896,56 +1005,41 @@ table(perfect_lumps)
 splits_with_perfect_reversions <- splits[splits$perfect_reversion_count >= 1,]
 splits_with_perfect_reversions
 nrow(splits_with_perfect_reversions)
+# - 24
+round(nrow(splits_with_perfect_reversions)/nrow(splits) * 100, 2)
+# - 25.81%
 
 perfect_splits <- factor(splits_with_perfect_reversions$perfect_reversions_summary)
 table(perfect_splits)
 
 # ALL TOGETHER NOW
 perfect_splumps <- splumps[splumps$perfect_reversion_count >= 1,]
-perfect_reversion_table <- table(factor(perfect_splumps$perfect_reversions_summary))
-perfect_reversion_table
+summary(perfect_splumps$type)
+write.csv(data.frame(table(perfect_splumps$perfect_reversions_summary)), "tables/perfect_reversions_summary.csv")
 
-# TODO Okay, these are no longer coming out twice! Whaaat.
-
-perfect_reversions <- names(perfect_reversion_table)
-count_total_perfect_reversions <- length(perfect_reversions)
-count_total_perfect_reversions
-# - 23
-
-# Wait, what's all this?
-# lumps[grep("^lump \\(1944\\) -> lump \\(1947\\).*", lumps$perfect_reversions_summary),]
-
-#
-# TODO: REDO
-#
-
+# Count 'em
 count_lump_split_lump <- 1
 count_split_lump_split <- 2
-count_lump_split <- 14
-count_lump_lump <- 1 # NOTE: This is LOW -- the current reversion code ignores lump -> lump, so this is really an error
-count_split_lump <- 3
-count_split_split <- 0 # NOTE: This is DELIBERATE -- the current reversion code ignores split -> split
-total_splump_possibilities <- count_lump_split_lump + count_split_lump_split + count_lump_split + count_lump_lump + count_split_lump + count_split_split
-total_splump_possibilities
-# - 21
+count_lump_split <- 35
+35/45
+count_split_lump <- 10
+10/45
+count_total = count_lump_split_lump + count_split_lump_split + count_lump_split + count_split_lump
 
 # BINOMIAL TEST: is there a 50-50 chance of lump_split vs split_lump?
 binom.test(c(count_lump_split, count_split_lump))
+# - 77.78%, p < 0.001
 
 # FISHER'S EXACT TEST TIME
 actual_lump_split <- count_lump_split
 actual_split_lump <- count_split_lump
-expected_lump_split <- (count_lump_lump + count_lump_split)
-expected_split_lump <- (count_split_lump + count_split_split)
+expected_lump_split <- nrow(splits)
+expected_split_lump <- nrow(lumps)
 
 fisher.test(
     matrix(data = c(actual_lump_split, expected_lump_split, actual_split_lump, expected_split_lump), nrow = 2, ncol = 2)
 )
-
-# Puttering about
-total_actual <- actual_lump_split + actual_split_lump
-total_expected <- expected_lump_split + expected_split_lump
-chisq.test(c(actual_lump_split, actual_split_lump), p=c(expected_lump_split/total_expected, expected_split_lump/total_expected))
+# p < 0.001, true odds ratio is not equal to 1: more splits after lump than expected if same proportion as lumps
 
 ##################################
 #### PART 6: SOURCE OF SPLITS ####
@@ -958,55 +1052,55 @@ splumps <- read.csv("../splumps/list.csv")
 
 # Question N. How many lumps or splits have been reverted?
 nrow(splumps)
-# - 202
+# - 215
 summary(splumps$type)
-# - lump: 117
-# - splits: 85
+# - lump: 122
+# - splits: 93
 
 lumps <- splumps[splumps$type == "lump",]
 splits <- splumps[splumps$type == "split",]
 
 nrow(lumps)
-# - 117
+# - 122
 nrow(splits)
-# - 85
+# - 93
 
 # How many splits revert previous lumps?
 sum(splits$perfect_reversion_count > 0)
 pc_splits_perfectly_reverting_lumps <- sum(splits$perfect_reversion_count > 0)/nrow(splits) * 100
 round(pc_splits_perfectly_reverting_lumps, 2)
-# 22.35%
+# 25.81%
 
 splits_since_1980 <- splits[splits$year >= 1980,]
 nrow(splits_since_1980)
-# - 64 splits
+# - 70 splits
 splits_since_1980$year
 # in range
 
 sum(splits_since_1980$perfect_reversion_count > 0)
-# - 9 splits
+# - 13 splits
 pc_splits_perfectly_reverting_lumps_since_1980 <- sum(splits_since_1980$perfect_reversion_count > 0)/nrow(splits_since_1980) * 100
 round(pc_splits_perfectly_reverting_lumps_since_1980, 2)
-# - 14.06%
+# - 18.57%
 
 splits_since_1950 <- splits[splits$year >= 1950,]
 nrow(splits_since_1950)
-# - 71 splits
+# - 77 splits
 splits_since_1950$year
 # in range
 
 sum(splits_since_1950$perfect_reversion_count > 0)
-# - 13 splits
+# - 17 splits
 pc_splits_reverting_lumps_since_1950 <- sum(splits_since_1950$perfect_reversion_count > 0)/nrow(splits_since_1950) * 100
 round(pc_splits_reverting_lumps_since_1950, 2)
-# - 18.31%
+# - 22.08%
 
 #### Now with partial ####
 sum(splits_since_1980$reversion_count > 0)
-# - 20 splits
+# - 24 splits
 pc_splits_reverting_lumps_since_1980 <- sum(splits_since_1980$reversion_count > 0)/nrow(splits_since_1980) * 100
 round(pc_splits_reverting_lumps_since_1980, 2)
-# - 31.25%
+# - 34.29%
 
 ####################################
 #### PART 7. HIERARCHICAL MODEL ####
@@ -1015,36 +1109,49 @@ round(pc_splits_reverting_lumps_since_1980, 2)
 # Reload, just 'cos.
 taxon_concepts <- read.csv("../taxon_concepts/list.csv")
 nrow(taxon_concepts)
-# - 1193 circumscriptions
+# - 1205 circumscriptions
 
-name_clusters <- read.csv("../currently_recognized/list.csv")
-nrow(name_clusters)
-# - 974 recognized names
+name_clusters_all <- read.csv("../currently_recognized/list.csv")
+nrow(name_clusters_all)
+# - 1045 recognized names
 
 # Duplicates?
-sum(table(name_clusters$name) > 1)
+sum(table(name_clusters_all$name) > 1)
 # NO DUPLICATES!
 
-#
-# DISCREPENCY! No renames or anything. I'll figure this out later.
-# 
+# Now, let's get rid of the names added by aou_5_34
+name_clusters <- name_clusters_all[name_clusters_all$taxon_concept_count > 0,]
+nrow(name_clusters)
+# 862
+
+# Any extralimitals?
+summary(name_clusters$order)
+# YUP - 29 NAs! Eliminate.
+
+name_clusters_no_extralimitals <- name_clusters[!is.na(name_clusters$order),]
+nrow(name_clusters_no_extralimitals)
+# 833
+
+# How many eliminated?
+862 - 833
+# 29
 
 # What's the mean definition count?
-round(mean(name_clusters$taxon_concept_count), 3)
-# - 1.225
+round(mean(name_clusters_no_extralimitals$taxon_concept_count), 3)
+# - 1.366
 
-sd(name_clusters$taxon_concept_count)
-# 0.56057
+sd(name_clusters_no_extralimitals$taxon_concept_count)
+# 0.7316
 
-summary(name_clusters$taxon_concept_count > 1)
-# false: 814, true: 160, NA: 0
+summary(name_clusters_no_extralimitals$taxon_concept_count > 1)
+# false: 630, true: 203, NA: 0
 
 # Histogram of the number of definitions per name.
 start_export('hist_definition_counts')
 par(cex=overall_cex*1.2)
 
 # Sort by name
-table_taxon_concept_counts <- table(name_clusters$taxon_concept_count)
+table_taxon_concept_counts <- table(name_clusters_no_extralimitals$taxon_concept_count)
 table_taxon_concept_counts
 table_taxon_concept_counts
 barplot(table(name_clusters$taxon_concept_count),
@@ -1057,44 +1164,50 @@ dev.off()
 par(cex=overall_cex)
 
 # We should see the same count as the latest AOU checklist
-length(name_clusters$taxon_concept_count)
-# - 974, yay
+length(name_clusters_no_extralimitals$taxon_concept_count)
+# - 833, yay
 
 # Do we still see "hyemalis" as the toppermost of the poppermost?
 name_clusters[which.max(name_clusters$taxon_concept_count),]$name
-# - It's Rallus crepitans. I think that's right?
+# - Yar.
 
 # We shouldn't have any names with zero definitions.
-sum(name_clusters$taxon_concept_count == 0)
+sum(name_clusters_no_extralimitals$taxon_concept_count == 0)
 
 # How many species have a single definition?
-pc_single_defn <- sum(name_clusters$taxon_concept_count == 1)/nrow(name_clusters)
+pc_single_defn <- sum(name_clusters_no_extralimitals$taxon_concept_count == 1)/nrow(name_clusters_no_extralimitals)
 round(pc_single_defn * 100, 3)
-# = 83.573%
+# = 75.63%
 
 # Okay, we need some higher taxonomy.
 # And it's already in the file! Boom.
-length(unique(factor(name_clusters$order)))
-# - 26 orders
-summary(is.na(name_clusters$order))
+length(unique(factor(name_clusters_no_extralimitals$order)))
+# - 25 orders
+summary(is.na(name_clusters_no_extralimitals$order))
 # - No NAs!
-name_clusters[which(is.na(name_clusters$order)),]$name
-# ... um, where did these go?
 
-name_clusters_for_hierarchical_modeling <- name_clusters[-which(is.na(name_clusters$order)),]
+name_clusters_for_hierarchical_modeling <- name_clusters_no_extralimitals
 nrow(name_clusters_for_hierarchical_modeling)
-# - 910
+# - 833
+
+# Re-factor the higher taxonomy
+name_clusters_for_hierarchical_modeling$order <- factor(name_clusters_for_hierarchical_modeling$order)
+# - 25 orders
+name_clusters_for_hierarchical_modeling$family <- factor(name_clusters_for_hierarchical_modeling$family)
+# - 80 families
+name_clusters_for_hierarchical_modeling$genus <- factor(name_clusters_for_hierarchical_modeling$genus)
+# - 338 genera
 
 summary(is.na(name_clusters_for_hierarchical_modeling$order))
 # No NAs!
 
 length(unique(factor(name_clusters_for_hierarchical_modeling$family)))
-# - 92 familes
+# - 80 familes
 summary(is.na(name_clusters_for_hierarchical_modeling$family))
 # - contains NA: NO!
 
 length(unique(factor(name_clusters_for_hierarchical_modeling$genus)))
-# - 402 genera
+# - 338 genera
 summary(is.na(name_clusters_for_hierarchical_modeling$genus))
 # - contains NA: NO!
 
@@ -1105,19 +1218,18 @@ summary(is.na(name_clusters_for_hierarchical_modeling$first_added_year))
 # YAY!
 
 hist(name_clusters_for_hierarchical_modeling$first_added_year)
-# TODO - yeah, this is WAY off, many more of these names should be 1886 names. What.
 
 name_clusters_for_hierarchical_modeling$years_in_list <- 2017 - name_clusters_for_hierarchical_modeling$first_added_year 
 hist(name_clusters_for_hierarchical_modeling$years_in_list)
 
 # Get ready to STAN
-Sys.setenv(PATH=paste("C:\\Rtools\\bin", "C:\\Rtools\\mingw_64\\bin", Sys.getenv("PATH"), sep=";"))
-cat('Sys.setenv(BINPREF = "C:/Program Files/mingw_$(WIN)/bin/")',
-    file = file.path(Sys.getenv("HOME"), ".Rprofile"), 
-    sep = "\n", append = TRUE)
-Sys.getenv("PATH")
-system("where make")
-system("where g++")
+#Sys.setenv(PATH=paste("C:\\Rtools\\bin", "C:\\Rtools\\mingw_64\\bin", Sys.getenv("PATH"), sep=";"))
+#cat('Sys.setenv(BINPREF = "C:/Program Files/mingw_$(WIN)/bin/")',
+#    file = file.path(Sys.getenv("HOME"), ".Rprofile"), 
+#    sep = "\n", append = TRUE)
+#Sys.getenv("PATH")
+#system("where make")
+#system("where g++")
 
 library(rstan)
 rstan_options(auto_write = TRUE)
@@ -1138,7 +1250,13 @@ stan_d <- list(
     years_in_list = name_clusters_for_hierarchical_modeling$years_in_list
 )
 
-model_fit <- stan('counts_per_name_model.stan', data=stan_d) #, iter=5000
+model_fit <- stan('counts_per_name_model.stan', data=stan_d, 
+    control = list(
+        adapt_delta = 0.9
+        # 1: There were 1 divergent transitions after warmup. Increasing adapt_delta above 0.8 may help. See
+        # http://mc-stan.org/misc/warnings.html#divergent-transitions-after-warmup 
+    )
+, iter=5000)
 model_fit
 # - Rhats appear to be at 1.0!
 post <- rstan::extract(model_fit)
@@ -1152,16 +1270,17 @@ hist(post$sigma_k)
 
 library("shinystan")
 my_sso <- launch_shinystan(model_fit)
-# - no Rhat above 1.1
+# - no Rhat above 1.1!
 
 hist(post$lambda_0)
 lambda_0 <- mean(post$lambda_0)
 lambda_0
+# = -4.47
 exp(lambda_0)
-# = 0.014188
+# = 0.0114
 
 1/exp(lambda_0)
-# 70.48
+# 87.3
 
 # Order level changes
 library(dplyr)
