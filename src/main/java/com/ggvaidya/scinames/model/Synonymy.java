@@ -24,18 +24,40 @@ package com.ggvaidya.scinames.model;
  */
 public class Synonymy extends NameCluster {
 	private Dataset dataset;
-	private Name from;
-	private Name to;
+	private Name fromName;
+	private Name toName;
 	
-	public Synonymy(Name nameFrom, Name nameTo, Dataset foundIn) {
-		super(foundIn, nameFrom, nameTo);
+	public Synonymy(Name n1, Name n2, Dataset foundIn) {
+		super(foundIn, n1, n2);
 		
-		from = nameFrom;
-		to = nameTo;
+		fromName = n1;
+		toName = n2;
 		dataset = foundIn;
 	}
 	
 	public Dataset getDataset() { return dataset; }
-	public Name getFrom() { return from; }
-	public Name getTo() { return to; }
+	public Name getFrom() { return fromName; }
+	public Name getTo() { return toName; }
+	
+	/**
+	 * Compare to another Synonymy. Note that the order of the names is important,
+	 * so Synonymy(n1, n2, ds) is different from Synonymy(n2, n1, ds).
+	 */
+	public boolean equals(Synonymy other) {
+		if(other.dataset == dataset && other.fromName == fromName && other.toName == toName)
+			return true;
+		else
+			return false;
+	}
+
+	// Based on http://stackoverflow.com/a/113600/27310
+	public int hashCode() {
+		int result = 918731;
+		
+		result = 37 * result + dataset.hashCode();
+		result = 37 * result + fromName.hashCode();
+		result = 37 * result + toName.hashCode();
+		
+		return result;
+	}
 }

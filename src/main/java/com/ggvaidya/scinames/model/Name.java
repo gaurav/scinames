@@ -388,7 +388,7 @@ public class Name implements Comparable<Name> {
 		if(getSpecificEpithet() != null)
 			nameElement.setAttribute("specificEpithet", getSpecificEpithet());
 		
-		if(infraspecificEpithets.isEmpty()) {
+		if(!infraspecificEpithets.isEmpty()) {
 			nameElement.setAttribute("infraspecificEpithets", getInfraspecificEpithetsAsString());
 		}
 			

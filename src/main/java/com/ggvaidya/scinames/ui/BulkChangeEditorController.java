@@ -16,13 +16,17 @@
  */
 package com.ggvaidya.scinames.ui;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
+import com.ggvaidya.scinames.SciNames;
 import com.ggvaidya.scinames.model.ChangeType;
+import com.ggvaidya.scinames.model.Dataset;
 import com.ggvaidya.scinames.model.DatasetColumn;
 import com.ggvaidya.scinames.model.Name;
 import com.ggvaidya.scinames.model.Project;
@@ -31,13 +35,16 @@ import com.ggvaidya.scinames.model.change.NameSetStringConverter;
 import com.ggvaidya.scinames.model.change.PotentialChange;
 import com.ggvaidya.scinames.model.change.RenamesByIdChangeGenerator;
 import com.ggvaidya.scinames.model.filters.ChangeFilter;
+import com.ggvaidya.scinames.util.SimplifiedDate;
 
 import javafx.beans.property.ReadOnlyStringWrapper;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 import javafx.collections.ObservableSet;
+import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
+import javafx.scene.control.Alert;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.SelectionMode;
 import javafx.scene.control.TableColumn;
@@ -47,6 +54,7 @@ import javafx.scene.control.cell.ComboBoxTableCell;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.control.cell.TextFieldTableCell;
 import javafx.scene.input.MouseButton;
+import javafx.stage.FileChooser;
 
 /**
  * FXML Controller class for bulk-creating changes using different methods.
@@ -55,6 +63,7 @@ import javafx.scene.input.MouseButton;
  */
 public class BulkChangeEditorController {
 	private static final Logger LOGGER = Logger.getLogger(BulkChangeEditor.class.getSimpleName());
+	private static final Dataset ALL = new Dataset("All datasets", SimplifiedDate.MIN, false);
 	
 	private BulkChangeEditor bulkChangeEditor;
 	private Project project;
@@ -75,6 +84,12 @@ public class BulkChangeEditorController {
 				comboBoxNameIdentifiers.setDisable(true);
 			}
 		});
+		
+		ObservableList<Dataset> datasets = FXCollections.observableArrayList();
+		datasets.add(ALL);
+		datasets.addAll(project.getDatasets());
+		datasetsComboBox.setItems(datasets);
+		datasetsComboBox.getSelectionModel().clearAndSelect(0);
 		
 		setupChangesTableView();
 		// findChanges();
@@ -106,6 +121,7 @@ public class BulkChangeEditorController {
 	 */
 	@FXML private ComboBox<String> comboBoxMethods;
 	@FXML private ComboBox<DatasetColumn> comboBoxNameIdentifiers;
+	@FXML private ComboBox<Dataset> datasetsComboBox;
 	@FXML private TableView<PotentialChange> changesTableView;
 	@FXML private TextField statusTextField;
 	
@@ -126,6 +142,9 @@ public class BulkChangeEditorController {
 		// Clear existing.
 		foundChanges.clear();
 		
+		// Which datasets are we working on?
+		Dataset dataset = datasetsComboBox.getValue();
+		
 		// Which method should we use?
 		String method = comboBoxMethods.getSelectionModel().getSelectedItem();
 		if(method == null)
@@ -133,11 +152,20 @@ public class BulkChangeEditorController {
 		
 		switch(method) {
 			case "Find changes using a name identifier field":
-				foundChanges.setAll(
-					new RenamesByIdChangeGenerator(comboBoxNameIdentifiers.getSelectionModel().getSelectedItem())
-						.generate(project)
-						.collect(Collectors.toList())
-				);
+				if(dataset == ALL) {
+					foundChanges.setAll(
+						new RenamesByIdChangeGenerator(comboBoxNameIdentifiers.getSelectionModel().getSelectedItem())
+							.generate(project)
+							.collect(Collectors.toList())
+					);
+				} else {
+					foundChanges.setAll(
+						new RenamesByIdChangeGenerator(comboBoxNameIdentifiers.getSelectionModel().getSelectedItem())
+							.generate(project, dataset)
+							.collect(Collectors.toList())
+					);	
+				}
+				
 				break;
 				
 			case "Find changes using subspecific names":
@@ -259,5 +287,47 @@ public class BulkChangeEditorController {
 		
 		changesTableView.getSelectionModel().clearAndSelect(row);
 		changesTableView.scrollTo(row);
+	}
+	
+	@FXML
+	private void backupCurrentDataset(ActionEvent evt) {
+		// We just need to save this somewhere that isn't the project's actual file location.
+		File currentFile = project.getFile();
+		
+		FileChooser chooser = new FileChooser();
+		chooser.setTitle("Save project to ...");
+		chooser.setSelectedExtensionFilter(
+			new FileChooser.ExtensionFilter("Project XML.gz file", "*.xml.gz")
+		);
+		File f = chooser.showSaveDialog(bulkChangeEditor.getStage());
+		if(f != null) {
+			project.setFile(f);
+			
+			try {
+				SciNames.reportMemoryStatus("Saving project " + project + " to disk");
+				project.saveToFile();
+				SciNames.reportMemoryStatus("Project saved to disk");
+				
+				new Alert(Alert.AlertType.INFORMATION, "Project saved as " + f + "; subsequent saves will return to " + currentFile)
+					.showAndWait();
+			} catch (IOException ex) {
+				new Alert(Alert.AlertType.ERROR, "Could not save project to file '" + f + "': " + ex)
+					.showAndWait();
+			}
+		}
+		
+		project.setFile(currentFile);
+	}
+	
+	@FXML
+	private void addSelectedChanges(ActionEvent evt) {
+		foundChanges.stream().forEach(ch -> {
+			ch.getDataset().explicitChangesProperty().add(ch);
+		});
+		
+		new Alert(Alert.AlertType.INFORMATION, foundChanges.size() + " changes added to the project!")
+			.showAndWait();
+		
+		foundChanges.clear();
 	}
 }

@@ -54,6 +54,13 @@ public class TaxonConceptTest {
 		));
 	}
 	
+	Project builtProject = null;
+	private Project getBuiltProject() {
+		if(builtProject == null) builtProject = buildProject();
+		return builtProject;
+	}
+	
+	// warning: don't call this more than once -- call getBuiltProject() instead!
 	private Project buildProject() {
 		Project project = new Project();
 		project.getChangeFilter().addChangeFilter(new IgnoreErrorChangeTypeFilter(project, true));
@@ -123,7 +130,7 @@ public class TaxonConceptTest {
      */
 	@Test
 	public void testChangesAffectingRecognizedNamesOverTime() {
-		Project project = buildProject();
+		Project project = getBuiltProject();
 		
 		assertEquals(5, project.getDatasets().size());
 		
@@ -178,5 +185,24 @@ public class TaxonConceptTest {
      */
 	@Test
 	public void testTaxonConceptIdentification() {
+		Project project = getBuiltProject();
+		Dataset lastDataset = project.getLastDataset().get();
+		
+		assertEquals(
+			setOfNames(
+				Name.get("Branta", "canadensis"),
+				Name.get("Branta", "hutchinsii"),
+				Name.get("Ornithorhynchus", "anatinus")
+			),
+			lastDataset.getRecognizedNames(project).collect(Collectors.toSet())
+		);
+		
+		/*
+		assertEquals(
+			new HashSet<>(Arrays.asList(
+				// TODO: how do we test this?
+			)),
+			project.getNameClusterManager().getClusters(lastDataset.getRecognizedNames(project).collect(Collectors.toList()))
+		);*/	
 	}
 }
