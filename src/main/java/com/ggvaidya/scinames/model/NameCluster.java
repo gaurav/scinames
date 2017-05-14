@@ -296,12 +296,9 @@ public class NameCluster {
 				}
 			}
 			
-			// Find all changes involving this name cluster in this dataset, and
-			// extract all the names in this name cluster used in this one dataset.
-			Set<Name> namesFromThisDataset = ds.getChanges(p)
-				.flatMap(ch -> ch.getAllNames().stream()
-					.filter(n -> contains(n))
-				)
+			// Find all names in this cluster that's also in this dataset.
+			Set<Name> namesFromThisDataset = ds.getReferencedNames()
+				.filter(n -> contains(n))
 				.collect(Collectors.toSet());
 			current.addNames(ds, new ArrayList<>(namesFromThisDataset));
 			

@@ -21,6 +21,7 @@ import java.io.IOException;
 import java.time.format.DateTimeParseException;
 import java.util.Optional;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
 import com.ggvaidya.scinames.SciNames;
 import com.ggvaidya.scinames.complexquery.SearchView;
@@ -350,7 +351,7 @@ public class ProjectSceneController {
 		view.getStage().initModality(Modality.APPLICATION_MODAL);
 		view.getStage().showAndWait();
 		
-		view.getDatasetsToImport().forEach(dt -> projectView.getProject().addDataset(dt));
+		view.getDatasetsToImport().collect(Collectors.toList()).forEach(dt -> projectView.getProject().addDataset(dt));
 		updateProject(projectView.getProject());
 	}
 	

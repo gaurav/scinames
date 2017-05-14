@@ -28,6 +28,7 @@ import com.ggvaidya.scinames.model.ChangeType;
 import com.ggvaidya.scinames.project.ProjectView;
 import com.ggvaidya.scinames.tabulardata.TabularDataViewController;
 import java.util.List;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javafx.beans.property.ReadOnlyStringWrapper;
 import javafx.beans.value.ObservableValue;
@@ -104,7 +105,7 @@ public final class ProjectCountsView {
 			)
 		));
 		Stream<ChangeType> changes = projectView.getProject().getChanges().map(ch -> ch.getType()).distinct().sorted();
-		changes.forEach(chType -> 
+		changes.collect(Collectors.toList()).forEach(chType -> 
 			cols.add(
 				createTableColumnForDataset(
 					"count_" + chType.getType(), 

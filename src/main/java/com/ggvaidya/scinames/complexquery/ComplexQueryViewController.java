@@ -195,7 +195,7 @@ public class ComplexQueryViewController implements Initializable {
 		List<List<String>> result = new LinkedList<>();		
 		List<TableColumn<NameCluster, ?>> columns = dataTableView.getColumns();
 		
-		columns.forEach(col -> {
+		for(TableColumn<NameCluster, ?> col: columns) {
 			List<String> column = new LinkedList<>();
 			
 			// Add the header.
@@ -208,7 +208,7 @@ public class ComplexQueryViewController implements Initializable {
 			}
 			
 			result.add(column);
-		});
+		};
 		
 		return result;
 	}
