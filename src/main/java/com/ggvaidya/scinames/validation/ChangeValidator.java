@@ -33,6 +33,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -59,6 +60,7 @@ public class ChangeValidator implements Validator {
 		errors.addAll(checkFromWasPreviouslyRecognized(p).collect(Collectors.toList()));
 		errors.addAll(changesOfNonRecognizedTypes(p).collect(Collectors.toList()));
 		errors.addAll(checkForDuplicateNameClustersOnSameSide(p).collect(Collectors.toList()));
+		errors.addAll(findDuplicateAdditionsOrDeletions(p).collect(Collectors.toList()));		
 		errors.addAll(getEncodingErrors(p).collect(Collectors.toList()));
 		
 		return errors.stream();
@@ -178,6 +180,46 @@ public class ChangeValidator implements Validator {
 				return errors;
 			}
 		});
+	}
+	
+	/**
+	 * Find cases where a name is added or deleted from a single checklist in multiple changes,
+	 * for example, a rename and a delete that both remove the same name.
+	 * 
+	 * @param p
+	 * @return
+	 */
+	private Stream<ValidationError<Dataset>> findDuplicateAdditionsOrDeletions(Project p) {
+		return p.getDatasets().stream().flatMap(ds -> findDuplicateAdditionsOrDeletions(p, ds));
+	}
+	
+	private Stream<ValidationError<Dataset>> findDuplicateAdditionsOrDeletions(Project p, Dataset ds) {
+		Map<Name, Long> namesDeleted = ds.getChanges(p).flatMap(ch -> ch.getFromStream())
+			.collect(Collectors.groupingBy(
+				Function.identity(),
+				Collectors.counting()
+			));
+		Map<Name, Long> namesAdded = ds.getChanges(p).flatMap(ch -> ch.getToStream())
+			.collect(Collectors.groupingBy(
+				Function.identity(),
+				Collectors.counting()
+			));
+		
+		return Stream.concat(
+			// Duplicate additions.
+			namesDeleted.entrySet().stream().filter(entry -> entry.getValue().longValue() > 1).map(entry -> {
+				List<Change> changes = ds.getChanges(p).filter(ch -> ch.getFrom().contains(entry.getKey())).collect(Collectors.toList());
+				
+				return new ValidationError<>(this, p, "Name '" + entry.getKey() + "' deleted " + entry.getValue() + " times in " + changes, ds);
+			}),
+			
+			// Duplicate deletions.
+			namesAdded.entrySet().stream().filter(entry -> entry.getValue().longValue() > 1).map(entry -> {
+				List<Change> changes = ds.getChanges(p).filter(ch -> ch.getTo().contains(entry.getKey())).collect(Collectors.toList());
+				
+				return new ValidationError<>(this, p, "Name '" + entry.getKey() + "' added " + entry.getValue() + " times in " + changes, ds);
+			})
+		);
 	}
 
 	@Override
