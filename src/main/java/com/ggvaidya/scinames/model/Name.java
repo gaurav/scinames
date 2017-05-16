@@ -94,38 +94,6 @@ public class Name implements Comparable<Name> {
 		}
 	}
 	
-	/**
-	 * Replace the infraspecific epithets with the string of names provided.
-	 * This destroys the current infraspecific epithets, which is why it's
-	 * private. 
-	 * 
-	 * @param otherEpithets The infraspecific epithets to add.
-	 */
-	private void setInfraspecificEpithets(String... otherEpithets) {
-		List<String> filteredOtherEpithets = Stream.of(otherEpithets).filter(epi -> (epi != null && !epi.equals(""))).collect(Collectors.toList());
-		
-		infraspecificEpithets.clear();
-		if(!filteredOtherEpithets.isEmpty()) {		
-			int x;
-			for(x = 0; x < filteredOtherEpithets.size(); x += 2) {
-				if(x + 1 == filteredOtherEpithets.size()) continue;
-				
-				String name = filteredOtherEpithets.get(x);
-				String value = filteredOtherEpithets.get(x + 1);
-				infraspecificEpithets.add(new InfraspecificEpithet(name, value));
-			}
-
-			if(x > filteredOtherEpithets.size()) {
-				// This will only happen if we 'jump' over the ending.
-				infraspecificEpithets.add(new InfraspecificEpithet(filteredOtherEpithets.get(filteredOtherEpithets.size() - 1)));
-			}
-		}
-	}
-	
-	private void setInfraspecificEpithetsFromString(String str) {
-		setInfraspecificEpithets(str.split("\\s+"));
-	}	
-	
 	private static Set<String> specificEpithetsThatArentLowercase = new HashSet<>(Arrays.asList(
 		"sp",
 		"spp",
@@ -155,12 +123,38 @@ public class Name implements Comparable<Name> {
 	
 	private Name(String genus, String specificEpithet) {
 		this.genus = genus;
+		this.specificEpithet = specificEpithet; // may be null
+	}
+	
+	/**
+	 * Create a new name with a genus, specific epithet and a subspecific epithet.
+	 */
+	public Name(String genus, String specificEpithet, String subspecificEpithets) {
+		this(genus, specificEpithet);
 		
-		// Is putative specific epithet lowercase and alphanumeric?
-		if(PATTERN_SPECIFICEPITHET.matcher(specificEpithet).matches())
-		    this.specificEpithet = specificEpithet;
-		else
-			setInfraspecificEpithetsFromString(specificEpithet);
+		if(subspecificEpithets == null || subspecificEpithets.trim().equals(""))
+			return;
+		
+		String[] otherEpithets = subspecificEpithets.split("\\s+");
+		List<String> filteredOtherEpithets = Stream.of(otherEpithets)
+			.filter(epi -> (epi != null && !epi.equals("")))
+			.collect(Collectors.toList());
+		
+		if(!filteredOtherEpithets.isEmpty()) {		
+			int x;
+			for(x = 0; x < filteredOtherEpithets.size(); x += 2) {
+				if(x + 1 == filteredOtherEpithets.size()) continue;
+				
+				String name = filteredOtherEpithets.get(x);
+				String value = filteredOtherEpithets.get(x + 1);
+				infraspecificEpithets.add(new InfraspecificEpithet(name, value));
+			}
+
+			if(x > filteredOtherEpithets.size()) {
+				// This will only happen if we 'jump' over the ending.
+				infraspecificEpithets.add(new InfraspecificEpithet(filteredOtherEpithets.get(filteredOtherEpithets.size() - 1)));
+			}
+		}
 	}
 	
 	/*
@@ -170,74 +164,83 @@ public class Name implements Comparable<Name> {
 	private static Map<String, Name> namesByFullName = new HashMap<>();
 	private static Map<String, Name> namesByBinomial = new HashMap<>(); // TODO delete
 	
+	/**
+	 * Return a singleton Name object corresponding to a genus/specificEpithet/subspecificEpithets combination.
+	 * 
+	 * @param genus Genus name
+	 * @param specificEpithet Specific epithet
+	 * @param subspecificEpithets Subspecific epithet
+	 * @return Singleton Name object
+	 */
 	public static Name get(String genus, String specificEpithet, String subspecificEpithets) {
-		// This apparently can be called with 'null's! Funky.
-		if(subspecificEpithets == null || subspecificEpithets.equals("")) {
-			if(specificEpithet == null || specificEpithet.equals(""))
-				return get(genus);
-			else
-				return get(genus, specificEpithet);
+		Name newName = null;
+		
+		// Trim everything down to null.
+		if(genus != null) {
+			if(genus.trim().equals("")) genus = null;
+			else genus = genus.trim();
 		}
 		
-        genus = genus.trim();
-        specificEpithet = specificEpithet.trim();
-        subspecificEpithets = subspecificEpithets.trim();
-		String fullName = genus + SEPARATOR + specificEpithet + SEPARATOR + subspecificEpithets;
+		if(genus == null) {
+			throw new IllegalArgumentException("Cannot create Name without genus name: Name.get(" + genus + ", " + specificEpithet + ", " + subspecificEpithets + ")");
+		}
 		
+		if(specificEpithet != null) {
+			if(specificEpithet.trim().equals("")) specificEpithet = null;
+			else specificEpithet = specificEpithet.trim();
+		}
+		
+		if(subspecificEpithets != null) {
+			if(subspecificEpithets.trim().equals("")) subspecificEpithets = null;
+			else subspecificEpithets = subspecificEpithets.trim();
+		}
+		
+		// Is the specificEpithet a real specific epithet?
+		if(specificEpithet != null) {
+			if(!PATTERN_SPECIFICEPITHET.matcher(specificEpithet).matches()
+				|| specificEpithetsThatArentLowercase.contains(specificEpithet.toLowerCase())) {
+				if(subspecificEpithets == null) {
+					subspecificEpithets = specificEpithet;
+					specificEpithet = null;
+				} else {
+					// specific epithet does not look like a specific epithet!
+					subspecificEpithets = specificEpithet + SEPARATOR + subspecificEpithets;
+					specificEpithet = null;
+				}
+			}
+		}
+		
+		// Create a name using all the parameters given to us.
+		if(subspecificEpithets != null) {
+			if(specificEpithet != null) {
+				newName = new Name(genus, specificEpithet, subspecificEpithets);
+			} else if(specificEpithet == null) {
+				newName = new Name(genus, null, subspecificEpithets);
+			}
+		} else if(subspecificEpithets == null) {
+			if(specificEpithet != null) {
+				newName = new Name(genus, specificEpithet);
+			} else if(specificEpithet == null) {
+				newName = new Name(genus);
+			}
+		}
+		
+		// We have a prospective new name. But is it unique? If not,
+		// return the indexed name.
+		String fullName = newName.getFullName();
 		if(namesByFullName.containsKey(fullName))
 			return namesByFullName.get(fullName);
 		
-		// Now hang on. Is that a REAL specific epithet?
-		Name name;
-		if(!PATTERN_SPECIFICEPITHET.matcher(specificEpithet).matches() || specificEpithetsThatArentLowercase.contains(specificEpithet.toLowerCase())) {
-			// Oops, it's actually a genus name.
-			name = new Name(genus);
-			subspecificEpithets = specificEpithet + SEPARATOR + subspecificEpithets;
-		} else {
-			name = new Name(genus, specificEpithet);
-			namesByBinomial.put(name.getBinomialName(), name);			
-		}
-		
-		name.setInfraspecificEpithets(subspecificEpithets);
-		namesByFullName.put(fullName, name);
-		
-		return name;
+		namesByFullName.put(fullName, newName);
+		return newName;
 	}
 
 	public static Name get(String genus, String specificEpithet) {
-        genus = genus.trim();
-        specificEpithet = specificEpithet.trim();
-            
-		String fullName = genus + SEPARATOR + specificEpithet;
-		
-		if(namesByFullName.containsKey(fullName))
-			return namesByFullName.get(fullName);
-		
-		Name name;
-		if(!PATTERN_SPECIFICEPITHET.matcher(specificEpithet).matches() || specificEpithetsThatArentLowercase.contains(specificEpithet.toLowerCase())) {
-			// Oops, it's actually a genus name.
-			name = new Name(genus);
-			name.setInfraspecificEpithets(specificEpithet);
-		} else {
-			name = new Name(genus, specificEpithet);
-			namesByBinomial.put(name.getBinomialName(), name);
-		}
-
-		namesByFullName.put(fullName, name);
-		return name;
+        return get(genus, specificEpithet, null);
 	}
 	
 	public static Name get(String genus) {
-		String fullName = genus.trim();		
-		if(fullName.equals("")) return EMPTY;
-		
-		if(namesByFullName.containsKey(fullName))
-			return namesByFullName.get(fullName);
-		
-		Name name = new Name(genus);
-		namesByFullName.put(fullName, name);
-		
-		return name;
+		return get(genus, null, null);
 	}
 	
 	/**
@@ -385,7 +388,7 @@ public class Name implements Comparable<Name> {
 		Element nameElement = doc.createElement("name");
 		
 		nameElement.setAttribute("genus", getGenus());
-		if(getSpecificEpithet() != null)
+		if(hasSpecificEpithet())
 			nameElement.setAttribute("specificEpithet", getSpecificEpithet());
 		
 		if(!infraspecificEpithets.isEmpty()) {

@@ -121,4 +121,9 @@ public class NameTest {
 			new HashSet<>(Arrays.asList(Name.get("Dryobates", "arizonae"), Name.get("Dryobates", "stricklandi")))
 		);
 	}
+	
+	@Test
+	public void testInfraspecificEpithets() {
+		// TODO
+	}
 }

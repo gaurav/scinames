@@ -354,6 +354,7 @@ public class ProjectXMLReader {
 					case "to":
 						List<XMLKeyValue> keyValues = getTagSeries(reader, "name");
 						List<Name> names = new LinkedList<>();
+						
 						for(XMLKeyValue kv: keyValues) {
 							Map<String, String> attrs = kv.getAttributes();
 
@@ -361,15 +362,23 @@ public class ProjectXMLReader {
 								Name name = null;
 								String genus = attrs.get("genus");
 
-								if(attrs.containsKey("specificEpithet")) {
-									String specificEpithet = attrs.get("specificEpithet");
-									if(attrs.containsKey("infraspecificEpithets")) {
-										String infraspecificEpithets = attrs.get("infraspecificEpithets");
+								String specificEpithet = null;
+								if(attrs.containsKey("specificEpithet"))
+									specificEpithet = attrs.get("specificEpithet");
+								
+								if(attrs.containsKey("infraspecificEpithets")) {
+									String infraspecificEpithets = attrs.get("infraspecificEpithets");
+									
+									if(specificEpithet == null)
+										name = Name.get(genus, null, infraspecificEpithets);	
+									else
 										name = Name.get(genus, specificEpithet, infraspecificEpithets);
-									} else
+								} else {
+									if(specificEpithet == null)
+										name = Name.get(genus);	
+									else
 										name = Name.get(genus, specificEpithet);
-								} else
-									name = Name.get(genus);
+								}
 								
 								names.add(name);
 							} else
