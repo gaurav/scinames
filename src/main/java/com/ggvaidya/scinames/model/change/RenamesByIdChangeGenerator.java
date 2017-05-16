@@ -68,7 +68,8 @@ public class RenamesByIdChangeGenerator implements ChangeGenerator {
 			.filter(row -> row.hasColumn(idColumn))
 			.collect(Collectors.toMap(
 				(DatasetRow row) -> row.get(idColumn),
-				(DatasetRow row) -> ds.getNamesByRow().get(row)
+				(DatasetRow row) -> ds.getNamesByRow().get(row),
+				(a, b) -> { a.addAll(b); return a; }
 			));
 		LOGGER.info("Completed indexing " + ds + " by column " + idColumn);
 		
@@ -77,7 +78,8 @@ public class RenamesByIdChangeGenerator implements ChangeGenerator {
 			.filter(row -> row.hasColumn(idColumn))
 			.collect(Collectors.toMap(
 				(DatasetRow row) -> row.get(idColumn),
-				(DatasetRow row) -> prevDataset.getNamesByRow().get(row)
+				(DatasetRow row) -> prevDataset.getNamesByRow().get(row),
+				(a, b) -> { a.addAll(b); return a; }
 			));
 		LOGGER.info("Completed indexing " + prevDataset + " by column " + idColumn);
 		
