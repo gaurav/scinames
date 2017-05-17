@@ -1235,7 +1235,198 @@ library(rstan)
 rstan_options(auto_write = TRUE)
 options(mc.cores = parallel::detectCores())
 
-# TODO: prior predictive modelling
+# Prepare for prior predictive modelling.
+prior_multiplier <- 7.5
+
+taxon_concept_count_for_prior <- name_clusters_for_hierarchical_modeling
+mean(taxon_concept_count_for_prior$taxon_concept_count)
+taxon_concept_count_for_prior$taxon_concept_count <- 1 + rpois(nrow(taxon_concept_count_for_prior), mean(taxon_concept_count_for_prior$taxon_concept_count))    
+taxon_concept_count_for_prior$taxon_concept_count
+mean(taxon_concept_count_for_prior$taxon_concept_count)
+# Mean goes up from 1.366 to 2.35, is that a problem?
+
+# Let's set Branta canadensis, Branta hutchinsii and Grus americana as having 5x as many taxon concepts as it really has.
+
+index_branta_canadensis <- which(taxon_concept_count_for_prior$name == "Branta canadensis")
+index_branta_canadensis
+taxon_concept_count_for_prior[index_branta_canadensis,]$taxon_concept_count <- 
+    ceil(prior_multiplier * taxon_concept_count_for_prior[index_branta_canadensis,]$taxon_concept_count)
+
+index_branta_hutchinsii <- which(taxon_concept_count_for_prior$name == "Branta hutchinsii")
+index_branta_hutchinsii
+taxon_concept_count_for_prior[index_branta_hutchinsii,]$taxon_concept_count <- 
+    ceil(prior_multiplier * taxon_concept_count_for_prior[index_branta_hutchinsii,]$taxon_concept_count)
+
+index_grus_americana <- which(taxon_concept_count_for_prior$name == "Grus americana")
+index_grus_americana
+taxon_concept_count_for_prior[index_grus_americana,]$taxon_concept_count <- 
+    ceil(prior_multiplier * taxon_concept_count_for_prior[index_grus_americana,]$taxon_concept_count)
+
+index_gavia_arctica <- which(taxon_concept_count_for_prior$name == "Gavia arctica")
+index_gavia_arctica
+taxon_concept_count_for_prior[index_gavia_arctica,]$taxon_concept_count <- 
+    ceil(prior_multiplier * taxon_concept_count_for_prior[index_gavia_arctica,]$taxon_concept_count)
+
+index_gavia_pacifica <- which(taxon_concept_count_for_prior$name == "Gavia pacifica")
+index_gavia_pacifica
+taxon_concept_count_for_prior[index_gavia_pacifica,]$taxon_concept_count <- 
+    ceil(prior_multiplier * taxon_concept_count_for_prior[index_gavia_pacifica,]$taxon_concept_count)
+
+index_chamaea_fasciata <- which(taxon_concept_count_for_prior$name == "Chamaea fasciata")
+index_chamaea_fasciata
+taxon_concept_count_for_prior[index_chamaea_fasciata,]$taxon_concept_count <- 
+    ceil(prior_multiplier * taxon_concept_count_for_prior[index_chamaea_fasciata,]$taxon_concept_count)
+
+index_phoenicopterus_ruber <- which(taxon_concept_count_for_prior$name == "Phoenicopterus ruber")
+index_phoenicopterus_ruber
+taxon_concept_count_for_prior[index_phoenicopterus_ruber,]$taxon_concept_count <- 
+    ceil(prior_multiplier * taxon_concept_count_for_prior[index_phoenicopterus_ruber,]$taxon_concept_count)
+
+# resulting counts:
+taxon_concept_count_for_prior[index_branta_canadensis,]$taxon_concept_count
+taxon_concept_count_for_prior[index_branta_hutchinsii,]$taxon_concept_count
+taxon_concept_count_for_prior[index_grus_americana,]$taxon_concept_count
+taxon_concept_count_for_prior[index_phoenicopterus_ruber,]$taxon_concept_count
+
+# Prior predictive modelling
+stan_d_prior <- list(
+    nobs = nrow(name_clusters_for_hierarchical_modeling),
+    norder = length(levels(name_clusters_for_hierarchical_modeling$order)),
+    nfamily = length(levels(name_clusters_for_hierarchical_modeling$family)),
+    ngenus = length(levels(name_clusters_for_hierarchical_modeling$genus)),
+    y = taxon_concept_count_for_prior$taxon_concept_count,
+    order = as.integer(name_clusters_for_hierarchical_modeling$order),
+    family = as.integer(name_clusters_for_hierarchical_modeling$family),
+    genus = as.integer(name_clusters_for_hierarchical_modeling$genus),
+    years_in_list = name_clusters_for_hierarchical_modeling$years_in_list
+)
+
+model_fit_prior <- stan('counts_per_name_model.stan', data=stan_d_prior, 
+  control = list(
+      adapt_delta = 0.9
+      # 1: There were 1 divergent transitions after warmup. Increasing adapt_delta above 0.8 may help. See
+      # http://mc-stan.org/misc/warnings.html#divergent-transitions-after-warmup 
+  ))
+model_fit_prior
+# - Rhats appear to be at 1.0!
+post <- rstan::extract(model_fit_prior)
+
+#library("shinystan")
+#my_sso <- launch_shinystan(model_fit_prior)
+# - no Rhat above 1.1!
+
+hist(post$lambda_0)
+lambda_0 <- mean(post$lambda_0)
+lambda_0
+# = -4.47
+exp(lambda_0)
+# = 0.0114
+
+1/exp(lambda_0)
+# 87.3
+
+# Order level changes
+library(dplyr)
+
+# Order measurements.
+order_mean <- apply(post$pi_i, 2, mean)
+order_interval_min <- apply(post$pi_i, 2, function(x) { quantile(x, probs=0.025) } )
+order_interval_max <- apply(post$pi_i, 2, function(x) { quantile(x, probs=0.975) } )
+order_interval_width <- order_interval_max - order_interval_min
+count_per_order <- name_clusters_for_hierarchical_modeling %>% group_by(order) %>% summarize(count = length(id))
+order_measurements <- data.frame(
+    row.names=levels(count_per_order$order),
+    count=count_per_order$count,
+    min=order_interval_min,
+    mean=order_mean,
+    max=order_interval_max,
+    significant=ifelse(((order_interval_min > 0 & order_interval_max > 0) == 1) | ((order_interval_min < 0 & order_interval_max < 0) == 1), "yes", "no"),
+    interval_width=order_interval_width
+)
+#order_measurements
+order_measurements[order_measurements$significant == "yes",]
+
+# Plot
+# count number of observations per order
+#plot(order_interval_width ~ count_per_order$count, ylab="Interval width", xlab="Number of observations per order", main="5% credible interval widths for number of observations")
+
+# FAMILY
+family_mean <- apply(post$tau_j, 2, mean)
+family_interval_min <- apply(post$tau_j, 2, function(x) { quantile(x, probs=0.025) } )
+family_interval_max <- apply(post$tau_j, 2, function(x) { quantile(x, probs=0.975) } )
+family_interval_width <- family_interval_max - family_interval_min
+count_per_family <- name_clusters_for_hierarchical_modeling %>% group_by(family) %>% summarize(count = length(id))
+family_measurements <- data.frame(
+    row.names=levels(count_per_family$family),
+    count=count_per_family$count,
+    min=family_interval_min,
+    mean=family_mean,
+    max=family_interval_max,
+    significant=ifelse(((family_interval_min > 0 & family_interval_max > 0) == 1) | ((family_interval_min < 0 & family_interval_max < 0) == 1), "yes", "no"),
+    interval_width=family_interval_width
+)
+#family_measurements
+family_measurements[family_measurements$significant == "yes",]
+
+# Plot
+# plot(family_interval_width ~ count_per_family$count, ylab="Interval width", xlab="Number of observations per family", main="5% credible interval widths for number of observations")
+
+# GENUS
+genus_mean <- apply(post$rho_k, 2, mean)
+genus_interval_min <- apply(post$rho_k, 2, function(x) { quantile(x, probs=0.025) } )
+genus_interval_max <- apply(post$rho_k, 2, function(x) { quantile(x, probs=0.975) } )
+genus_interval_width <- genus_interval_max - genus_interval_min
+count_per_genus <- name_clusters_for_hierarchical_modeling %>% group_by(genus) %>% summarize(count = length(id))
+genus_measurements <- data.frame(
+    row.names=levels(count_per_genus$genus),
+    count=count_per_genus$count,
+    min=genus_interval_min,
+    mean=genus_mean,
+    max=genus_interval_max,
+    significant=ifelse(((genus_interval_min > 0 & genus_interval_max > 0) == 1) | ((genus_interval_min < 0 & genus_interval_max < 0) == 1), "yes", "no"),
+    interval_width=genus_interval_width
+)
+# genus_measurements
+genus_measurements[genus_measurements$significant == "yes",]
+# View(genus_measurements)
+
+prior_multiplier
+
+# CONCLUSION OF PRIOR PREDICTIVE TESTING (TEST 3)
+# - at a prior_multiplier of 20 -> three genera, no families, two orders
+# - at a prior_multiplier of 15 -> many genera, no families, no orders
+# - at a prior_multiplier of 12 -> many genera, no families, no orders
+# - at a prior_multiplier of 10 -> several genera, no families, no orders
+# - at a prior_multiplier of 9 -> three genera, no families, no orders
+# - at a prior_multiplier of 8 -> two genera, two orders, no families
+# - at a prior_multiplier of 7 -> genus and families significant, but not order
+#   -> retry: genus, no families, one order
+# - at a prior_multiplier of 5 -> nothing significant
+# - at a prior_multiplier of 3 -> nothing significant
+
+# CONCLUSION OF PRIOR PREDICTIVE TESTING (TEST 2)
+# - at a prior_multiplier of 200 -> 
+# - at a prior_multiplier of 100 -> one family significant, two orders significant
+# - at a prior_multiplier of 50 -> four families, no orders
+# - at a prior_multiplier of 20 -> families become significant, orders no longer significant
+# - at a prior_multiplier of 18 -> 
+# - at a prior_multiplier of 15 -> 
+# - at a prior_multiplier of 12 -> multiple orders are significant
+# - at a prior_multiplier of 11 -> one order, one family 
+# - at a prior_multiplier of 10 -> 
+# - at a prior_multiplier of 9 -> only one order is significant
+# - at a prior_multiplier of 5, 7 -> orders are significant.
+# - at a prior_multiplier of 4.8 -> 
+# - at a prior_multiplier of 4.5 -> nothing is significant.
+# - at a prior_multiplier of 4.2 -> 
+# - at a prior_multiplier of 3, 4 -> nothing is significant.
+# - at a prior_multiplier of 2.8 -> nothing is significant
+# - at a prior_multiplier of 2.5 -> 
+# - at a prior_multiplier of 2.2 -> nothing is significant
+# - at a prior_multiplier of 1.8 -> nothing is significant
+# - at a prior_multiplier of 1.5 -> four families, no genera or families
+# - at a prior_multiplier of 1.2 -> nothing is significant
+
 
 # STAN model.
 stan_d <- list(
