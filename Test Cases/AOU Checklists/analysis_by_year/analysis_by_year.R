@@ -3,8 +3,11 @@
 #
 # This analysis file includes instructions for both full analyses as well
 # as pre-1982 analyses. Set the FLAG_PRE1982 = T if you would like to
-# perform this analysis; otherwise, set FLAG_PRE1982 = F
+# perform this analysis; otherwise, set FLAG_PRE1982 = 
 #
+
+# Make sure the taxon concept counts align with the trajectory counts.
+# 
 
 getwd()
 
@@ -663,7 +666,7 @@ summary(name_clusters$taxon_concept_count)
 
 name_clusters$taxon_concept_count
 sum(name_clusters$taxon_concept_count)
-# - 1205 taxon concepts
+# - 1138 taxon concepts
 
 # How many currently recognized species have been corrected more than once?
 # (We call this the "correction rate" in the paper.)
@@ -677,31 +680,41 @@ sum(name_clusters$taxon_concept_count)
 
 count_name_clusters_exactly_one <- sum(name_clusters$taxon_concept_count == 1)
 count_name_clusters_exactly_one
-# - 630
+# - 630 name clusters have never been corrected
 stability <- count_name_clusters_exactly_one / total_recognized_name_clusters
 round(stability * 100, 2)
 # - 75.63%
 
 count_name_clusters_more_than_one <- sum(name_clusters$taxon_concept_count > 1)
 count_name_clusters_more_than_one
-# - 203 name clusters
+# - 203 name clusters have ever been corrected
 correction_rate <- count_name_clusters_more_than_one / total_recognized_name_clusters
 round(correction_rate * 100, 2)
 # - 24.37%
 
 count_name_clusters_exactly_two <- sum(name_clusters$taxon_concept_count == 2)
 count_name_clusters_exactly_two
-# - 120
+# - 120 have been recorrected exactly once
 single_correction <- count_name_clusters_exactly_two / total_recognized_name_clusters
 round(single_correction * 100, 2)
 # - 14.41%
 
+# DISCREPENCY: The trajectory calculation is 123, not 120! What's up with those
+# three clusters?
+
 count_name_clusters_more_than_two <- sum(name_clusters$taxon_concept_count > 2)
 count_name_clusters_more_than_two
-# - 83 name clusters
+# - 83 name clusters have ever been recorrected
 recorrection_rate <- count_name_clusters_more_than_two / total_recognized_name_clusters
 round(recorrection_rate * 100, 2)
-# - 24.37%
+# - 9.96%
+
+name_clusters_more_than_two <- name_clusters[name_clusters$taxon_concept_count > 2,]
+name_clusters_more_than_two$name
+
+# So, total:
+630 + 120 + 83
+# = 833!
 
 # Let's reload splumps just to make debugging easier.
 splumps <- read.csv("../splumps/list.csv")
@@ -773,81 +786,84 @@ sum(trajectories)
 df_trajectories <- data.frame(trajectories)
 df_trajectories
 
-df_trajectories[df_trajectories$Var1 == "",]
+traj_never_corrected <- df_trajectories[df_trajectories$Var1 == "",]$Freq
 # - 630 never corrected
-round(631/sum(trajectories) * 100, 2)
-# - 75.75%
+round(traj_never_corrected/sum(trajectories) * 100, 2)
+# - 75.63%
 
-(sum(trajectories) - 631)
-# - 202 corrected
+(sum(trajectories) - traj_never_corrected)
+# - 203 corrected
 
 # first split: 
 1 + 3 + 75 + 6 + 1 + 7 + 1
 # - 94 splits first
 94/sum(trajectories)
 # 11.28
+traj_split_first <- 94
 
 # split only
 1 + 3 + 75
 # - 79 splits only
-79/94
+79/traj_split_first
 
-# split -> lump
-6 + 1 + 7
-# - 14 split -> lumps
-14/118
+# split -> lump -> ...
+6 + 1 + 7 + 1
+# - 15 
+15/traj_split_first
+# - 15.96%
 
-# - 16 split -> lump
-
-# split -> lump only
-6 + 1
-7/118
-
-# split -> split
+# split -> split -> ...
 0
-1/118
-
-# split -> lump -> split
-7
-
-# split -> lump -> lump -> split
-2
 
 # first lumped
 44 + 7 + 2 + 1 + 1 + 51 + 3
 # - 109 lumps first
 109/sum(trajectories)
 # - 13.1
+traj_lump_first <- 109
+
+# lump -> split -> ...
+51 + 3
+# - 54
+54/traj_lump_first
+# - 49.5%
 
 # lump only
 44
-44/109
+44/traj_lump_first
 # - 40.37%
 
-# lump -> lump
+# lump -> lump -> ...
 7 + 2 + 1 + 1
 # - 11
-11/109
-# - 10.1%
-
-# lump -> lump only
-7
-
-# lump -> split
-51 + 3
-# - 54
-54/109
-# - 49.5%
-
-# lump -> split only
-54
-
-# lump -> lump -> split
-2 + 1 + 1
+11/traj_lump_first
+# 10.1%
 
 # Changes not fully represented in two steps (i.e. something -> something -> ...)
 2 + 1 + 1 + 3 + 1 + 7
 # - 15
+
+# Changes made once and then not repeated
+79 + 44
+# - 123, NOT 120 as recognized earlier. Discrepency!
+
+# Changes made more than once (recorrection)
+15 + 54 + 11
+# - 80, not 83 as recognized earlier. Discrepency!
+
+# Okay, so, here are the clusters with more than two circumscriptions:
+name_clusters_more_than_two$name
+
+# And here are the ones with the trajectories with more than one step.
+df_trajectories
+
+name_clusters$trajectory_str <- as.character(name_clusters$trajectory_lumps_splits)
+
+nrow(which(name_clusters$trajectory != ""))
+name_clusters_traj_more_than_one <- name_clusters[which(name_clusters$trajectory_str != "" & name_clusters$trajectory_str != "added|split" & name_clusters$trajectory_str != "rename|split" & name_clusters$trajectory_str != "lump" & name_clusters$trajectory_str != "split" & name_clusters$trajectory_str != "split|deleted"),]
+nrow(name_clusters_traj_more_than_one)
+
+
 
 ##############################################################
 #### How many lumps and splits revert earlier reversions? ####

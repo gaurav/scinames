@@ -324,6 +324,7 @@ public class ComplexQueryViewController implements Initializable {
 		dataTableView.getColumns().clear();
 		dataTableView.getColumns().addAll(
 			createTableColumnFromChange("id", ch -> ch.getId().toString()),
+			createTableColumnFromChange("dataset", ch -> ch.getDataset().getName()),			
 			createTableColumnFromChange("type", ch -> ch.getType().getType()),
 			createTableColumnFromChange("from", ch -> ch.getFromString()),
 			createTableColumnFromChange("from_name_cluster_ids", ch ->  ncm.getClusters(ch.getFrom()).stream()
@@ -341,7 +342,6 @@ public class ComplexQueryViewController implements Initializable {
 				ch -> ncm.getClusters(ch.getTo()).stream()
 					.map(cl -> cl.getNames().stream().map(n -> n.getFullName()).collect(Collectors.joining("; ")))
 					.collect(Collectors.joining(" and "))),
-			createTableColumnFromChange("dataset", ch -> ch.getDataset().getName()),
 			createTableColumnFromChange("filter_status", ch -> project.getChangeFilter().test(ch) ? "retained" : "eliminated"),
 			createTableColumnFromChange("properties", ch -> ch.getProperties().entrySet().stream().map(entry -> entry.getKey() + ": " + entry.getValue()).sorted().collect(Collectors.joining("; "))),		
 			createTableColumnFromChange("citations", ch -> ch.getCitationStream().map(cit -> cit.getCitation()).sorted().collect(Collectors.joining("; ")))
@@ -373,6 +373,7 @@ public class ComplexQueryViewController implements Initializable {
 		dataTableView.getColumns().clear();
 		dataTableView.getColumns().addAll(
 			createTableColumnFromChange("id", ch -> ch.getId().toString()),
+			createTableColumnFromChange("dataset", ch -> ch.getDataset().getName()),			
 			createTableColumnFromChange("type", ch -> ch.getType().getType()),
 			createTableColumnFromChange("from", ch -> ch.getFromString()),
 			createTableColumnFromChange("from_name_cluster_ids", ch ->  ncm.getClusters(ch.getFrom()).stream()
@@ -391,7 +392,6 @@ public class ComplexQueryViewController implements Initializable {
 					.map(cl -> cl.getNames().stream().map(n -> n.getFullName()).collect(Collectors.joining("; ")))
 					.collect(Collectors.joining(" and "))),
 			createTableColumnFromChange("filter_status", ch -> project.getChangeFilter().test(ch) ? "retained" : "eliminated"),
-			createTableColumnFromChange("dataset", ch -> ch.getDataset().getName()),
 			createTableColumnFromChange("citations", ch -> ch.getCitationStream().map(cit -> cit.getCitation()).collect(Collectors.joining("; ")))
 		);
 

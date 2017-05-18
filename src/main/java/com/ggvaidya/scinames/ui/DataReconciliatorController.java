@@ -335,7 +335,7 @@ public class DataReconciliatorController implements Initializable {
 				));
 				
 				precalc.put(cluster, "trajectory_lumps_splits", getOneElementSet(
-						trajectorySteps.stream().filter(ch -> ch.contains("split") || ch.equals("lump")).collect(Collectors.joining(" -> "))	
+					trajectorySteps.stream().filter(ch -> ch.contains("split") || ch.contains("lump")).collect(Collectors.joining(" -> "))	
 				));
 			}
 			
