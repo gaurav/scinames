@@ -655,7 +655,7 @@ sum(taxon_concepts_per_name)
 # taxon_concepts_per_name[which.max(taxon_concepts_per_name)] <- NA
 taxon_concepts_per_name[which.max(taxon_concepts_per_name)]
 # - 6 ()
-taxon_concepts[taxon_concepts$name_cluster_id == "f1ce9f45-cedb-4f10-a85f-09c348421ab6",]
+taxon_concepts[taxon_concepts$name_cluster_id == "286f9898-4a7d-4713-8475-964d91ec545d",]
 #    - And yes, it's Junco hyemalis!
 
 summary(taxon_concepts_per_name)
@@ -816,17 +816,17 @@ traj_split_first <- 94
 0
 
 # first lumped
-44 + 7 + 2 + 1 + 1 + 51 + 3
-# - 109 lumps first
-109/sum(trajectories)
-# - 13.1
-traj_lump_first <- 109
+1 + 44 + 7 + 2 + 1 + 1 + 51 + 3 + 1 + 1
+# - 112 lumps first
+112/sum(trajectories)
+# - 13.4
+traj_lump_first <- 112
 
 # lump -> split -> ...
-51 + 3
-# - 54
-54/traj_lump_first
-# - 49.5%
+1 + 51 + 3 + 1 + 1
+# - 57
+57/traj_lump_first
+# - 50.9%
 
 # lump only
 44
@@ -863,7 +863,18 @@ nrow(which(name_clusters$trajectory != ""))
 name_clusters_traj_more_than_one <- name_clusters[which(name_clusters$trajectory_str != "" & name_clusters$trajectory_str != "added|split" & name_clusters$trajectory_str != "rename|split" & name_clusters$trajectory_str != "lump" & name_clusters$trajectory_str != "split" & name_clusters$trajectory_str != "split|deleted"),]
 nrow(name_clusters_traj_more_than_one)
 
+as.character(name_clusters_traj_more_than_one$name)
 
+length(as.character(name_clusters_traj_more_than_one$name))
+length(as.character(name_clusters_more_than_two$name))
+
+setdiff(as.character(name_clusters_more_than_two$name), as.character(name_clusters_traj_more_than_one$name))
+# "Junco insularis"         "Aphelocoma coerulescens" "Empidonax wrightii"  
+
+# Okay! So! What are their trajectories?
+name_clusters[which(as.character(name_clusters$name) == "Junco insularis"),]$trajectory
+name_clusters[which(as.character(name_clusters$name) == "Aphelocoma coerulescens"),]$taxon_concepts
+name_clusters[which(as.character(name_clusters$name) == "Empidonax wrightii"),]$taxon_concepts
 
 ##############################################################
 #### How many lumps and splits revert earlier reversions? ####
