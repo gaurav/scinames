@@ -1,5 +1,4 @@
 /*
- *
  *  ComplexQueryViewController
  *  Copyright (C) 2017 Gaurav Vaidya
  *
@@ -19,7 +18,6 @@
  *  along with SciNames.  If not, see <http://www.gnu.org/licenses/>.
  *
  */
-
 package com.ggvaidya.scinames.complexquery;
 
 import java.io.File;
