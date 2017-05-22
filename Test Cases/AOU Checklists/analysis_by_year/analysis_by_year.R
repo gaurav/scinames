@@ -791,53 +791,57 @@ traj_never_corrected <- df_trajectories[df_trajectories$Var1 == "",]$Freq
 round(traj_never_corrected/sum(trajectories) * 100, 2)
 # - 75.63%
 
+630/833
 (sum(trajectories) - traj_never_corrected)
 # - 203 corrected
 
 # first split: 
-1 + 3 + 75 + 6 + 1 + 7 + 1
-# - 94 splits first
-94/sum(trajectories)
-# 11.28
-traj_split_first <- 94
+1 + 3 + 72 + 6 + 1 + 7 + 1
+# - 91 splits first
+91/sum(trajectories)
+# 10.92
+traj_split_first <- 91
 
 # split only
-1 + 3 + 75
-# - 79 splits only
-79/traj_split_first
+1 + 3 + 72
+# - 76 splits only
+76/traj_split_first
+# 83.52%
 
 # split -> lump -> ...
 6 + 1 + 7 + 1
 # - 15 
 15/traj_split_first
-# - 15.96%
+# - 16.48%
 
 # split -> split -> ...
 0
 
+df_trajectories
+
 # first lumped
 1 + 44 + 7 + 2 + 1 + 1 + 51 + 3 + 1 + 1
 # - 112 lumps first
-112/sum(trajectories)
-# - 13.4
+round(100*112/sum(trajectories), 2)
+# - 13.45%
 traj_lump_first <- 112
 
 # lump -> split -> ...
 1 + 51 + 3 + 1 + 1
 # - 57
 57/traj_lump_first
-# - 50.9%
+# - 50.89%
 
 # lump only
 44
 44/traj_lump_first
-# - 40.37%
+# - 39.29%
 
 # lump -> lump -> ...
 7 + 2 + 1 + 1
 # - 11
 11/traj_lump_first
-# 10.1%
+# 9.82%
 
 # Changes not fully represented in two steps (i.e. something -> something -> ...)
 2 + 1 + 1 + 3 + 1 + 7
