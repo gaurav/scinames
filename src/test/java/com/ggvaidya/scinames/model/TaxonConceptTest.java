@@ -139,8 +139,7 @@ public class TaxonConceptTest {
 		project.addDataset(ds1950);
 		
 		ds1960.explicitChangesProperty().addAll(
-			Stream.concat(streamNamesToAdditions(ds1960
-			), Stream.of(
+			Stream.of(
 				new Change(ds1960, ChangeType.LUMP, 
 					Stream.of(Name.get("Ornithorhynchus", "paradoxus"), Name.get("Ornithorhynchus", "anatinus")),
 					Stream.of(Name.get("Ornithorhynchus", "anatinus"))
@@ -148,12 +147,16 @@ public class TaxonConceptTest {
 				new Change(ds1960, ChangeType.SPLIT, Stream.of(Name.get("Branta", "canadensis")), Stream.of(
 						Name.get("Branta", "canadensis"),
 						Name.get("Branta", "hutchinsii")
-					)),
+				)),
 				new Change(ds1960, ChangeType.LUMP,
 					Stream.of(Name.get("Buteo", "harlani"), Name.get("Buteo", "jamaicensis")),
 					Stream.of(Name.get("Buteo", "jamaicensis"))
+				),
+				new Change(ds1960, ChangeType.SPLIT,
+					Stream.of(Name.get("Buteo", "jamaicensis")),
+					Stream.of(Name.get("Buteo", "borealis"), Name.get("Buteo", "jamaicensis"))
 				)
-			)).collect(Collectors.toList())
+			).collect(Collectors.toList())
 		);
 		project.addDataset(ds1960);
 		
@@ -210,12 +213,13 @@ public class TaxonConceptTest {
 		), ds1950.getRecognizedNames(project).collect(Collectors.toSet()));
 		
 		LOGGER.fine("ds1960: " + ds1960.getAllChanges().map(ch -> ch.toString()).collect(Collectors.joining("\n - ")));
-		assertEquals(3, ds1960.getAllChanges().count());
+		assertEquals(4, ds1960.getAllChanges().count());
 		assertEquals(setOfNames(
 			Name.get("Branta", "canadensis"),
 			Name.get("Branta", "hutchinsii"),			
 			Name.get("Ornithorhynchus", "anatinus"),	
-			Name.get("Buteo", "jamaicensis")
+			Name.get("Buteo", "jamaicensis"),
+			Name.get("Buteo", "borealis")
 		), ds1960.getRecognizedNames(project).collect(Collectors.toSet()));
 		
 		assertEquals(
@@ -223,7 +227,8 @@ public class TaxonConceptTest {
 				Name.get("Branta", "canadensis"),
 				Name.get("Branta", "hutchinsii"),
 				Name.get("Ornithorhynchus", "anatinus"),
-				Name.get("Buteo", "jamaicensis")
+				Name.get("Buteo", "jamaicensis"),
+				Name.get("Buteo", "borealis")
 			),
 			last.getRecognizedNames(project).collect(Collectors.toSet())
 		);
@@ -242,6 +247,7 @@ public class TaxonConceptTest {
 				Name.get("Branta", "canadensis"),
 				Name.get("Branta", "hutchinsii"),
 				Name.get("Ornithorhynchus", "anatinus"),
+				Name.get("Buteo", "borealis"),
 				Name.get("Buteo", "jamaicensis")
 			),
 			lastDataset.getRecognizedNames(project).collect(Collectors.toSet())
@@ -288,6 +294,114 @@ public class TaxonConceptTest {
 					)
 			)
 		);
+
+		ComprehensiveSetTest.test(
+			"Taxon concepts for 'Buteo jamaicensis'",
+			project.getNameClusterManager().getSpeciesClusters()
+				.filter(cl -> cl.contains(Name.get("Buteo", "jamaicensis")))
+				.flatMap(cl -> cl.getTaxonConcepts(project).stream())
+				.collect(Collectors.toSet()),
+			Arrays.asList(
+				(Predicate<TaxonConcept>) tc -> 
+					ComprehensiveSetTest.containsOnly(tc.getNames(), 
+						Arrays.asList(
+							Name.get("Buteo", "jamaicensis")
+						)
+					) && ComprehensiveSetTest.containsOnly(tc.getFoundIn(), 
+						Arrays.asList(
+							ds1935 // First recognized as an extralimital
+						)		
+					),
+				(Predicate<TaxonConcept>) tc -> 
+					ComprehensiveSetTest.containsOnly(tc.getNames(), 
+						Arrays.asList(
+								Name.get("Buteo", "jamaicensis")						
+						)
+					) && ComprehensiveSetTest.containsOnly(tc.getFoundIn(), 
+						Arrays.asList(
+							// harlani and borealis are lumped into it
+							ds1935, ds1945
+						)							
+					),
+				(Predicate<TaxonConcept>) tc -> 
+					ComprehensiveSetTest.containsOnly(tc.getNames(), 
+						Arrays.asList(
+								Name.get("Buteo", "jamaicensis")
+						)
+					) && ComprehensiveSetTest.containsOnly(tc.getFoundIn(), 
+						Arrays.asList(
+							// harlani is split out
+							ds1945, ds1960
+						)							
+					),
+					(Predicate<TaxonConcept>) tc -> 
+					ComprehensiveSetTest.containsOnly(tc.getNames(), 
+						Arrays.asList(
+								Name.get("Buteo", "jamaicensis")
+						)
+					) && ComprehensiveSetTest.containsOnly(tc.getFoundIn(), 
+						Arrays.asList(
+							// borealis is split out
+							ds1960
+						)							
+					)
+			)
+		);
+		
+		ComprehensiveSetTest.test(
+			"Taxon concepts for 'Buteo harlani'",
+			project.getNameClusterManager().getSpeciesClusters()
+				.filter(cl -> cl.contains(Name.get("Buteo", "harlani")))
+				.flatMap(cl -> cl.getTaxonConcepts(project).stream())
+				.collect(Collectors.toSet()),
+			Arrays.asList(
+				(Predicate<TaxonConcept>) tc -> 
+					ComprehensiveSetTest.containsOnly(tc.getNames(), 
+						Arrays.asList(
+							Name.get("Buteo", "harlani")
+						)
+					) && ComprehensiveSetTest.containsOnly(tc.getFoundIn(), 
+						Arrays.asList(
+							ds1930, ds1935 // First recognized
+						)		
+					),
+				(Predicate<TaxonConcept>) tc -> 
+					ComprehensiveSetTest.containsOnly(tc.getNames(), 
+						Arrays.asList(
+								Name.get("Buteo", "harlani")						
+						)
+					) && ComprehensiveSetTest.containsOnly(tc.getFoundIn(), 
+						Arrays.asList(
+							// lumped into jamaicensis. Note that this
+							// taxon concept isn't technically in this
+							// dataset -- it's here as a subspecies!
+							ds1935, ds1945
+						)							
+					),
+					(Predicate<TaxonConcept>) tc -> 
+					ComprehensiveSetTest.containsOnly(tc.getNames(), 
+						Arrays.asList(
+								Name.get("Buteo", "harlani")
+						)
+					) && ComprehensiveSetTest.containsOnly(tc.getFoundIn(), 
+						Arrays.asList(
+							// split out of jamaicensis
+							ds1945, ds1960
+						)							
+					),
+					(Predicate<TaxonConcept>) tc -> 
+					ComprehensiveSetTest.containsOnly(tc.getNames(), 
+						Arrays.asList(
+								Name.get("Buteo", "harlani")
+						)
+					) && ComprehensiveSetTest.containsOnly(tc.getFoundIn(), 
+						Arrays.asList(
+							// lumped back into jamaicensis is split out
+							ds1960
+						)							
+					)
+			)
+		);	
 	}
 	
     /**
