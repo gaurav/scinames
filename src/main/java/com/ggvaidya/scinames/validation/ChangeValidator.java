@@ -28,6 +28,7 @@ import java.nio.charset.CharsetDecoder;
 import java.nio.charset.CharsetEncoder;
 import java.nio.charset.CodingErrorAction;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -42,6 +43,7 @@ import com.ggvaidya.scinames.model.ChangeType;
 import com.ggvaidya.scinames.model.Dataset;
 import com.ggvaidya.scinames.model.Name;
 import com.ggvaidya.scinames.model.NameCluster;
+import com.ggvaidya.scinames.model.NameClusterManager;
 import com.ggvaidya.scinames.model.Project;
 
 /**
@@ -56,7 +58,8 @@ public class ChangeValidator implements Validator {
 		List<ValidationError> errors = new LinkedList<>();
 		
 		errors.addAll(getIncorrectAdditionsAndDeletions(p).collect(Collectors.toList()));
-		errors.addAll(getIncorrectLumpsAndSplits(p).collect(Collectors.toList()));
+		errors.addAll(getLumpsAndSplitsWithUnexpectedFromTos(p).collect(Collectors.toList()));
+		errors.addAll(getLumpsAndSplitsWithoutSharedConcepts(p).collect(Collectors.toList()));
 		errors.addAll(checkFromWasPreviouslyRecognized(p).collect(Collectors.toList()));
 		errors.addAll(changesOfNonRecognizedTypes(p).collect(Collectors.toList()));
 		errors.addAll(checkForDuplicateNameClustersOnSameSide(p).collect(Collectors.toList()));
@@ -105,19 +108,46 @@ public class ChangeValidator implements Validator {
 			.map(ch -> new ValidationError<Change>(this, p, "Incorrect addition or deletion", ch));
 	}
 	
-	private Stream<ValidationError<Change>> getIncorrectLumpsAndSplits(Project p) {
+	private Stream<ValidationError<Change>> getLumpsAndSplitsWithoutSharedConcepts(Project p) {
+		NameClusterManager ncm = p.getNameClusterManager();
+		
+		return p.getChanges()
+			.filter(ch -> ch.getType().equals(ChangeType.LUMP) || ch.getType().equals(ChangeType.SPLIT))
+			.flatMap(ch -> {
+				List<NameCluster> fromClusters = ncm.getClusters(ch.getFrom());
+				Set<NameCluster> toClusters = new HashSet<>(ncm.getClusters(ch.getTo()));
+				
+				List<NameCluster> intersection = fromClusters.stream()
+					.filter(cluster -> toClusters.contains(cluster))
+					.collect(Collectors.toList());
+				
+				// Should be exactly one shared between the two ends
+				if(intersection.size() == 1)
+					return Stream.empty();
+				else
+					return Stream.of(new ValidationError<Change>(this, p, "Intersection between 'from' and 'to' in change is not one: " + intersection, ch));
+			});
+	}
+	
+	private Stream<ValidationError<Change>> getLumpsAndSplitsWithUnexpectedFromTos(Project p) {
 		return p.getChanges()
 			.flatMap(ch -> {
 				if(ch.getType().equals(ChangeType.LUMP)) {
-					if(ch.getFrom().size() > ch.getTo().size())
-						return Stream.empty();
-					else
-						return Stream.of(new ValidationError<Change>(this, p, "Lump results in more names than were lumped", ch));
-				} else if(ch.getType().equals(ChangeType.SPLIT)) {
+					// There should be more in 'from' than in 'to'
 					if(ch.getFrom().size() < ch.getTo().size())
-						return Stream.empty();
+						return Stream.of(new ValidationError<Change>(this, p, "Lump results in more names than were lumped", ch));
+					else if(ch.getTo().size() != 1)
+						return Stream.of(new ValidationError<Change>(this, p, "Lump results in more than one name", ch));
 					else
+						return Stream.empty();
+				} else if(ch.getType().equals(ChangeType.SPLIT)) {
+					// There should be more in 'to' than in 'from'
+					if(ch.getFrom().size() > ch.getTo().size())
 						return Stream.of(new ValidationError<Change>(this, p, "Split results in fewer names than were split", ch));
+					else if(ch.getFrom().size() != 1)
+						return Stream.of(new ValidationError<Change>(this, p, "Split results in more than one name", ch));
+					else
+						return Stream.empty();
 				} else
 					return Stream.empty();
 			});

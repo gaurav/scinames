@@ -17,8 +17,6 @@ par(family="Calibri")
 
 # - TODO: Note that we do have multiple checklists within the same year 
 # sometimes, so make sure all our per-year measurements account for that.
-# - TODO: pre-1982 or pre-1983? We've standardized to pre-1982 for now, but
-# maybe the other one makes more sense?
 
 #
 # There is a convenience setup that controls where the output of this script
