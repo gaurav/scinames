@@ -180,7 +180,12 @@ public class DataReconciliatorController implements Initializable {
 			case RECONCILE_BY_SPECIES_NAME_CLUSTER:
 				if(namesDataset == ALL) {
 					nameClusters = project.getNameClusterManager().getSpeciesClustersAfterFiltering(project).collect(Collectors.toList());
-				} else if(!namesDataset.isChecklist()) {
+				// TODO: we're going to have to figure this out once AOU is done!
+				// There are logically three states here:
+				//	- is checklist: 
+				//	- is comprehensive: 
+				//	- is neither
+				/*} else if(!namesDataset.isChecklist()) {
 					// Not a checklist? Then referenced names is fine!
 					namesInDataset = namesDataset.getReferencedNames()
 							.filter(n -> n.hasSpecificEpithet())
@@ -190,7 +195,7 @@ public class DataReconciliatorController implements Initializable {
 					nameClusters = project.getNameClusterManager().getClusters(
 						namesInDataset
 					);
-					
+				*/
 					
 				} else {
 					// A checklist? Use recognized names.
@@ -202,8 +207,6 @@ public class DataReconciliatorController implements Initializable {
 					nameClusters = project.getNameClusterManager().getClusters(
 						namesInDataset
 					);
-				
-
 				}
 				
 				break;
@@ -211,6 +214,7 @@ public class DataReconciliatorController implements Initializable {
 			case RECONCILE_BY_NAME_CLUSTER:
 				// Note that this includes genus name clusters!
 				if(namesDataset == ALL)
+					// TODO: include filtering here too, I guess.
 					nameClusters = project.getNameClusterManager().getClusters().collect(Collectors.toList());
 				else {
 					nameClusters = project.getNameClusterManager().getClusters(
@@ -224,7 +228,7 @@ public class DataReconciliatorController implements Initializable {
 				
 			case RECONCILE_BY_SPECIES_TAXON_CONCEPT:
 				if(namesDataset == ALL)
-					nameClusters = project.getNameClusterManager().getSpeciesClusters().flatMap(
+					nameClusters = project.getNameClusterManager().getSpeciesClustersAfterFiltering(project).flatMap(
 						cl -> cl.getTaxonConcepts(project).stream()).collect(Collectors.toList());
 				else {
 					namesInDataset = namesDataset.getRecognizedNames(project)

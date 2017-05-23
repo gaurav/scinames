@@ -202,10 +202,9 @@ public class NameCluster {
 	 * datasets might have been filtered out: see getFoundInAfterFiltering for that.
 	 */
 	public ObservableSet<Dataset> getFoundIn() {
-		/*
-		if(contains(Name.get("Tringa", "ptilocnemis"))) {
-			LOGGER.fine(" - Name cluster containing 'Tringa ptilocnemis' has foundIn: " + foundIn + ", concept: " + this);
-		}*/
+		//if(contains(Name.get("Chordeiles", "acutipennis"))) {
+		//	LOGGER.info(" - Name cluster containing 'Chordeiles acutipennis' has foundIn: " + foundIn + ", concept: " + this);
+		//}
 		
 		return foundIn;
 	}
@@ -237,7 +236,12 @@ public class NameCluster {
 	
 	public void addAll(NameCluster cluster) {
 		names.addAll(cluster.getNames());
+		
+		Set<Dataset> snapshot = new HashSet<>(foundIn);
 		foundIn.addAll(cluster.getFoundIn());
+		//if(cluster.contains(Name.get("Chordeiles", "acutipennis"))) {
+		//	LOGGER.info("foundIn changed from " + snapshot + " + " + cluster.getFoundIn() + " -> " + foundIn);
+		//}
 		
 		// merge the other cluster's "binomialNameByDataset" data.
 		cluster.binomialNameByDataset.forEach((Dataset ds, Name n) -> {
@@ -310,7 +314,7 @@ public class NameCluster {
 					current = new TaxonConcept(this);
 					current.setStartsWith(changes);
 					
-					//if(contains(Name.get("Junco", "hyemalis")))
+					//if(contains(Name.get("Chordeiles", "acutipennis")))
 					//	LOGGER.info(" - New empty taxon concept started in dataset " + ds + ": " + current);
 					
 				}
@@ -322,7 +326,7 @@ public class NameCluster {
 				.collect(Collectors.toSet());
 			current.addNames(ds, new ArrayList<>(namesFromThisDataset));
 			
-			//if(contains(Name.get("Junco", "hyemalis")))
+			//if(contains(Name.get("Chordeiles", "acutipennis")))
 			//	LOGGER.info(" - Added names to " + current + " for " + ds + ": " + namesFromThisDataset);
 			
 			// Then filter that down to just the lumps and splits.
@@ -351,8 +355,8 @@ public class NameCluster {
 			concepts.add(current);
 		}
 		
-		//if(contains(Name.get("Junco", "hyemalis")))
-		//	LOGGER.info(" - Taxon concepts for 'Junco hyemalis':\n" + concepts.stream().map(c -> c.toString()).collect(Collectors.joining("\n - ")));
+		//if(contains(Name.get("Chordeiles", "acutipennis")))
+		//	LOGGER.info(" - Taxon concepts for 'Chordeiles acutipennis' from " + foundIn + ":\n" + concepts.stream().map(c -> c.toString()).collect(Collectors.joining("\n - ")));
 		
 		return concepts;
 	}

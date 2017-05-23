@@ -308,6 +308,10 @@ public class Project {
 		ds.setPreviousDataset(Optional.of(this), Optional.ofNullable(prev));
 		lastModified.modified();
 		
+		// Debugging code!
+		//if(ds.getName().startsWith("aou_1_07"))
+		//	LOGGER.info("Referenced names for aou_1_07: " + ds.getReferencedNames().collect(Collectors.toList()));
+		
 		// Add all referenced names to the nameClusterManager. That way, a name cluster
 		// must exist for each of them (and they'll be lumped in with others if we have
 		// existing renames to that effect).

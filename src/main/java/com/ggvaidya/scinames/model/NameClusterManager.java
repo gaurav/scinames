@@ -116,9 +116,9 @@ public class NameClusterManager {
 	 */
 	public void addCluster(NameCluster newCluster) {
 		// debugging; leaving in in case I need it.
-		if(newCluster.contains(Name.get("Tringa", "ptilocnemis"))) {
-			LOGGER.fine(" - Cluster for 'Tringa ptilocnemis' query: " + newCluster);
-		}	
+		//if(newCluster.contains(Name.get("Chordeiles", "acutipennis"))) {
+		//	LOGGER.info(" - Cluster for 'Chordeiles acutipennis' query: " + newCluster);
+		//}
 		
 		// Are any of these names already known to us? If so, we need to merge
 		// them.
@@ -128,6 +128,11 @@ public class NameClusterManager {
 			LOGGER.finest("New cluster " + newCluster + " has no overlap with existing clusters.");
 			newCluster.getNames().forEach(n -> clustersByName.put(n, newCluster));
 			clusters.add(newCluster);
+			
+			//if(newCluster.contains(Name.get("Chordeiles", "acutipennis"))) {
+			//	LOGGER.info(" - Cluster for 'Chordeiles acutipennis' added: " + newCluster);
+			//}
+			
 			return;
 		}
 		
@@ -144,15 +149,23 @@ public class NameClusterManager {
 			cluster.getNames().forEach(n -> clustersByName.remove(n));
 			clusters.remove(cluster);
 			
+			//if(cluster.contains(Name.get("Chordeiles", "acutipennis"))) {
+			//	LOGGER.info(" - Found old cluster for 'Chordeiles acutipennis': " + cluster + ", found in: " + cluster.getFoundIn());
+			//}
+			
 			// Now that we've "unindexed" that cluster, add all of its names and timepoints into
 			// our new merged cluster.
 			newCluster.addAll(cluster);
+			
+			//if(newCluster.contains(Name.get("Chordeiles", "acutipennis"))) {
+			//	LOGGER.info(" - Old cluster merged with new cluster for 'Chordeiles acutipennis': " + newCluster + ", found in: " + newCluster.getFoundIn());
+			//}
 		});
 		
 		// debugging; leaving in just in case I need it.
-		if(newCluster.contains(Name.get("Tringa", "ptilocnemis"))) {
-			LOGGER.fine(" - Cluster for 'Tringa ptilocnemis' result: " + newCluster);
-		}
+		//if(newCluster.contains(Name.get("Chordeiles", "acutipennis"))) {
+		//	LOGGER.info(" - Cluster for 'Chordeiles acutipennis' result: " + newCluster);
+		//}
 		
 		// Now index the merged cluster.
 		newCluster.getNames().forEach(n -> clustersByName.put(n, newCluster));

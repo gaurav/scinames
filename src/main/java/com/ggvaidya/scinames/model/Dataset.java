@@ -113,7 +113,22 @@ public class Dataset implements Citable, Comparable<Dataset> {
 	/* Higher order accessors */
 	@Override
 	public int compareTo(Dataset tp) {
-		return getDate().compareTo(tp.getDate());
+		int compare = getDate().compareTo(tp.getDate());
+		if(compare != 0) return compare;
+		
+		// Identical dates! Let's try names.
+		compare = getName().compareTo(tp.getName());
+		if(compare != 0) return compare;
+		
+		// Identical date, identical name! Go with the smaller hashcode.
+		compare = hashCode() - tp.hashCode();
+		if(compare != 0) return compare;
+		
+		// Crap, identical hashcodes. Are we identical?
+		if(this == tp) return 0;
+		
+		// No? Always pick us, I guess.
+		return -1;
 	}
 	
 	@Override public void setDate(SimplifiedDate sd) { 
@@ -363,9 +378,7 @@ public class Dataset implements Citable, Comparable<Dataset> {
 	 */
 	public Stream<Name> getReferencedNames() {
 		Stream<Name> namesFromData = getNamesInAllRows().stream();
-		Stream<Name> namesFromChanges = explicitChanges.stream().flatMap(
-			ch -> Stream.concat(ch.getFromStream(), ch.getToStream())
-		);
+		Stream<Name> namesFromChanges = explicitChanges.stream().flatMap(ch -> ch.getAllNames().stream());
 		
 		return Stream.concat(namesFromData, namesFromChanges).distinct();
 	}
