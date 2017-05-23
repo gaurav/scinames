@@ -60,6 +60,7 @@ public final class ValidationSuiteView {
 		
 		// Set up validators.
 		validators.add(new ChangeValidator());
+		validators.add(new NameClustersValidator());
 		
 		// Set up controller
 		controller = TabularDataViewController.createTabularDataView();
