@@ -386,7 +386,7 @@ public class ProjectXMLReader {
 										name = Name.get(genus, specificEpithet, infraspecificEpithets);
 								} else {
 									if(specificEpithet == null)
-										name = Name.get(genus);	
+										name = Name.getFromGenus(genus);	
 									else
 										name = Name.get(genus, specificEpithet);
 								}

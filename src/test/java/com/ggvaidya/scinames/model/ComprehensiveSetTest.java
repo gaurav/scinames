@@ -25,18 +25,18 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
  *
  */
 public class ComprehensiveSetTest {
-	public static <T> void test(String setName, Set<T> objects, List<Predicate<T>> filters) {
+	public static <T> void test(String setName, Set<T> set, List<Predicate<T>> filters) {
 		HashSet<T> objectsMatched = new HashSet<>();
 
-		assertEquals(objects.size(), filters.size(), "Filter count should be the same as set count");
+		assertEquals(set.size(), filters.size(), "Filter count should be the same as set count");
 		
 		for(Predicate<T> filter: filters) {
-			Set<T> matchedObjects = objects.stream().filter(filter).collect(Collectors.toSet());
+			Set<T> matchedObjects = set.stream().filter(filter).collect(Collectors.toSet());
 			
 			if(matchedObjects.size() == 0) {
-				fail("No object in set " + setName + " matched filter " + filter + ": " + objects);
+				fail("No object in set " + setName + " matched filter " + filter + ": " + set);
 			} else if(matchedObjects.size() > 1) {
-				fail(matchedObjects.size() + " matches in set " + setName + " for filter " + filter + ": " + objects);
+				fail(matchedObjects.size() + " matches in set " + setName + " for filter " + filter + ": " + set);
 			} else {
 				// Exactly one match! Perfect.
 				T match = matchedObjects.iterator().next();
@@ -50,7 +50,7 @@ public class ComprehensiveSetTest {
 			}
 		};
 		
-		assertEquals(objects, objectsMatched, "Comparing matched objects with set objects");
+		assertEquals(set, objectsMatched, "Comparing matched objects with set objects");
 	}
 
 	public static <T> boolean containsOnly(Set<T> set, List<T> expected) {

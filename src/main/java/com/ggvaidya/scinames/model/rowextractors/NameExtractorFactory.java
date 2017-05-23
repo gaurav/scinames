@@ -131,7 +131,7 @@ public class NameExtractorFactory {
 						return names;
 					
 					else if(specificEpithet == null)
-						names.add(Name.get(genus));
+						names.add(Name.getFromGenus(genus));
 					
 					else if(args.length > 2) {
 						String subspecificEpithetCol = args[2];

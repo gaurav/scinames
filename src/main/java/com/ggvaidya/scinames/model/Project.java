@@ -672,25 +672,12 @@ public class Project {
 		return getLumpsAndSplits().filter(
 			// When change is inverted (LUMP -> SPLIT, SPLIT -> LUMP):
 			ch -> (ch.getType().equals(changeReversed.getType().invert()) && (
-					// AND either contains TWO of the 'from' clusters in the 'to' slot.
-					nameClusterManager.getClusters(ch.getFrom()).stream().filter(nc -> changeReversedTo.contains(nc)).count() >= 2
+				// AND either contains TWO of the 'from' clusters in the 'to' slot.
+				nameClusterManager.getClusters(ch.getFrom()).stream().filter(nc -> changeReversedTo.contains(nc)).count() >= 2
 
-					// OR contains TWO of the 'to' clusters in the 'from' slot.
-					|| nameClusterManager.getClusters(ch.getTo()).stream().filter(nc -> changeReversedFrom.contains(nc)).count() >= 2
-				))
-			
-			/*
-			// OR when change is the SAME (SPLIT -> SPLIT, LUMP -> LUMP) but this isn't the same change: 
-			|| (ch != changeReversed && ch.getType().equals(changeReversed.getType()) 
-					&& (
-						// AND it contains TWO of the 'from' clusters in the 'from' slot (they're changing again!)
-						nameClusterManager.getClusters(ch.getFrom()).stream().filter(nc -> changeReversedFrom.contains(nc)).count() >= 2
-
-						// OR it contains TWO of the 'to' clusters in the 'to' slot (they've been changed again!)
-						|| nameClusterManager.getClusters(ch.getTo()).stream().filter(nc -> changeReversedTo.contains(nc)).count() >= 2	
-					)
-				)
-			*/
+				// OR contains TWO of the 'to' clusters in the 'from' slot.
+				|| nameClusterManager.getClusters(ch.getTo()).stream().filter(nc -> changeReversedFrom.contains(nc)).count() >= 2
+			))
 		);
 	} 
 	
@@ -708,13 +695,7 @@ public class Project {
 				changeReversed.getType().equals(ch.getType().invert())
 				&& nameClusterManager.getClusters(ch.getFrom()).equals(nameClusterManager.getClusters(changeReversed.getTo()))
 				&& nameClusterManager.getClusters(ch.getTo()).equals(nameClusterManager.getClusters(changeReversed.getFrom()))
-			) /* || (
-				// OR be identical to the original (A + B -> C, C -> A + B, A + B -> C)
-				ch != changeReversed
-				&& changeReversed.getType().equals(ch.getType())
-				&& nameClusterManager.getClusters(ch.getFrom()).equals(nameClusterManager.getClusters(changeReversed.getFrom()))
-				&& nameClusterManager.getClusters(ch.getTo()).equals(nameClusterManager.getClusters(changeReversed.getTo()))		
-			) */
+			)
 		);
 	}
 	

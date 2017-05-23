@@ -97,9 +97,4 @@ public class NameClusterManagerTest {
 		
 		assertEquals(cluster.getFoundInSorted().get(0), ds1);
 	}
-	
-	@Test
-	public void testTaxonConcepts() {
-		// TODO
-	}
 }

@@ -239,7 +239,7 @@ public class Name implements Comparable<Name> {
         return get(genus, specificEpithet, null);
 	}
 	
-	public static Name get(String genus) {
+	public static Name getFromGenus(String genus) {
 		return get(genus, null, null);
 	}
 	
@@ -272,7 +272,7 @@ public class Name implements Comparable<Name> {
 			return Optional.ofNullable(Name.get(components[0], components[1]));
 			
 		} else if(components.length == 1) {
-			return Optional.ofNullable(Name.get(components[0]));
+			return Optional.ofNullable(Name.getFromGenus(components[0]));
 			
 		} else {
 			LOGGER.warning("Name '" + name + "' could not be parsed into a Name.");

@@ -24,7 +24,7 @@ import org.junit.jupiter.api.Test;
  * @author Gaurav Vaidya <gaurav@ggvaidya.com>
  */
 public class ChangeTest {
-       
+	
 	/**
 	 * Test serialization.
 	 */
@@ -38,4 +38,5 @@ public class ChangeTest {
 	public void testRepresentations() {
 		// TODO: test whether we can represent our Change as an "and" string correctly and completely.
 	}
+
 }
