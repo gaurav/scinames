@@ -78,7 +78,7 @@ public class BulkChangeEditorController {
 		comboBoxNameIdentifiers.setItems(FXCollections.observableArrayList(columns));
 		
 		comboBoxMethods.getSelectionModel().selectedItemProperty().addListener((a, b, c) -> {
-			if(c.equals("Find changes using a name identifier field")) {
+			if(c.equals("Find renames using a name identifier field")) {
 				comboBoxNameIdentifiers.setDisable(false);
 			} else {
 				comboBoxNameIdentifiers.setDisable(true);
@@ -130,9 +130,10 @@ public class BulkChangeEditorController {
 	 */
 	
 	private final ObservableList<String> availableMethods = FXCollections.observableArrayList(Arrays.asList(
-		"Find changes using a name identifier field",
-		"Find changes using subspecific names",
-		"Find changes using species name changes"
+		"Find renames using a name identifier field",
+		"Find renames using subspecific names",
+		"Find renames using species name changes",
+		"Find lumps/splits using renames"
 	));
 	
 	private ObservableList<PotentialChange> foundChanges = FXCollections.observableList(new LinkedList<>());
@@ -151,7 +152,7 @@ public class BulkChangeEditorController {
 			return;
 		
 		switch(method) {
-			case "Find changes using a name identifier field":
+			case "Find renames using a name identifier field":
 				if(dataset == ALL) {
 					foundChanges.setAll(
 						new RenamesByIdChangeGenerator(comboBoxNameIdentifiers.getSelectionModel().getSelectedItem())
@@ -168,10 +169,13 @@ public class BulkChangeEditorController {
 				
 				break;
 				
-			case "Find changes using subspecific names":
+			case "Find renames using subspecific names":
 				break;
 		
-			case "Find changes using species name changes":
+			case "Find renames using species name changes":
+				break;
+				
+			case "Find lumps/splits using renames":
 				break;
 				
 			default:

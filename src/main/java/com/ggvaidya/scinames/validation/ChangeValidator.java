@@ -107,15 +107,20 @@ public class ChangeValidator implements Validator {
 	
 	private Stream<ValidationError<Change>> getIncorrectLumpsAndSplits(Project p) {
 		return p.getChanges()
-			.filter(ch -> {
+			.flatMap(ch -> {
 				if(ch.getType().equals(ChangeType.LUMP)) {
-					return !(ch.getFrom().size() > ch.getTo().size());
+					if(ch.getFrom().size() > ch.getTo().size())
+						return Stream.empty();
+					else
+						return Stream.of(new ValidationError<Change>(this, p, "Lump results in more names than were lumped", ch));
 				} else if(ch.getType().equals(ChangeType.SPLIT)) {
-					return !(ch.getFrom().size() < ch.getTo().size());
+					if(ch.getFrom().size() < ch.getTo().size())
+						return Stream.empty();
+					else
+						return Stream.of(new ValidationError<Change>(this, p, "Split results in fewer names than were split", ch));
 				} else
-					return false;
-			})
-			.map(ch -> new ValidationError<Change>(this, p, "Incorrect lump or split", ch));
+					return Stream.empty();
+			});
 	}
 	
 	private Stream<ValidationError<Change>> checkFromWasPreviouslyRecognized(Project p) {
