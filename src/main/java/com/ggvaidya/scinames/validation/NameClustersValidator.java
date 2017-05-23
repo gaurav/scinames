@@ -56,6 +56,7 @@ public class NameClustersValidator implements Validator {
 		List<ValidationError> errors = new LinkedList<>();
 		
 		errors.addAll(ensureNameClustersAreUnique(p).collect(Collectors.toList()));
+		errors.addAll(identifyNameClustersWithMultipleBinomials(p).collect(Collectors.toList()));
 		
 		return errors.stream();
 	}
@@ -71,6 +72,20 @@ public class NameClustersValidator implements Validator {
 				
 				nameClustersByName.put(n, nc);
 			}
+		}
+		
+		return errors.stream();
+	}
+	
+	private Stream<ValidationError<NameCluster>> identifyNameClustersWithMultipleBinomials(Project p) {
+		Map<Name, NameCluster> nameClustersByName = new HashMap<>(); 
+		LinkedList<ValidationError<NameCluster>> errors = new LinkedList<>();
+		
+		for(NameCluster nc: p.getNameClusterManager().getClusters().collect(Collectors.toList())) {
+			List<Name> binomials = nc.getNames().stream().flatMap(n -> n.asBinomial()).distinct().collect(Collectors.toList());
+			
+			if(binomials.size() > 1)
+				errors.add(new ValidationError<NameCluster>(this, p, "Name cluster contains multiple binomials: " + binomials, nc));
 		}
 		
 		return errors.stream();

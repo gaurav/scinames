@@ -88,9 +88,20 @@ public final class NameClustersView {
 		cols.add(colClusterName);
 		
 		TableColumn<NameCluster, String> colClusterList = new TableColumn<>("Cluster");
-		colClusterList.setCellValueFactory(new PropertyValueFactory<>("names"));
+		colClusterList.setCellValueFactory(
+			(TableColumn.CellDataFeatures<NameCluster, String> features) -> 
+				new ReadOnlyStringWrapper(features.getValue().getNames().stream().map(n -> n.getFullName()).collect(Collectors.joining("; ")))
+		);
 		colClusterList.setPrefWidth(200.0);
 		cols.add(colClusterList);
+		
+		TableColumn<NameCluster, String> colClusterCount = new TableColumn<>("Cluster Count");
+		colClusterCount.setCellValueFactory(
+			(TableColumn.CellDataFeatures<NameCluster, String> features) -> 
+				new ReadOnlyStringWrapper(String.valueOf(features.getValue().getNames().stream().map(n -> n.getFullName()).count()))
+		);
+		colClusterCount.setPrefWidth(100.0);
+		cols.add(colClusterCount);
 		
 		TableColumn<NameCluster, String> colDateRange = new TableColumn<>("Dates");
 		colDateRange.setCellValueFactory((TableColumn.CellDataFeatures<NameCluster, String> features) -> new ReadOnlyStringWrapper(features.getValue().getDateRange())
@@ -98,8 +109,21 @@ public final class NameClustersView {
 		colClusterList.setPrefWidth(100.0);
 		cols.add(colDateRange);
 		
+		TableColumn<NameCluster, String> colTaxonConceptCount = new TableColumn<>("Taxon Concept Count");
+		colTaxonConceptCount.setCellValueFactory(
+			(TableColumn.CellDataFeatures<NameCluster, String> features) -> 
+				new ReadOnlyStringWrapper(String.valueOf(features.getValue().getTaxonConcepts(projectView.getProject()).size()))
+		);
+		colTaxonConceptCount.setPrefWidth(100.0);
+		cols.add(colTaxonConceptCount);
+		
 		TableColumn<NameCluster, String> colTaxonConcepts = new TableColumn<>("Taxon Concepts");
-		colTaxonConcepts.setCellValueFactory(new PropertyValueFactory<>("TaxonConcepts"));
+		colTaxonConcepts.setCellValueFactory(
+			(TableColumn.CellDataFeatures<NameCluster, String> features) -> 
+				new ReadOnlyStringWrapper(features.getValue().getTaxonConcepts(projectView.getProject()).stream()
+					.map(tc -> "(" + tc.getNames().stream().map(n -> n.getFullName()).collect(Collectors.joining("; ")) + ")")
+					.collect(Collectors.joining(", ")))
+		);
 		colTaxonConcepts.setPrefWidth(200.0);
 		cols.add(colTaxonConcepts);
 		
