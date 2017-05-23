@@ -16,7 +16,7 @@
  */
 package com.ggvaidya.scinames.model;
 
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 import org.junit.jupiter.api.Test;
 
@@ -41,5 +41,8 @@ public class DatasetTest {
 		assertTrue(ds1.compareTo(ds2) < 0);
 		assertTrue(ds3.compareTo(ds2) > 0);
 		assertTrue(ds3.compareTo(ds1) > 0);
+
+		Dataset ds4 = new Dataset("ds1", new SimplifiedDate(1930), false);
+		assertTrue(ds1.compareTo(ds4) != 0);
 	}
 }
