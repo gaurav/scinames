@@ -220,20 +220,24 @@ public class ProjectSceneController {
 		dateCol.setEditable(true);
 
 		TableColumn<Dataset, String> nameCount = new TableColumn<>("Names");
-		nameCount.setPrefWidth(150);
+		nameCount.setPrefWidth(200);
+		//nameCount.setCellValueFactory(new PropertyValueFactory<>("NameCountSummary"));
 		nameCount.setCellValueFactory((CellDataFeatures<Dataset, String> cdf) -> {
 			Dataset dataset = cdf.getValue();
 			return new ReadOnlyStringWrapper(
-				projectView.getProject().getRecognizedNames(dataset).size() + " (" + dataset.getReferencedNames().count() + " in this dataset)"
+				dataset.getNameCountSummary(projectView.getProject())
+				//projectView.getProject().getRecognizedNames(dataset).size() + " (" + dataset.getReferencedNames().count() + " in this dataset)"
 			);
 		});
 		
 		TableColumn<Dataset, String> binomialCount = new TableColumn<>("Binomials");
-		binomialCount.setPrefWidth(150);
+		binomialCount.setPrefWidth(200);
+		// nameCount.setCellValueFactory(new PropertyValueFactory<>("BinomialCountSummary"));		
 		binomialCount.setCellValueFactory((CellDataFeatures<Dataset, String> cdf) -> {
 			Dataset dataset = cdf.getValue();
 			return new ReadOnlyStringWrapper(
-				projectView.getProject().getRecognizedNames(dataset).stream().map(n -> n.getBinomialName()).distinct().count() + " (" + dataset.getReferencedNames().map(n -> n.getBinomialName()).distinct().count() + " in this dataset)"
+				dataset.getBinomialCountSummary(projectView.getProject())
+				// projectView.getProject().getRecognizedNames(dataset).stream().map(n -> n.getBinomialName()).distinct().count() + " (" + dataset.getReferencedNames().map(n -> n.getBinomialName()).distinct().count() + " in this dataset)"
 			);
 		});
 		

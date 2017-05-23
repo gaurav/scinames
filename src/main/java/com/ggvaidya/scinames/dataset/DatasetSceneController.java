@@ -16,6 +16,9 @@
  */
 package com.ggvaidya.scinames.dataset;
 
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
@@ -27,6 +30,9 @@ import java.util.Set;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import org.apache.commons.csv.CSVFormat;
+import org.apache.commons.csv.CSVPrinter;
 
 import com.ggvaidya.scinames.model.Change;
 import com.ggvaidya.scinames.model.ChangeType;
@@ -40,14 +46,19 @@ import com.ggvaidya.scinames.model.Project;
 import com.ggvaidya.scinames.model.change.ChangeTypeStringConverter;
 import com.ggvaidya.scinames.model.change.NameSetStringConverter;
 import com.ggvaidya.scinames.model.filters.ChangeFilter;
+import com.ggvaidya.scinames.project.ProjectView;
+import com.ggvaidya.scinames.tabulardata.TabularDataViewController;
 
 import javafx.beans.Observable;
 import javafx.beans.property.ReadOnlyStringWrapper;
+import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 import javafx.collections.ObservableSet;
+import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
+import javafx.scene.control.Alert;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
@@ -57,6 +68,8 @@ import javafx.scene.control.TableView;
 import javafx.scene.control.cell.ComboBoxTableCell;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.control.cell.TextFieldTableCell;
+import javafx.stage.FileChooser;
+import javafx.stage.Stage;
 
 /**
  * FXML Controller class for a view of a Timepoint in a project.
@@ -504,6 +517,13 @@ public class DatasetSceneController {
 		listView.getItems().setAll("Dataset (" + rows.size() + " rows)");
 		listView.getSelectionModel().clearAndSelect(0);
 		
+		fillTableViewWithDatasetRows(tableView);
+	}
+	
+	private void fillTableViewWithDatasetRows(TableView<DatasetRow> tableView) {
+		// We need to precalculate.
+		ObservableList<DatasetRow> rows = dataset.rowsProperty();
+		
 		// Setup table.
 		tableView.editableProperty().set(false);
 		
@@ -555,5 +575,90 @@ public class DatasetSceneController {
 		
 		changesTableView.getSelectionModel().clearAndSelect(row);
 		changesTableView.scrollTo(row);
+	}
+	
+	// Export to CSV
+	public List<List<String>> getDataAsTable(TableView tv) {
+		// What columns do we have?
+		List<List<String>> result = new LinkedList<>();		
+		List<TableColumn> columns = tv.getColumns();
+		
+		columns.forEach(col -> {
+			List<String> column = new LinkedList<>();
+			
+			// Add the header.
+			column.add(col.getText());
+			
+			// Add the data.
+			for(int x = 0; x < tv.getItems().size(); x++) {
+				ObservableValue cellObservableValue = col.getCellObservableValue(x);
+				column.add(cellObservableValue.getValue().toString());
+			}
+			
+			result.add(column);
+		});
+		
+		return result;
+	}
+	
+	private void fillCSVFormat(CSVFormat format, Appendable destination, List<List<String>> data) throws IOException {
+		try (CSVPrinter printer = format.print(destination)) {
+			List<List<String>> dataAsTable = data;
+			if(dataAsTable.isEmpty())
+				return;
+
+			for(int x = 0; x < dataAsTable.get(0).size(); x++) {
+				for(int y = 0; y < dataAsTable.size(); y++) {
+					String value = dataAsTable.get(y).get(x);
+					printer.print(value);
+				}
+				printer.println();
+			}
+		}
+	}
+	
+	private void exportToCSV(TableView tv, ActionEvent evt) {
+		FileChooser chooser = new FileChooser();
+		chooser.getExtensionFilters().setAll(
+			new FileChooser.ExtensionFilter("CSV file", "*.csv"),
+			new FileChooser.ExtensionFilter("Tab-delimited file", "*.txt")			
+		);
+		File file = chooser.showSaveDialog(datasetView.getStage());
+		if(file != null) {
+			CSVFormat format = CSVFormat.RFC4180;
+			
+			String outputFormat = chooser.getSelectedExtensionFilter().getDescription();
+			if(outputFormat.equalsIgnoreCase("Tab-delimited file"))
+				format = CSVFormat.TDF;
+			
+			try {
+				List<List<String>> dataAsTable = getDataAsTable(tv);
+				fillCSVFormat(format, new FileWriter(file), dataAsTable);
+				
+				Alert window = new Alert(Alert.AlertType.CONFIRMATION, "CSV file '" + file + "' saved with " + (dataAsTable.get(0).size() - 1) + " rows.");
+				window.showAndWait();
+				
+			} catch(IOException e) {
+				Alert window = new Alert(Alert.AlertType.ERROR, "Could not save CSV to '" + file + "': " + e);
+				window.showAndWait();
+			}
+		}
+	}
+	
+	@FXML
+	private void exportChangesToCSV(ActionEvent evt) {
+		exportToCSV(changesTableView, evt);
+	}
+	
+	@FXML
+	private void displayData(ActionEvent evt) {
+		TabularDataViewController tdvc = TabularDataViewController.createTabularDataView();
+		
+		tdvc.getHeaderTextProperty().set("Data contained in dataset " + dataset);
+		fillTableViewWithDatasetRows(tdvc.getTableView());
+		
+		Stage stage = new Stage();
+		stage.setScene(tdvc.getScene());
+		stage.show();
 	}
 }

@@ -76,6 +76,11 @@ public class NameClusterManager {
 		return getClusters().filter(c -> !c.containsSuperspecificNames());
 	}
 	
+	public Stream<NameCluster> getSpeciesClustersAfterFiltering(Project project) {
+		return getSpeciesClusters()
+			.filter(cluster -> cluster.getFoundInAfterFiltering(project).size() > 0);
+	}
+	
 	public boolean hasCluster(Name n) {
 		return clustersByName.containsKey(n);
 	}

@@ -125,7 +125,7 @@ public class Project {
 	public ObservableSet<Name> binomialNamesProperty() { return binomialNames; }	
 	public ObservableMap<Name, List<Dataset>> timepointsByNameProperty() { return timepointsByName; }
 	public ObservableMap<String, String> propertiesProperty() { return properties; }
-	public Stream<NameCluster> getSpeciesNameClusters() { return nameClusterManager.getSpeciesClusters(); }
+	public Stream<NameCluster> getSpeciesNameClusters() { return nameClusterManager.getSpeciesClustersAfterFiltering(this); }
 	public ObservableSet<ChangeType> changeTypesProperty() { return changeTypes; }
 	public ObjectProperty<ChangeFilter> changeFilterProperty() { return changeFilterProperty; }
 	public ChangeFilter getChangeFilter() { return changeFilterProperty.get(); }

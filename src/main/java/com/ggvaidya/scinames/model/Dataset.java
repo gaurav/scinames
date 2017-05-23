@@ -151,7 +151,7 @@ public class Dataset implements Citable, Comparable<Dataset> {
 		prevDataset = tp.orElse(null);
 		
 		implicitChanges.clear();	
-		if(isChecklistProperty.get()) {
+		if(isChecklist()) {
 			// Implicit changes don't exist for non-checklists. If we're a checklist, figure out what
 			// names are new or have been removed in this checklist.
 			
@@ -172,17 +172,12 @@ public class Dataset implements Citable, Comparable<Dataset> {
 			 * So, instead, we accept all explicit changes and calculate implicit changes on that
 			 * basis. We then filter changes out of the explicit and implicit changes as needed.
 			 * 
-			ChangeFilter cf = ChangeFilterFactory.getNullChangeFilter();
-			
-			if(proj.isPresent()) {
-				cf = proj.get().getChangeFilter();
-			}
-			*/
+			 */
 
 			// What names do explicit changes add or remove?
 			Set<Name> addedByExplicitChanges = explicitChanges.stream().flatMap(ch -> ch.getToStream()).collect(Collectors.toSet());
 			Set<Name> deletedByExplicitChanges = explicitChanges.stream().flatMap(ch -> ch.getFromStream()).collect(Collectors.toSet());		
-
+						
 			// Calculate implicit changes that can't be explained by an explicit change.
 			Stream<Change> additions = names.stream()
 				.filter(n -> !prevNames.contains(n) && !addedByExplicitChanges.contains(n))
@@ -393,14 +388,19 @@ public class Dataset implements Citable, Comparable<Dataset> {
 		Set<Name> addedNames = getChanges(proj).flatMap(ch -> ch.getToStream()).collect(Collectors.toSet());
 		Stream<Name> names = addedNames.stream();
 		
-		if(isChecklistProperty.get()) {
+		// Not sure why I wrote all this, but it's unnecessary -- the implicit changes have already
+		// been set up correctly, so all we have to do is start with the previously recognized
+		// names, filter all changes and boom, we're done.
+		
+		//if(isChecklist()) {
 			// If this is a checklist, then we use the names we have now.
-			names = Stream.concat(names, getNamesInAllRows().stream());
-		} else {
+			// But let's figure out if we need to ignore any of them.
+			// names = Stream.concat(names, getNamesInAllRows().stream());
+		//} else {
 			// If this is not a checklist, then pass through previously recognized names.
 			if(prevDataset != null)
 				names = Stream.concat(names, prevDataset.getRecognizedNames(proj));
-		}
+		//}
 		
 		// Delete names we explicitly delete.
 		Set<Name> deletedNames = getChanges(proj)
@@ -421,12 +421,19 @@ public class Dataset implements Citable, Comparable<Dataset> {
 	
 	/* Display options: provides information on what happened in this dataset for UI purposes */
 
+	// Calculating this ourselves is too slow, so we hook into Project's cache.
 	public String getNameCountSummary(Project project) {
-		return getRecognizedNames(project).count() + " (" + getReferencedNames().count() + " in this dataset)";
+		if(isChecklist())
+			return project.getRecognizedNames(this).size() + " (" + getReferencedNames().count() + " in this dataset)";
+		else
+			return getReferencedNames().count() + " in this dataset (" + project.getRecognizedNames(this).size() + " recognized)";
 	}
 
 	public String getBinomialCountSummary(Project project) {
-		return getRecognizedNames(project).flatMap(n -> n.asBinomial()).distinct().count() + " (" + getReferencedNames().flatMap(n -> n.asBinomial()).distinct().count() + " in this dataset)";
+		if(isChecklist())
+			return project.getRecognizedNames(this).stream().flatMap(n -> n.asBinomial()).distinct().count() + " (" + getReferencedNames().flatMap(n -> n.asBinomial()).distinct().count() + " in this dataset)";
+		else
+			return getReferencedNames().flatMap(n -> n.asBinomial()).distinct().count() + " in this dataset (" + project.getRecognizedNames(this).stream().flatMap(n -> n.asBinomial()).distinct().count() + " recognized)";
 	}
 	
 	/** 

@@ -197,6 +197,10 @@ public class NameCluster {
 		return names.stream().anyMatch(n -> n.getFullName().matches(startsWith));
 	}
 	
+	/**
+	 * Returns the set of datasets these names have been found in. Note that some of those
+	 * datasets might have been filtered out: see getFoundInAfterFiltering for that.
+	 */
 	public ObservableSet<Dataset> getFoundIn() {
 		/*
 		if(contains(Name.get("Tringa", "ptilocnemis"))) {
@@ -206,11 +210,27 @@ public class NameCluster {
 		return foundIn;
 	}
 	
+	/**
+	 * Returns a sorted list of datasets these names have been found in.
+	 */
 	public List<Dataset> getFoundInSorted() {
 		if(foundIn.isEmpty())
 			return new ArrayList<Dataset>();
 		
 		return foundIn.stream().sorted().collect(Collectors.toList());
+	}
+	
+	/**
+	 * Returns only those datasets where the relevant changes haven't been filtered out.
+	 */
+	public List<Dataset> getFoundInAfterFiltering(Project project) {
+		if(foundIn.isEmpty())
+			return new ArrayList<Dataset>();
+		
+		return foundIn.stream()
+			.filter(ds -> containsAny(project.getRecognizedNames(ds)))
+			.sorted()
+			.collect(Collectors.toList());
 	}
 	
 	/* Different ways of adding names */

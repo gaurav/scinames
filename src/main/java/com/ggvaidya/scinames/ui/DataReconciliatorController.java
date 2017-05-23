@@ -179,7 +179,7 @@ public class DataReconciliatorController implements Initializable {
 			
 			case RECONCILE_BY_SPECIES_NAME_CLUSTER:
 				if(namesDataset == ALL) {
-					nameClusters = project.getNameClusterManager().getSpeciesClusters().collect(Collectors.toList());
+					nameClusters = project.getNameClusterManager().getSpeciesClustersAfterFiltering(project).collect(Collectors.toList());
 				} else if(!namesDataset.isChecklist()) {
 					// Not a checklist? Then referenced names is fine!
 					namesInDataset = namesDataset.getReferencedNames()
