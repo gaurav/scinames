@@ -160,8 +160,8 @@ public class ChangeValidator implements Validator {
 				
 				if(prev == null) return Stream.empty();
 				
-				Set<Name> prevNames = p.getRecognizedNames(prev);
-				List<Name> fromNamesMissing = ch.getFromStream().filter(n -> !prevNames.contains(n)).collect(Collectors.toList());
+				Set<Name> prevNames = p.getRecognizedNames(prev).stream().flatMap(n -> n.asBinomial()).collect(Collectors.toSet());
+				List<Name> fromNamesMissing = ch.getFromStream().flatMap(n -> n.asBinomial()).filter(n -> !prevNames.contains(n)).collect(Collectors.toList());
 				
 				return fromNamesMissing.stream().map(n -> 
 					new ValidationError<Change>(this, p, 
