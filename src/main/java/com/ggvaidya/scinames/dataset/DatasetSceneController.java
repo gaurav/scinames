@@ -654,11 +654,21 @@ public class DatasetSceneController {
 	private void displayData(ActionEvent evt) {
 		TabularDataViewController tdvc = TabularDataViewController.createTabularDataView();
 		
+		// TODO: modify this so we can edit that data, too!
 		tdvc.getHeaderTextProperty().set("Data contained in dataset " + dataset);
 		fillTableViewWithDatasetRows(tdvc.getTableView());
 		
 		Stage stage = new Stage();
 		stage.setScene(tdvc.getScene());
 		stage.show();
+	}
+	
+	@FXML
+	private void addNewChange(ActionEvent evt) {
+		int selectedIndex = changesTableView.getSelectionModel().getSelectedIndex();
+		if(selectedIndex < 0)
+			selectedIndex = 0;
+		
+		changesTableView.getItems().add(selectedIndex, new Change(dataset, ChangeType.ERROR, Stream.empty(), Stream.empty()));
 	}
 }
