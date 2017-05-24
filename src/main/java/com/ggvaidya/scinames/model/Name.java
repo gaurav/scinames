@@ -381,6 +381,8 @@ public class Name implements Comparable<Name> {
 		int c = this.getComparableName().compareTo(n.getComparableName());
 		if(c != 0) return c;
 		
+		// If they have identical full names -- included subspecific epithets
+		// -- then they are in fact identical.
 		return this.getFullName().compareTo(n.getFullName());
 	}
 	
