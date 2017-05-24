@@ -34,6 +34,7 @@ import org.junit.jupiter.api.Test;
 
 import com.ggvaidya.scinames.model.filters.ChangeFilterFactory;
 import com.ggvaidya.scinames.model.filters.IgnoreErrorChangeTypeFilter;
+import com.ggvaidya.scinames.model.filters.SkipChangesUnlessAddedBeforeChangeFilter;
 import com.ggvaidya.scinames.util.SimplifiedDate;
 
 import java.util.function.Consumer;
@@ -73,6 +74,7 @@ public class TaxonConceptTest {
 	private Project buildProject() {
 		Project project = new Project();
 		project.getChangeFilter().addChangeFilter(new IgnoreErrorChangeTypeFilter(project, true));
+		project.addChangeFilter(new SkipChangesUnlessAddedBeforeChangeFilter(project, 1950, true));		
 			
 		ds1930.explicitChangesProperty().addAll(
 			streamNamesToAdditions(ds1930,
@@ -123,7 +125,9 @@ public class TaxonConceptTest {
 		
 		ds1950.explicitChangesProperty().addAll(
 			Stream.concat(streamNamesToAdditions(ds1950,
-				Name.get("Ornithorhynchus", "paradoxus")
+				Name.get("Ornithorhynchus", "paradoxus"), 	// This will be eliminated by the <1950 filter,
+															// but the lump will still take place in 1960!
+				Name.get("Homo", "sapiens")
 			), Stream.of(
 				new Change(ds1950, ChangeType.RENAME,
 					Stream.of(Name.get("Platypus", "anatinus")), 
@@ -202,12 +206,11 @@ public class TaxonConceptTest {
 		), ds1940.getRecognizedNames(project).collect(Collectors.toSet()));
 		
 		LOGGER.fine("ds1950: " + ds1950.getAllChanges().map(ch -> ch.toString()).collect(Collectors.joining("\n - ")));
-		assertEquals(4, ds1950.getAllChanges().count());	
-		assertEquals(3, ds1950.getChanges(project).count());	
+		assertEquals(5, ds1950.getAllChanges().count());
+		assertEquals(2, ds1950.getChanges(project).count());	
 		assertEquals(setOfNames(
 			Name.get("Branta", "canadensis"),		
 			Name.get("Ornithorhynchus", "anatinus"),
-			Name.get("Ornithorhynchus", "paradoxus"),
 			Name.get("Buteo", "harlani"),
 			Name.get("Buteo", "jamaicensis")
 		), ds1950.getRecognizedNames(project).collect(Collectors.toSet()));
@@ -414,6 +417,7 @@ public class TaxonConceptTest {
 		// This won't work unless the name clusters include all the names.
 		Set<NameCluster> speciesNameClusters = project.getNameClusterManager().getSpeciesClusters().collect(Collectors.toSet());
 		ComprehensiveSetTest.test("species name clusters", speciesNameClusters, Arrays.asList(
+			cluster -> cluster.contains(Name.get("Homo", "sapiens")) && cluster.getTaxonConcepts(project).size() == 0,
 			cluster -> cluster.contains(Name.get("Branta", "hutchinsii")),
 			cluster -> cluster.contains(Name.get("Branta", "canadensis")),
 			cluster -> cluster.contains(Name.get("Platypus", "anatinus")),
