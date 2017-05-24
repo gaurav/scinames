@@ -198,7 +198,7 @@ public class DataReconciliatorController implements Initializable {
 				*/
 					
 				} else {
-					// A checklist? Use recognized names.
+					// A checklist? Use recognized binomial names.
 					namesInDataset = namesDataset.getRecognizedNames(project)
 							.filter(n -> n.hasSpecificEpithet())
 							.flatMap(n -> n.asBinomial())

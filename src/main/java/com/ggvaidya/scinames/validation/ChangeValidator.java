@@ -155,17 +155,20 @@ public class ChangeValidator implements Validator {
 	
 	private Stream<ValidationError<Change>> checkFromWasPreviouslyRecognized(Project p) {
 		return p.getChanges()
-			.filter(ch -> {
+			.flatMap(ch -> {
 				Dataset prev = ch.getDataset().getPreviousDataset();
 				
-				if(prev == null)
-					return false;
+				if(prev == null) return Stream.empty();
 				
 				Set<Name> prevNames = p.getRecognizedNames(prev);
+				List<Name> fromNamesMissing = ch.getFromStream().filter(n -> !prevNames.contains(n)).collect(Collectors.toList());
 				
-				return !ch.getFromStream().allMatch(n -> prevNames.contains(n));
-			})
-			.map(ch -> new ValidationError<Change>(this, p, "'From' not previously recognized", ch));
+				return fromNamesMissing.stream().map(n -> 
+					new ValidationError<Change>(this, p, 
+						"'From' name not previously recognized: " + n
+						+ " (cluster: " + p.getNameClusterManager().getCluster(n).get().getNames().stream().map(n2 -> n2.getFullName()).collect(Collectors.joining(", ")) + ")", 
+					ch));
+			});
 	}
 	
 	private Stream<ValidationError<Change>> changesOfNonRecognizedTypes(Project p) {
