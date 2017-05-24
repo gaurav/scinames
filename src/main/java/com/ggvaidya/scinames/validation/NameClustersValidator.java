@@ -56,7 +56,9 @@ public class NameClustersValidator implements Validator {
 		List<ValidationError> errors = new LinkedList<>();
 		
 		errors.addAll(ensureNameClustersAreUnique(p).collect(Collectors.toList()));
-		errors.addAll(identifyNameClustersWithMultipleBinomials(p).collect(Collectors.toList()));
+		
+		// - This results in lots of spurious errors, so we're ignoring this for now.
+		// errors.addAll(identifyNameClustersWithMultipleBinomials(p).collect(Collectors.toList()));
 		
 		return errors.stream();
 	}
