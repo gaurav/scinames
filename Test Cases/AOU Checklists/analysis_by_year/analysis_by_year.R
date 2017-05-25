@@ -450,16 +450,16 @@ cumsum(rev(table(name_clusters_not_extralimital_with_desc$year)))
 # - 834 in total
 
 # Described since 1950
-round(3/833 * 100, 2)
+round(3/834 * 100, 2)
 # - 0.36%
 
-round(15/833 * 100, 2)
+round(15/834 * 100, 2)
 # - 15 since 1900 (1.80%)
 
-round(24/833 * 100, 2)
+round(24/834 * 100, 2)
 # - 24 since 1889 (2.88%) 
 
-round(31/833 * 100, 2)
+round(31/834 * 100, 2)
 # - 31 since 1885 (3.72%)
 
 #############################################
@@ -556,6 +556,7 @@ round(pc_splits_after_1982, 2)
 
 sum(splits_by_year[names(splits_by_year) >= 1980])
 # - 70 splits
+70/95
 round(100 - pc_splits_after_1982, 2)
 # - missing: 26.32%
 
@@ -610,6 +611,10 @@ name_clusters <- name_clusters[!is.na(name_clusters$order),]
 nrow(name_clusters)
 # - 834! woo!
 
+# How many taxon concepts for the 834 name clusters?
+summary(name_clusters$taxon_concept_count)
+sum(name_clusters$taxon_concept_count)
+
 sum(is.na(name_clusters$taxon_concept_count))
 # - 0 NAs
 sum(name_clusters$taxon_concept_count)
@@ -647,13 +652,18 @@ taxon_concepts[taxon_concepts$name_cluster_id == "ea88d3e5-6fd7-4a7e-9542-45876e
 
 summary(taxon_concepts_per_name)
 #   Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
-#   1.000   1.000   1.000   1.398   2.000   6.000
+#   1.000   1.000   1.000   1.422   2.000   6.000
+summary(name_clusters_all$taxon_concept_count)
+#   1.000   1.000   1.000   1.422   2.000   6.000
+
+# Note that this is larger than
 summary(name_clusters$taxon_concept_count)
-#   1.000   1.000   1.000   1.398   2.000   6.000
+#    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+#   1.000   1.000   1.000   1.391   2.000   6.000 
 
 name_clusters$taxon_concept_count
 sum(name_clusters$taxon_concept_count)
-# - 1141 taxon concepts
+# - 1160 taxon concepts
 
 # How many currently recognized species have been corrected more than once?
 # (We call this the "correction rate" in the paper.)
@@ -663,41 +673,41 @@ total_recognized_name_clusters
 # - 834 name clusters
 
 sum(name_clusters$taxon_concept_count)
-# - 1141 taxon concepts
+# - 1160 taxon concepts
 
 count_name_clusters_exactly_one <- sum(name_clusters$taxon_concept_count == 1)
 count_name_clusters_exactly_one
-# - 629 name clusters have never been corrected
+# - 616 name clusters have never been corrected
 stability <- count_name_clusters_exactly_one / total_recognized_name_clusters
 round(stability * 100, 2)
-# - 75.42%
+# - 73.86%
 
 count_name_clusters_more_than_one <- sum(name_clusters$taxon_concept_count > 1)
 count_name_clusters_more_than_one
-# - 205 name clusters have ever been corrected
+# - 218 name clusters have ever been corrected
 correction_rate <- count_name_clusters_more_than_one / total_recognized_name_clusters
 round(correction_rate * 100, 2)
-# - 24.58%
+# - 26.14%
 
 count_name_clusters_exactly_two <- sum(name_clusters$taxon_concept_count == 2)
 count_name_clusters_exactly_two
-# - 122 have been recorrected exactly once
+# - 133 have been recorrected exactly once
 single_correction <- count_name_clusters_exactly_two / total_recognized_name_clusters
 round(single_correction * 100, 2)
-# - 14.63%
+# - 15.95%
 
 count_name_clusters_more_than_two <- sum(name_clusters$taxon_concept_count > 2)
 count_name_clusters_more_than_two
-# - 83 name clusters have ever been recorrected
+# - 85 name clusters have ever been recorrected
 recorrection_rate <- count_name_clusters_more_than_two / total_recognized_name_clusters
 round(recorrection_rate * 100, 2)
-# - 9.95%
+# - 10.19%
 
 name_clusters_more_than_two <- name_clusters[name_clusters$taxon_concept_count > 2,]
 name_clusters_more_than_two$name
 
 # So, total:
-629 + 122 + 83
+616 + 133 + 85
 # = 834!
 
 # Let's reload splumps just to make debugging easier.
@@ -718,20 +728,11 @@ nrow(lumps)
 nrow(splits)
 # - 95
 
+nrow(lumps) + nrow(splits)
+# - 237 taxonomic corrections
+
 # Perfect reversions, man, I don't know.
 (splumps$perfect_reversion_count >= 1)
-
-sum(lumps$reversion_count >= 1)
-# - 43 lumps
-reversion_pc_lumps = sum(lumps$reversion_count >= 1)/nrow(lumps)
-round(reversion_pc_lumps * 100, 2)
-# - lumps: 30.28%
-
-sum(splits$reversion_count >= 1)
-# - 43 splits
-reversion_pc_splits = sum(splits$reversion_count >= 1)/nrow(splits)
-round(reversion_pc_splits * 100, 2)
-# - splits: 45.26%
 
 sum(lumps$perfect_reversion_count >= 1)
 # - 27 lumps
@@ -745,21 +746,105 @@ perfect_reversion_pc_splits = sum(splits$perfect_reversion_count >= 1)/nrow(spli
 round(perfect_reversion_pc_splits * 100, 2)
 # - 28.42%
 
-sum(splumps$reversion_count >= 1)
-# - 86 splumps
-reversion_pc_splumps = sum(splumps$reversion_count >= 1)/nrow(splumps)
-round(reversion_pc_splumps * 100, 2)
-# - splits: 36.29%
-
 sum(splumps$perfect_reversion_count >= 1)
 # - 54 splumps
 perfect_reversion_pc_splumps = sum(splumps$perfect_reversion_count >= 1)/nrow(splumps)
 round(perfect_reversion_pc_splumps * 100, 2)
 # - 22.78%
 
+# View(data.frame(lumps$reversions,lumps$reversion_count,lumps$reverts_a_previous_change))
+
+sum(lumps$reversion_count >= 1)
+# - 43 lumps
+reversion_pc_lumps = sum(lumps$reversion_count >= 1)/nrow(lumps)
+round(reversion_pc_lumps * 100, 2)
+# - lumps: 30.28%
+
+sum(splits$reversion_count >= 1)
+# - 43 splits
+reversion_pc_splits = sum(splits$reversion_count >= 1)/nrow(splits)
+round(reversion_pc_splits * 100, 2)
+# - splits: 45.26%
+
+sum(splumps$reversion_count >= 1)
+# - 86 splumps
+reversion_pc_splumps = sum(splumps$reversion_count >= 1)/nrow(splumps)
+round(reversion_pc_splumps * 100, 2)
+# - splumps: 36.29%
+
+100 - round(reversion_pc_splumps * 100, 2)
+# - 63.71% have never been changed.
+
+
+# What if we use 'reverts_a_previous_change' to eliminate double-counting?
+lumps <- splumps[splumps$type == "lump",]
+splits <- splumps[splumps$type == "split",]
+
+nrow(lumps)
+# - 142
+nrow(splits)
+# - 95
+
+sum(lumps$perfectly_reverts_a_previous_change == "yes")
+# - 7 lumps
+perfect_reversion_pc_lumps = sum(lumps$perfectly_reverts_a_previous_change == "yes")/nrow(lumps)
+round(perfect_reversion_pc_lumps * 100, 2)
+# - 4.93%
+
+sum(splits$perfectly_reverts_a_previous_change == "yes")
+# - 22 splits
+perfect_reversion_pc_splits = sum(splits$perfectly_reverts_a_previous_change == "yes")/nrow(splits)
+round(perfect_reversion_pc_splits * 100, 2)
+# - 23.16%
+
+sum(splumps$perfectly_reverts_a_previous_change == "yes")
+# - 29 splumps
+perfect_reversion_pc_splumps = sum(splumps$perfectly_reverts_a_previous_change == "yes")/nrow(splumps)
+round(perfect_reversion_pc_splumps * 100, 2)
+# - 12.24%
+
+# Perfect reversions, man, I don't know.
+(splumps$reverts_a_previous_change == "yes")
+
+sum(lumps$reverts_a_previous_change == "yes")
+# - 12 lumps
+reversion_pc_lumps = sum(lumps$reverts_a_previous_change == "yes")/nrow(lumps)
+round(reversion_pc_lumps * 100, 2)
+# - lumps: 8.45%
+
+sum(splits$reverts_a_previous_change == "yes")
+# - 34 splits
+reversion_pc_splits = sum(splits$reverts_a_previous_change == "yes")/nrow(splits)
+round(reversion_pc_splits * 100, 2)
+# - splits: 35.79%
+
+sum(splumps$reverts_a_previous_change == "yes")
+# - 46 splumps
+reversion_pc_splumps = sum(splumps$reverts_a_previous_change == "yes")/nrow(splumps)
+round(reversion_pc_splumps * 100, 2)
+# - splumps: 19.41%
+
+100 - round(reversion_pc_splumps * 100, 2)
+# - 80.59% have never been changed.
+
+splumps_since_1980 <- splumps[splumps$year >= 1980,]
+nrow(splumps_since_1980)
+# - 80
+splumps_since_1980$year
+# - in range
+sum(splumps_since_1980$reversion_count >= 1)
+# - 29
+pc_splits_perfectly_reverting_lumps_since_1980 <- sum(splumps_since_1980$reversion_count >= 1)/nrow(splumps_since_1980) * 100
+100-round(pc_splits_perfectly_reverting_lumps_since_1980, 2)
+# - 63.75%
+
 #############################
 #### CHANGE TRAJECTORIES ####
 #############################
+
+# We're still on the 834, yes?
+nrow(name_clusters)
+# - 834! yup!
 
 trajectories <- table(name_clusters$trajectory_lumps_splits)
 sum(trajectories)
@@ -770,21 +855,64 @@ df_trajectories
 
 traj_never_corrected <- df_trajectories[df_trajectories$Var1 == "",]$Freq
 traj_never_corrected
-# - 629 never corrected
+# - 616 never corrected
 round(traj_never_corrected/sum(trajectories) * 100, 2)
-# - 75.42%
+# - 73.86%
 
-630/834
-(sum(trajectories) - traj_never_corrected)
-# - 205 corrected
+616/834
+traj_corrected <- (sum(trajectories) - traj_never_corrected)
+traj_corrected
+# - 218 corrected
+traj_corrected/834
+# - 26.14%
+
+# Review
+df_trajectories
+
+# first lumped
+57 + 8 + 4 + 1 + 1 + 1 + 50 + 3 + 2 + 1
+# - 128 lumps first
+round(128*100/traj_corrected, 2)
+# - 58.72
+128/834
+# - 15.3%
+traj_lump_first <- 128
+
+# Review
+df_trajectories
+
+# lump -> split -> ...
+1 + 50 + 3 + 2
+# - 56
+56/traj_lump_first
+# - 43.75%
+
+# lump only
+57 + 1
+58/traj_lump_first
+# - 45.3%
+
+# lump -> lump -> ...
+8 + 4 + 1 + 1
+# - 14
+14/traj_lump_first
+# 10.93%
+
+# LUMP_ONLY + LUMP_SPLIT + LUMP_LUMP
+58 + 56 + 14
+# - 128
+128 - traj_lump_first
+
 
 # Review
 df_trajectories
 
 # first split: 
-1 + 3 + 72 + 6 + 1 + 6 + 1
+3 + 72 + 6 + 1 + 6 + 1 + 1
 # - 90 splits first
-90/sum(trajectories)
+90/traj_corrected
+# - 41.28%
+90/834
 # 10.79
 traj_split_first <- 90
 
@@ -792,79 +920,49 @@ traj_split_first <- 90
 df_trajectories
 
 # split only
-1 + 3 + 72
-# - 76 splits only
-76/traj_split_first
-# 84.44%
+3 + 72
+# - 75 splits only
+75/traj_split_first
+# 83.33%
 
 # Review
 df_trajectories
 
 # split -> lump -> ...
-6 + 1 + 6 + 1
-# - 14 
-14/traj_split_first
-# - 15.56%
+6 + 1 + 6 + 1 + 1
+# - 15 
+15/traj_split_first
+# - 16.67%
 
 # split -> split -> ...
 0
 
 # SPLIT ONLY + SPLIT_LUMP + SPLIT_SPLIT
-76 + 14 + 0
+75 + 15 + 0
 # = 90
 90 - traj_split_first
 
-# Review
-df_trajectories
-
-# first lumped
-1 + 45 + 8 + 2 + 1 + 1 + 1 + 51 + 3 + 1 + 1
-# - 115 lumps first
-round(100*115/sum(trajectories), 2)
-# - 13.79%
-traj_lump_first <- 115
-
-# Review
-df_trajectories
-
-# lump -> split -> ...
-1 + 1 + 51 + 3 + 1
-# - 57
-57/traj_lump_first
-# - 49.57%
-
-# lump only
-45 + 1
-46/traj_lump_first
-# - 40%
-
-# lump -> lump -> ...
-8 + 2 + 1 + 1
-# - 12
-12/traj_lump_first
-# 10.43%
-
-# LUMP_ONLY + LUMP_SPLIT + LUMP_LUMP
-46 + 57 + 12
-# - 115
-115 - traj_lump_first
 
 # Review
 df_trajectories
 
 # Changes not fully represented in two steps (i.e. something -> something -> ...)
-2 + 1 + 1 + 3 + 1 + 6 + 1
-# - 15
+4 + 1 + 1 + 3 + 1 + 6 + 1 + 1
+# - 18
 
 # Changes made once and then not repeated
 # (LUMP_ONLY + SPLIT_ONLY)
-46 + 76
-# - 122, exactly what we got before
+58 + 75
+# - 133, exactly what we got before
+(58 + 75)/834
+# - 15.95%
 
 # Changes made more than once (recorrection)
 # (LUMP_SPLIT + SPLIT_LUMP + LUMP_LUMP + SPLIT_SPLIT)
-57 + 14 + 12 + 0
-# - 83, exactly what we got before
+56 + 15 + 14 + 0
+# - 85, exactly what we got before
+85/834
+# - 10.19%
 
 if(0) {
     # DEBUGGING CODE
@@ -1048,62 +1146,111 @@ if(0) {
 # What we want to compare:
 #   - %age of lump reverted  
 
-lumps_with_perfect_reversions <- lumps[lumps$perfect_reversion_count >= 1,]
+if(0) {
+    lumps_with_perfect_reversions <- lumps[lumps$perfect_reversion_count >= 1,]
+    lumps_with_perfect_reversions
+    nrow(lumps_with_perfect_reversions)
+    # - 27
+    round(nrow(lumps_with_perfect_reversions)/nrow(lumps) * 100, 2)
+    # - 19.01%
+    
+    perfect_lumps <- factor(lumps_with_perfect_reversions$perfect_reversions_summary)
+    table(perfect_lumps)
+    
+    splits_with_perfect_reversions <- splits[splits$perfect_reversion_count >= 1,]
+    splits_with_perfect_reversions
+    nrow(splits_with_perfect_reversions)
+    # - 27
+    round(nrow(splits_with_perfect_reversions)/nrow(splits) * 100, 2)
+    # - 28.42%
+    
+    perfect_splits <- factor(splits_with_perfect_reversions$perfect_reversions_summary)
+    table(perfect_splits)
+    
+    # ALL TOGETHER NOW
+    perfect_splumps <- splumps[splumps$perfect_reversion_count >= 1,]
+    summary(perfect_splumps$type)
+    write.csv(data.frame(table(perfect_splumps$perfect_reversions_summary)), "tables/perfect_reversions_summary.csv")
+    
+    # 
+    df_perfect_reversions_summary <- data.frame(table(perfect_splumps$perfect_reversions_summary))
+    df_perfect_reversions_summary
+    
+    # QUESTION: why do we only see part of the trajectory here, and not the complete trajectory?
+    
+    # Count 'em
+    total_count <- length(perfect_splumps$perfect_reversions_summary)
+    total_count
+    # - 54
+    count_lump_split_lump <- 2
+    count_split_lump_split <- 2
+    
+    # Any others? You need to update the following calculations if you need to!
+    
+    count_lump_split <- sum(startsWith(as.character(perfect_splumps$perfect_reversions_summary), "lump")) - count_lump_split_lump
+    count_lump_split
+    # - 40
+    count_split_lump <- sum(startsWith(as.character(perfect_splumps$perfect_reversions_summary), "split")) - count_split_lump_split
+    count_split_lump
+    # - 10
+    count_total = count_lump_split_lump + count_split_lump_split + count_lump_split + count_split_lump
+    count_total - total_count
+    
+    # BINOMIAL TEST: is there a 50-50 chance of lump_split vs split_lump?
+    binom.test(c(count_lump_split, count_split_lump))
+    # - 80%, p < 0.001
+    
+    # FISHER'S EXACT TEST TIME
+    actual_lump_split <- count_lump_split
+    actual_split_lump <- count_split_lump
+    expected_lump_split <- nrow(splits)
+    expected_split_lump <- nrow(lumps)
+    
+    fisher.test(
+        matrix(data = c(actual_lump_split, expected_lump_split, actual_split_lump, expected_split_lump), nrow = 2, ncol = 2)
+    )
+    # p < 0.001, true odds ratio is not equal to 1: more splits after lump than expected if same proportion as lumps
+}
+
+lumps_with_perfect_reversions <- lumps[lumps$perfectly_reverts_a_previous_change == "yes",]
 lumps_with_perfect_reversions
 nrow(lumps_with_perfect_reversions)
-# - 27
+# - 7
 round(nrow(lumps_with_perfect_reversions)/nrow(lumps) * 100, 2)
-# - 19.01%
+# - 4.93
 
-perfect_lumps <- factor(lumps_with_perfect_reversions$perfect_reversions_summary)
-table(perfect_lumps)
-
-splits_with_perfect_reversions <- splits[splits$perfect_reversion_count >= 1,]
+splits_with_perfect_reversions <- splits[splits$perfectly_reverts_a_previous_change == "yes",]
 splits_with_perfect_reversions
 nrow(splits_with_perfect_reversions)
-# - 27
+# - 22
 round(nrow(splits_with_perfect_reversions)/nrow(splits) * 100, 2)
-# - 28.42%
-
-perfect_splits <- factor(splits_with_perfect_reversions$perfect_reversions_summary)
-table(perfect_splits)
-
-# ALL TOGETHER NOW
-perfect_splumps <- splumps[splumps$perfect_reversion_count >= 1,]
-summary(perfect_splumps$type)
-write.csv(data.frame(table(perfect_splumps$perfect_reversions_summary)), "tables/perfect_reversions_summary.csv")
-
-# 
-df_perfect_reversions_summary <- data.frame(table(perfect_splumps$perfect_reversions_summary))
-df_perfect_reversions_summary
-
-# QUESTION: why do we only see part of the trajectory here, and not the complete trajectory?
-
-# Count 'em
-total_count <- length(perfect_splumps$perfect_reversions_summary)
-total_count
-# - 54
-count_lump_split_lump <- 2
-count_split_lump_split <- 2
-
-# Any others? You need to update the following calculations if you need to!
-
-count_lump_split <- sum(startsWith(as.character(perfect_splumps$perfect_reversions_summary), "lump")) - count_lump_split_lump
-count_lump_split
-# - 40
-count_split_lump <- sum(startsWith(as.character(perfect_splumps$perfect_reversions_summary), "split")) - count_split_lump_split
-count_split_lump
-# - 10
-count_total = count_lump_split_lump + count_split_lump_split + count_lump_split + count_split_lump
-count_total - total_count
+# - 23.16%
 
 # BINOMIAL TEST: is there a 50-50 chance of lump_split vs split_lump?
-binom.test(c(count_lump_split, count_split_lump))
-# - 80%, p < 0.001
+binom.test(c(nrow(lumps_with_perfect_reversions), nrow(splits_with_perfect_reversions)))
+# - 24.14%, p < 0.01
+
+lumps_with_partial_reversions <- lumps[lumps$reverts_a_previous_change == "yes",]
+lumps_with_partial_reversions
+nrow(lumps_with_partial_reversions)
+# - 12
+round(nrow(lumps_with_partial_reversions)/nrow(lumps) * 100, 2)
+# - 8.45%
+
+splits_with_partial_reversions <- splits[splits$reverts_a_previous_change == "yes",]
+splits_with_partial_reversions
+nrow(splits_with_partial_reversions)
+# - 34
+round(nrow(splits_with_partial_reversions)/nrow(splits) * 100, 2)
+# - 35.79%
+
+# BINOMIAL TEST: is there a 50-50 chance of lump_split vs split_lump?
+binom.test(c(nrow(lumps_with_partial_reversions), nrow(splits_with_partial_reversions)))
+# - 24.14%, p < 0.01
 
 # FISHER'S EXACT TEST TIME
-actual_lump_split <- count_lump_split
-actual_split_lump <- count_split_lump
+actual_lump_split <- nrow(splits_with_perfect_reversions)
+actual_split_lump <- nrow(lumps_with_perfect_reversions)
 expected_lump_split <- nrow(splits)
 expected_split_lump <- nrow(lumps)
 
@@ -1112,6 +1259,7 @@ fisher.test(
 )
 # p < 0.001, true odds ratio is not equal to 1: more splits after lump than expected if same proportion as lumps
 
+    
 ##################################
 #### PART 6: SOURCE OF SPLITS ####
 ##################################
@@ -1190,11 +1338,6 @@ nrow(name_clusters_all)
 # Duplicates?
 sum(table(name_clusters_all$name) > 1)
 # NO DUPLICATES!
-
-#################################################################################
-####### TODO: I'm pretty sure we can eliminate these names inside SciNames, #####
-####### which will cause the species counts to be consistent everywhere!    #####
-#################################################################################
 
 # Now, let's get rid of the names added by aou_5_34
 nrow(name_clusters_all)
@@ -1659,3 +1802,108 @@ length(table(family))/length(unique(name_clusters_for_hierarchical_modeling$fami
 
 # Plot
 plot(genus_interval_width ~ count_per_genus$count, ylab="Interval width", xlab="Number of observations per genus", main="5% credible interval widths for number of observations")
+
+length(genera)
+# - 23 genera
+
+genus_measurement_counts <- genus_measurements$count
+summary(genus_measurement_counts)
+#    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+#   1.000   1.000   1.500   2.467   3.000  26.000 
+significant_genera_counts <- genus_measurements[genus_measurements$significant == "yes",]$count
+summary(significant_genera_counts)
+#    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+#   2.00    2.00    3.00    3.87    5.00   11.00
+
+sort(genus_measurement_counts)
+
+hist(genus_measurement_counts)
+hist(significant_genera_counts, col="red", add=T)
+
+# Genera with synonyms!
+name_clusters[name_clusters$genus %in% genera,]$all_names_in_cluster
+
+data.frame(genera)
+# Mayr and Short 1970:
+#
+# Hybridization (pg 93):
+#   1      Ammodramus
+#   2           Anser - A. Intraspecific hybridization: gamma polymorphism
+#   3      Aphelocoma
+#   4  Artemisiospiza 
+#   5      Baeolophus
+#   6          Branta - A. Intraspecific hybridization: beta extent of hybridization limited or uncertain
+#   7       Butorides
+#   8     Calonectris
+#   9     Dendragapus - A. Intraspecific hybridization: alpha hybrid zone
+#   10      Empidonax
+#   11      Gallinago
+#   12      Gallinula
+#   13          Junco - A. Intraspecific hybridization: alpha hybrid zone, Group C. Limited hybridization between sympatric species not belonging to the same superspecies
+#   14    Leucosticte - A. Intraspecific hybridization: alpha hybrid zone
+#   15    Limnodromus 
+#   16      Melanitta  
+#   17       Melozone
+#   18       Puffinus
+#   19      Quiscalus
+#   20         Rallus - B. Interspecific hybridization between largely allopatric members of the same superspecies: beta limited hybridization in contact or overlap zone
+#   21       Sternula 
+#   22           Sula 
+#   23    Troglodytes - A. Intraspecific hybridization
+#
+# Group A. Intraspecific hybridization: alpha hybrid zone
+#   - Missing: Anas, Colaptes, Perisoreus, Parus, Psaltriparus, Dendroica, Quiscalus,
+#       Icterus, Pipilo, Aimophila, 
+# Group A. Intraspecific hybridization: beta hybrid zone
+#   - Missing: Anas, Otus, Corvus, Oporornis, Carduelis
+# Group A. Intraspecific hybridization: gamma polymorphism
+#   - Missing: Ardea, Buteo, Psaltriparus, Charadrius
+# Group B. Interspecific hybridization between largely allopatric members of the same superspecies: alpha zones of overlap and extensive hybridization
+#   - Missing: Anas, Larus, Vermivora, Pheucticus, Passerina
+# Group B. Interspecific hybridization between largely allopatric members of the same superspecies: beta limited hybridization in contact or overlap zone
+#   - Missing: Gavia, Callipepla, Charadrius, Picoides, Sphyrapicus, Contopus, Parus, Dendroica, Sturnella, Piranga, Acanthis
+# Group C. Limited hybridization between sympatric species not belonging to the same superspecies
+#   - Missing: Tympanuchus, Callipepla, Archilochus, Archilochus, Picoides, Zonotrichia
+# 
+# (main table)   
+#   All values for North American range only
+#   Groups:
+#       - A: Waterbirds
+#       - B: hawks, gallinceous birds
+#       - C: rails, cranes, shorebirds, gulls
+#       - D: pigeons, parrots, cuckoos
+#       - E: owls, hummingbirds, woodpeckers
+#       - F: tyrant flycatchers
+#       - G: larks, swallows, crows, Old World oscines
+#       - H: nine-primaried oscines
+#
+#   status:
+#       - A: monotypic species
+#       - B: uncomplicated polytypic species
+#       - C: strongly differentiated polytypic species
+#       - D: member of superspecies
+#       - E: member of species group
+#   
+#   1      Ammodramus (group H) - A, B, C
+#   2           Anser (group A) - E
+#   3      Aphelocoma (group G) - C
+#   4  Artemisiospiza 
+#   5      Baeolophus
+#   6          Branta (group A) - C, D, E 
+#   7       Butorides
+#   8     Calonectris
+#   9     Dendragapus
+#   10      Empidonax (group F) - A, B, C, D, E
+#   11      Gallinago (group C) - A
+#   12      Gallinula (group C) - A
+#   13          Junco (group H) - A, C, D
+#   14    Leucosticte -- prob not in Mayr and Short
+#   15    Limnodromus 
+#   16      Melanitta (group ) - 
+#   17       Melozone
+#   18       Puffinus
+#   19      Quiscalus
+#   20         Rallus (group C) - D
+#   21       Sternula [=Sterna] (group C) - A, B, E (+ C, D in global range)
+#   22           Sula (group Maine Species) - A
+#   23    Troglodytes (group G) - B, C, D, E

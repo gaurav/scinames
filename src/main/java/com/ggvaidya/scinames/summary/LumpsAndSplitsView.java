@@ -140,12 +140,15 @@ public final class LumpsAndSplitsView {
 					.anyMatch(ch -> ch.getDataset().getDate().compareTo(change.getDataset().getDate()) < 0)
 				) ? "yes" : "no"		
 			);
+			
+			// TODO: broken! This returns 'yes' when changes are empty.			
 			precalc.put(change, "reverts_all_previous_changes", 
 				(project.getChangesReversing(change)
 					// Did every change take place before this change?
 					.allMatch(ch -> ch.getDataset().getDate().compareTo(change.getDataset().getDate()) < 0)
 				) ? "yes" : "no"
 			);
+			
 			precalc.put(change, "perfect_reversions", project.getChangesPerfectlyReversing(change)
 				.map(ch -> ch.toString())
 				.collect(Collectors.joining("; ")));
@@ -157,6 +160,8 @@ public final class LumpsAndSplitsView {
 					.anyMatch(ch -> ch.getDataset().getDate().compareTo(change.getDataset().getDate()) < 0)
 				) ? "yes" : "no"		
 			);
+			
+			// TODO: broken! This returns 'yes' when changes are empty.
 			precalc.put(change, "perfectly_reverts_all_previous_changes", 
 				(project.getChangesPerfectlyReversing(change)
 					// Did every change take place before this change?
