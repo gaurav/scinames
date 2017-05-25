@@ -106,7 +106,7 @@ public class DataReconciliatorController implements Initializable {
 		reconcileUsingComboBox.getItems().add(RECONCILE_BY_NAME_CLUSTER);		
 		reconcileUsingComboBox.getItems().add(RECONCILE_BY_SPECIES_TAXON_CONCEPT);	
 		reconcileUsingComboBox.getSelectionModel().select(RECONCILE_BY_SPECIES_NAME_CLUSTER);
-		// reconcileUsingComboBox.onActionProperty().set((evt) -> reconcileData());
+		reconcileUsingComboBox.onActionProperty().set((evt) -> reconcileData());
 		
 		// Fill in the table with the defaults.
 		// reconcileData();

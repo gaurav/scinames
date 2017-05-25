@@ -1,32 +1,35 @@
 "","Var1","Freq"
 "1","",0
-"2","lump (1923) -> split (1945) [starting with change id c158f0f5-0b43-468c-8d9f-d482816b6653]",2
-"3","lump (1923) -> split (2011) [starting with change id 6da9f4ed-6ad9-4512-aed7-b0e5a0b90441]",2
-"4","lump (1931) -> split (1973) [starting with change id 77f97df4-391a-49f3-b9b2-c638c7df7e0e]",2
-"5","lump (1931) -> split (1985) [starting with change id 0edd0a28-fcc0-4864-a0bd-d6b7374f2580]",2
-"6","lump (1931) -> split (1989) [starting with change id 00fd30aa-b9aa-48f0-9992-daf4e544ff5f]",2
-"7","lump (1931) -> split (1989) [starting with change id c5e30166-5eb6-48cd-bff4-4fb0de88f51c]",1
-"8","lump (1931) -> split (1989) [starting with change id d321b185-c238-443f-8b59-eace299f059c]",2
-"9","lump (1944) -> split (1949) -> lump (1982) [starting with change id b0b4a67e-cf23-4214-b9bc-d473ffb683d3]",1
-"10","lump (1944) -> split (1949) [starting with change id b0b4a67e-cf23-4214-b9bc-d473ffb683d3]",1
-"11","lump (1944) -> split (1951) -> lump (1976) [starting with change id 5dc431d9-7f50-4b2f-bd02-016eada07678]",1
-"12","lump (1944) -> split (1951) [starting with change id 5dc431d9-7f50-4b2f-bd02-016eada07678]",1
-"13","lump (1944) -> split (1956) [starting with change id 4bb9ac6b-9f01-49aa-8b24-a56226a81cdf]",2
-"14","lump (1944) -> split (1956) [starting with change id c3537b8a-b06b-4841-9eea-98d959d8759f]",2
-"15","lump (1944) -> split (1982) [starting with change id cfaec1a9-8585-4f78-92c2-3bb2b47e72fe]",2
-"16","lump (1944) -> split (2006) [starting with change id 59a51ade-9b25-441c-a3a1-2207008b5772]",1
-"17","lump (1944) -> split (2011) [starting with change id 0d6cf467-3312-4747-85f6-c64287b2fd82]",2
-"18","lump (1945) -> split (2002) [starting with change id f832cc73-6b49-4482-aa9a-1929a9931959]",2
-"19","lump (1954) -> split (1995) [starting with change id 5b3c3ece-7b72-4031-82fd-3b2afad769d9]",2
-"20","lump (1976) -> split (1993) [starting with change id 158fe958-681a-41ab-b6bd-23edcca38bca]",2
-"21","lump (1982) -> split (1993) [starting with change id f0075671-eb14-4fab-8b0b-daae480d3ac4]",2
-"22","lump (1982) -> split (2000) [starting with change id b01f82ab-5818-4c72-82dd-da174bfdb65b]",2
-"23","split (1901) -> lump (1931) [starting with change id c7f08699-a4d2-4f75-827e-385505bf4bd7]",2
-"24","split (1908) -> lump (1931) -> split (1989) [starting with change id 920f9ea6-5686-471c-af48-500c29e22339]",1
-"25","split (1908) -> lump (1931) [starting with change id 920f9ea6-5686-471c-af48-500c29e22339]",1
-"26","split (1931) -> lump (1944) -> split (2006) [starting with change id 2f328af0-c5ba-49c5-baea-4072b13aea40]",1
-"27","split (1931) -> lump (1944) [starting with change id 2f328af0-c5ba-49c5-baea-4072b13aea40]",1
-"28","split (1931) -> lump (1973) [starting with change id f405326d-3d81-4b70-9b1d-fdb76da8d7e5]",2
-"29","split (1944) -> lump (1948) [starting with change id cc7e0503-d84c-464a-bd53-4e57742c0c7a]",2
-"30","split (1949) -> lump (1982) [starting with change id 967aa905-9538-4241-8a48-6c342d2b1db5]",1
-"31","split (1951) -> lump (1976) [starting with change id 0e6f7760-0deb-4273-a981-3cf825aea031]",1
+"2","lump (1891) -> split (1944) [starting with change id a881ac6d-9e2f-404f-8af8-bdb6f939b121]",2
+"3","lump (1923) -> split (1945) [starting with change id de9be977-3002-474f-9f69-c0b8c15c2813]",2
+"4","lump (1923) -> split (2011) [starting with change id f8690343-16ba-4a22-a4b5-70d6fc4f50c4]",2
+"5","lump (1931) -> split (1973) [starting with change id 9825edea-bc73-44af-a4b8-3e79457cc266]",2
+"6","lump (1931) -> split (1985) [starting with change id d7593c46-166a-42ff-b3a8-8192adb29824]",2
+"7","lump (1931) -> split (1989) [starting with change id 5f1395f0-2d60-4f94-a0a2-50a0167efd9e]",2
+"8","lump (1931) -> split (1989) [starting with change id b75a28c2-de26-44ab-84e2-5fcae7835eee]",2
+"9","lump (1931) -> split (1989) [starting with change id f68c89d9-3732-4622-a6aa-983ca7c95db3]",1
+"10","lump (1944) -> split (1949) -> lump (1982) [starting with change id dc4e9f27-f1cc-41e3-bc7c-44ca58f2e5e7]",1
+"11","lump (1944) -> split (1949) [starting with change id dc4e9f27-f1cc-41e3-bc7c-44ca58f2e5e7]",1
+"12","lump (1944) -> split (1951) -> lump (1976) [starting with change id 2f1fbdfd-20a5-4c1c-9ad0-5a07a15baf77]",1
+"13","lump (1944) -> split (1951) [starting with change id 2f1fbdfd-20a5-4c1c-9ad0-5a07a15baf77]",1
+"14","lump (1944) -> split (1956) [starting with change id ee5011e1-40c8-4f32-aec3-c8bea8a91b5d]",2
+"15","lump (1944) -> split (1956) [starting with change id fdff0f15-e0f2-469c-9a14-f84fdb858980]",2
+"16","lump (1944) -> split (1982) [starting with change id 3195e0c3-0e6a-4095-97e0-ec18140d0a71]",2
+"17","lump (1944) -> split (2006) [starting with change id 07dbe145-9613-4c32-ae04-e9af460dbede]",1
+"18","lump (1944) -> split (2011) [starting with change id 13a3b0d3-4db7-4cce-8756-3eabdc3f4749]",2
+"19","lump (1945) -> split (2002) [starting with change id 4265ed26-5672-46b1-b7eb-8dbfee2acb23]",2
+"20","lump (1953) -> split (1982) [starting with change id d1c87604-89ff-40d8-97c2-7de7f6df17e7]",2
+"21","lump (1954) -> split (1995) [starting with change id 0a569e95-a614-4f3d-8819-17f82711da16]",2
+"22","lump (1976) -> split (1993) [starting with change id d695ea70-341c-42ff-bed8-9dba46cf0d14]",2
+"23","lump (1982) -> split (1993) [starting with change id f35ccedd-bbe3-42e1-87fe-c65578d9d4a5]",2
+"24","lump (1982) -> split (1993) [starting with change id fec11727-0313-4ed2-8d4b-f1a23d4d75a6]",2
+"25","lump (1982) -> split (2000) [starting with change id 77fee11c-2780-48ff-877a-1ebb001b4cc7]",2
+"26","split (1901) -> lump (1931) [starting with change id 487bbc6e-a670-4ace-9cdc-387708ef8277]",2
+"27","split (1908) -> lump (1931) -> split (1989) [starting with change id 551f265a-e020-4132-b4e0-6c5da4c14449]",1
+"28","split (1908) -> lump (1931) [starting with change id 551f265a-e020-4132-b4e0-6c5da4c14449]",1
+"29","split (1931) -> lump (1944) -> split (2006) [starting with change id 54489b97-06fa-4e49-9607-f236c3d0f030]",1
+"30","split (1931) -> lump (1944) [starting with change id 54489b97-06fa-4e49-9607-f236c3d0f030]",1
+"31","split (1931) -> lump (1973) [starting with change id 86bf54ca-d89c-4d36-b97c-b11cc77665f8]",2
+"32","split (1944) -> lump (1948) [starting with change id eb6f8735-c576-4043-93ad-955142044380]",2
+"33","split (1949) -> lump (1982) [starting with change id fd7a59b0-5647-4c38-b521-95dcb9bc46c5]",1
+"34","split (1951) -> lump (1976) [starting with change id ec76b862-ef7b-4c55-94ff-56e58991d871]",1
