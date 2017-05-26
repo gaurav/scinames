@@ -15,9 +15,6 @@ getwd()
 windowsFonts(Calibri=windowsFont("Calibri"))
 par(family="Calibri")
 
-# - TODO: Note that we do have multiple checklists within the same year 
-# sometimes, so make sure all our per-year measurements account for that.
-
 #
 # There is a convenience setup that controls where the output of this script
 # goes. If OUTPUT_SCREEN is set to T, then the output will be displayed in R
@@ -212,6 +209,7 @@ binomial_count_by_year <- tapply(
 sort(binomial_count_by_year)
 # min: 771 in 1886
 # max: 874 in 1956
+# final: 862 in 2016
 zoo_binomial_count_by_year <- zoo(binomial_count_by_year, names(binomial_count_by_year))
 
 # Checklists with zero splumps
@@ -361,9 +359,9 @@ abline(gap_model_splits, lty=2)
 dev.off()
 par(mfrow=c(1, 1), cex=overall_cex)
 
-######################################
-#### PART 4: Count latest species ####
-######################################
+###################################################################
+#### PART 4: Description rates of currently recognized species ####
+###################################################################
 
 latest_aou <- read.csv('../latest_aou_checklist/NACC_list_species_latest.csv')
 latest_aou$species_lc <- tolower(latest_aou$species)
@@ -418,16 +416,16 @@ round(101/2127 * 100, 2)
 round(169/2127 * 100, 2)
 # - 169 since 1889 (7.95%) 
 
-round(198/2127 * 100, 2)
-# - 198 since 1885 (9.31%) 
+round(191/2127 * 100, 2)
+# - 191 since 1885 (8.98%) 
 
 # What are the proportions of the species in this study?
 name_clusters <- read.csv("../currently_recognized/list.csv")
 nrow(name_clusters)
-# - 1045 name clusters
+# - 862 name clusters
 
 sum(name_clusters$taxon_concept_count)
-# - 1207 taxon concepts
+# - 1226 taxon concepts
 
 name_clusters$species_lc <- tolower(name_clusters$species)
 name_clusters$name_lc <- tolower(name_clusters$name)
@@ -439,6 +437,10 @@ nrow(name_clusters_recognized)
 name_clusters_not_extralimital <- name_clusters_recognized[!is.na(name_clusters_recognized$order),]
 nrow(name_clusters_not_extralimital)
 # - 834
+
+# Difference?
+nrow(name_clusters_recognized) - nrow(name_clusters_not_extralimital)
+# - 28
 
 name_clusters_not_extralimital_with_desc <- merge(name_clusters_not_extralimital, original_descs, by.x = "name_lc", by.y = "species_lc", all.x = TRUE)
 nrow(name_clusters_not_extralimital_with_desc)
@@ -519,7 +521,10 @@ legend("topleft",
 dev.off()
 par(cex=overall_cex)
 
-#### Where do lumping and splitting spike?
+###############################################
+#### Where do lumping and splitting spike? ####
+###############################################
+
 splumps_by_checklist <- tapply(
     splumps$id,
     splumps$dataset,
@@ -565,9 +570,9 @@ splumps_after_1980 <- splumps[splumps$year > 1980,]
 nrow(splumps_after_1980)
 # 80
 summary(splumps_after_1980$reversion_count == 0)
-# - 52
-52/80
-# - 65%
+# - 51
+51/80
+# - 64%
 
 ################################
 #### PART 6: TAXON CONCEPTS ####
@@ -599,7 +604,8 @@ which(table(name_clusters_all$id) > 1)
 
 # Okay, thanks to the wonder of SciNames, we already have the counts ...
 summary(name_clusters_all$taxon_concept_count)
-#   0.000   1.000   1.000   1.153   1.000   5.000
+#   Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+#  1.000   1.000   1.000   1.422   2.000   6.000
 
 # How many name clusters do we have now? Lemme guess ...
 nrow(name_clusters)
@@ -613,12 +619,16 @@ nrow(name_clusters)
 
 # How many taxon concepts for the 834 name clusters?
 summary(name_clusters$taxon_concept_count)
+#  Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+# 1.000   1.000   1.000   1.391   2.000   6.000 
+
 sum(name_clusters$taxon_concept_count)
+# 1160 taxon concepts
 
 sum(is.na(name_clusters$taxon_concept_count))
 # - 0 NAs
 sum(name_clusters$taxon_concept_count)
-# - 1141 taxon concepts
+# - 1160 taxon concepts
 sort(name_clusters$taxon_concept_count)
 name_clusters[which.max(name_clusters$taxon_concept_count),]
 # Junco hyemalis with *six* taxon concepts? Better recheck.
@@ -640,6 +650,9 @@ taxon_concepts_per_name
 sum(taxon_concepts_per_name)
 # - 1226 taxon concepts
 
+# This doesn't line up with the 1160 above, because this is based on the
+# 862 clusters that include extralimitals, not the 834 that don't.
+
 # What's the max?
 max(taxon_concepts_per_name)
 
@@ -656,7 +669,7 @@ summary(taxon_concepts_per_name)
 summary(name_clusters_all$taxon_concept_count)
 #   1.000   1.000   1.000   1.422   2.000   6.000
 
-# Note that this is larger than
+# Note that this is larger than the count we have based on the 834 clusters.
 summary(name_clusters$taxon_concept_count)
 #    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
 #   1.000   1.000   1.000   1.391   2.000   6.000 
@@ -740,6 +753,12 @@ perfect_reversion_pc_lumps = sum(lumps$perfect_reversion_count >= 1)/nrow(lumps)
 round(perfect_reversion_pc_lumps * 100, 2)
 # - 19.01%
 
+# Who are these?
+perfectly_reverted_lumps <- lumps[lumps$perfect_reversion_count >= 1,]
+perfectly_reverted_lumps
+# MOST of these are lumps that WILL be reverted, rather than those that 
+# are being reverted, i.e. we're counting the SPLITS, not the LUMPS! Cool.
+
 sum(splits$perfect_reversion_count >= 1)
 # - 27 splits
 perfect_reversion_pc_splits = sum(splits$perfect_reversion_count >= 1)/nrow(splits)
@@ -775,7 +794,6 @@ round(reversion_pc_splumps * 100, 2)
 100 - round(reversion_pc_splumps * 100, 2)
 # - 63.71% have never been changed.
 
-
 # What if we use 'reverts_a_previous_change' to eliminate double-counting?
 lumps <- splumps[splumps$type == "lump",]
 splits <- splumps[splumps$type == "split",]
@@ -803,6 +821,11 @@ perfect_reversion_pc_splumps = sum(splumps$perfectly_reverts_a_previous_change =
 round(perfect_reversion_pc_splumps * 100, 2)
 # - 12.24%
 
+# What proportion of perfectly reverting splumps are splits reverting previous lumps?
+summary(splumps[splumps$perfectly_reverts_a_previous_change == "yes",]$type)
+22/(22+7)
+# 75.9%
+
 # Perfect reversions, man, I don't know.
 (splumps$reverts_a_previous_change == "yes")
 
@@ -824,8 +847,12 @@ reversion_pc_splumps = sum(splumps$reverts_a_previous_change == "yes")/nrow(splu
 round(reversion_pc_splumps * 100, 2)
 # - splumps: 19.41%
 
+# How much higher than the perfect reversion rate is this?
+reversion_pc_splumps - perfect_reversion_pc_splumps
+# - 7.17%
+
 100 - round(reversion_pc_splumps * 100, 2)
-# - 80.59% have never been changed.
+# - 80.59% have never reverted a previous change.
 
 splumps_since_1980 <- splumps[splumps$year >= 1980,]
 nrow(splumps_since_1980)
@@ -858,8 +885,8 @@ traj_never_corrected
 # - 616 never corrected
 round(traj_never_corrected/sum(trajectories) * 100, 2)
 # - 73.86%
-
 616/834
+
 traj_corrected <- (sum(trajectories) - traj_never_corrected)
 traj_corrected
 # - 218 corrected
@@ -881,16 +908,16 @@ traj_lump_first <- 128
 # Review
 df_trajectories
 
+# lump only
+57 + 1
+58/traj_lump_first
+# - 45.3%
+
 # lump -> split -> ...
 1 + 50 + 3 + 2
 # - 56
 56/traj_lump_first
 # - 43.75%
-
-# lump only
-57 + 1
-58/traj_lump_first
-# - 45.3%
 
 # lump -> lump -> ...
 8 + 4 + 1 + 1
@@ -902,7 +929,6 @@ df_trajectories
 58 + 56 + 14
 # - 128
 128 - traj_lump_first
-
 
 # Review
 df_trajectories
@@ -929,12 +955,14 @@ df_trajectories
 df_trajectories
 
 # split -> lump -> ...
+# (I classifed the split -> lump|split -> split as a split->lump)
 6 + 1 + 6 + 1 + 1
 # - 15 
 15/traj_split_first
 # - 16.67%
 
 # split -> split -> ...
+# (I classifed the split -> lump|split -> split as a split->lump)
 0
 
 # SPLIT ONLY + SPLIT_LUMP + SPLIT_SPLIT
@@ -942,13 +970,14 @@ df_trajectories
 # = 90
 90 - traj_split_first
 
-
 # Review
 df_trajectories
 
 # Changes not fully represented in two steps (i.e. something -> something -> ...)
 4 + 1 + 1 + 3 + 1 + 6 + 1 + 1
 # - 18
+18/834
+# 2.16%
 
 # Changes made once and then not repeated
 # (LUMP_ONLY + SPLIT_ONLY)
@@ -1458,14 +1487,13 @@ rstan_options(auto_write = TRUE)
 options(mc.cores = parallel::detectCores())
 
 # Prepare for prior predictive modelling.
-prior_multiplier <- 7.5
+prior_multiplier <- 20
 
 taxon_concept_count_for_prior <- name_clusters_for_hierarchical_modeling
 mean(taxon_concept_count_for_prior$taxon_concept_count)
-taxon_concept_count_for_prior$taxon_concept_count <- 1 + rpois(nrow(taxon_concept_count_for_prior), mean(taxon_concept_count_for_prior$taxon_concept_count))    
+taxon_concept_count_for_prior$taxon_concept_count <- rpois(nrow(taxon_concept_count_for_prior), mean(taxon_concept_count_for_prior$taxon_concept_count))    
 taxon_concept_count_for_prior$taxon_concept_count
 mean(taxon_concept_count_for_prior$taxon_concept_count)
-# Mean goes up from 1.366 to 2.35, is that a problem?
 
 # Let's set Branta canadensis, Branta hutchinsii and Grus americana as having 5x as many taxon concepts as it really has.
 
@@ -1533,19 +1561,19 @@ model_fit_prior
 # - Rhats appear to be at 1.0!
 post <- rstan::extract(model_fit_prior)
 
-#library("shinystan")
-#my_sso <- launch_shinystan(model_fit_prior)
+library("shinystan")
+my_sso <- launch_shinystan(model_fit_prior)
 # - no Rhat above 1.1!
 
 hist(post$lambda_0)
 lambda_0 <- mean(post$lambda_0)
 lambda_0
-# = -3.82
+# = -4.44
 exp(lambda_0)
-# = 0.0219
+# = 0.01179
 
 1/exp(lambda_0)
-# 45.65
+# 84.77
 
 # Order level changes
 library(dplyr)
@@ -1565,7 +1593,7 @@ order_measurements <- data.frame(
     significant=ifelse(((order_interval_min > 0 & order_interval_max > 0) == 1) | ((order_interval_min < 0 & order_interval_max < 0) == 1), "yes", "no"),
     interval_width=order_interval_width
 )
-#order_measurements
+# order_measurements
 order_measurements[order_measurements$significant == "yes",]
 
 # Plot
@@ -1614,10 +1642,16 @@ genus_measurements[genus_measurements$significant == "yes",]
 
 prior_multiplier
 
+# CONCLUSION OF PRIOR PREDICTIVE TESTING (TEST 4)
+# - at a prior_multiplier of 20 -> two orders, three genera
+# - at a prior_multiplier of 11 -> four genera
+# - at a prior_multiplier of 7 -> five genera
+# 
 # CONCLUSION OF PRIOR PREDICTIVE TESTING (TEST 3)
 # - at a prior_multiplier of 20 -> three genera, no families, two orders
 # - at a prior_multiplier of 15 -> many genera, no families, no orders
 # - at a prior_multiplier of 12 -> many genera, no families, no orders
+# - at a prior_multiplier of 11 -> 
 # - at a prior_multiplier of 10 -> several genera, no families, no orders
 # - at a prior_multiplier of 9 -> three genera, no families, no orders
 # - at a prior_multiplier of 8 -> two genera, two orders, no families
@@ -1766,8 +1800,11 @@ genus_measurements
 write.csv(genus_measurements, file=paste(sep="", 'tables/table_s6_hmod_genus', filename_postfix, '.csv'))
 
 genus_measurements[genus_measurements$significant == "yes",]
+# 
+nrow(genus_measurements[genus_measurements$significant == "yes",])
+# - 24 genera
 nrow(genus_measurements[genus_measurements$significant == "yes",])/nrow(genus_measurements)
-# - 6.8% of
+# - 7.1% of
 nrow(genus_measurements)
 # - 338
 
@@ -1795,10 +1832,10 @@ length(table(order))/length(unique(name_clusters_for_hierarchical_modeling$order
 family
 table(family)
 length(table(family))
-# - 15 families
+# - 16 families
 length(unique(name_clusters_for_hierarchical_modeling$family))
 length(table(family))/length(unique(name_clusters_for_hierarchical_modeling$family))
-# - 18.7% of families
+# - 20% of families
 
 # Plot
 plot(genus_interval_width ~ count_per_genus$count, ylab="Interval width", xlab="Number of observations per genus", main="5% credible interval widths for number of observations")
@@ -1818,10 +1855,21 @@ summary(significant_genera_counts)
 sort(genus_measurement_counts)
 
 hist(genus_measurement_counts)
+table(genus_measurement_counts)
 hist(significant_genera_counts, col="red", add=T)
+table(significant_genera_counts)
 
 # Genera with synonyms!
 name_clusters[name_clusters$genus %in% genera,]$all_names_in_cluster
+
+# are these genera special in terms of their numbers of years in this checklist?
+nrow(name_clusters)
+hist(name_clusters$first_added_year)
+table(name_clusters$first_added_year)
+652/sum(table(name_clusters$first_added_year))
+hist(name_clusters[name_clusters$genus %in% genera,]$first_added_year, add=T, col="red")
+table(name_clusters[name_clusters$genus %in% genera,]$first_added_year)
+55/sum(table(name_clusters[name_clusters$genus %in% genera,]$first_added_year))
 
 data.frame(genera)
 # Mayr and Short 1970:
