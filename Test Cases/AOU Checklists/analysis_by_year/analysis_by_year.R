@@ -854,6 +854,27 @@ reversion_pc_splumps - perfect_reversion_pc_splumps
 100 - round(reversion_pc_splumps * 100, 2)
 # - 80.59% have never reverted a previous change.
 
+# What proportion of partially reverting splumps are splits reverting previous lumps?
+summary(splumps[splumps$reverts_a_previous_change == "yes",]$type)
+34/(12+34)
+# 73.91%
+
+# What proportion of lumps are later reverted?
+nrow(lumps[lumps$reverts_a_later_change == "yes",])
+# - 36 lumps
+nrow(lumps[lumps$reverts_a_later_change == "yes",])/nrow(lumps)
+# - 25.4%
+
+# What proportion of lumps are later reverted?
+nrow(lumps[lumps$perfectly_reverts_a_later_change == "yes",])
+# - 22 lumps
+nrow(lumps[lumps$perfectly_reverts_a_later_change == "yes",])/nrow(lumps)
+# - 15.5%
+
+############################
+#### SPLUMPS AFTER 1980 ####
+############################
+
 splumps_since_1980 <- splumps[splumps$year >= 1980,]
 nrow(splumps_since_1980)
 # - 80

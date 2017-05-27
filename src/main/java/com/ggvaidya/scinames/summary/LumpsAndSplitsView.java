@@ -140,6 +140,12 @@ public final class LumpsAndSplitsView {
 					.anyMatch(ch -> ch.getDataset().getDate().compareTo(change.getDataset().getDate()) < 0)
 				) ? "yes" : "no"		
 			);
+			precalc.put(change, "reverts_a_later_change", 
+				(project.getChangesReversing(change)
+					// Did any change take place before this change?
+					.anyMatch(ch -> ch.getDataset().getDate().compareTo(change.getDataset().getDate()) > 0)
+				) ? "yes" : "no"
+			);	
 			
 			// TODO: broken! This returns 'yes' when changes are empty.			
 			precalc.put(change, "reverts_all_previous_changes", 
@@ -158,6 +164,12 @@ public final class LumpsAndSplitsView {
 				(project.getChangesPerfectlyReversing(change)
 					// Did any change take place before this change?
 					.anyMatch(ch -> ch.getDataset().getDate().compareTo(change.getDataset().getDate()) < 0)
+				) ? "yes" : "no"		
+			);
+			precalc.put(change, "perfectly_reverts_a_later_change", 
+				(project.getChangesPerfectlyReversing(change)
+					// Did any change take place before this change?
+					.anyMatch(ch -> ch.getDataset().getDate().compareTo(change.getDataset().getDate()) > 0)
 				) ? "yes" : "no"		
 			);
 			
@@ -185,12 +197,15 @@ public final class LumpsAndSplitsView {
 		cols.add(createTableColumnForTable("change", 50.0, precalc));
 		cols.add(createTableColumnForTable("reversions", 200.0, precalc));
 		cols.add(createTableColumnForTable("reversion_count", 200.0, precalc));
-		cols.add(createTableColumnForTable("reverts_a_previous_change", 100.0, precalc));		
-		cols.add(createTableColumnForTable("reverts_all_previous_changes", 100.0, precalc));
+		cols.add(createTableColumnForTable("reverts_a_previous_change", 100.0, precalc));
+		cols.add(createTableColumnForTable("reverts_a_later_change", 100.0, precalc));
+		
+		//cols.add(createTableColumnForTable("reverts_all_previous_changes", 100.0, precalc));
 		cols.add(createTableColumnForTable("perfect_reversions", 200.0, precalc));
 		cols.add(createTableColumnForTable("perfect_reversions_summary", 200.0, precalc));
 		cols.add(createTableColumnForTable("perfect_reversion_count", 200.0, precalc));
 		cols.add(createTableColumnForTable("perfectly_reverts_a_previous_change", 100.0, precalc));
-		cols.add(createTableColumnForTable("perfectly_reverts_all_previous_changes", 100.0, precalc));
+		cols.add(createTableColumnForTable("perfectly_reverts_a_later_change", 100.0, precalc));		
+		// cols.add(createTableColumnForTable("perfectly_reverts_all_previous_changes", 100.0, precalc));
 	}
 }
