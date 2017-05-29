@@ -144,11 +144,13 @@ public class ProjectView {
 			}
 		});
 		
+		/*
 		// Add menubar.
 		if(!System.getProperty("os.name").startsWith("Windows")) {
 			// Doesn't work right on Windows, so don't use it there.
-			ap.getChildren().add(controller.createMenuBar());
+			ap.getChildren().add(controller.setupMenuBar());
 		}
+		*/
 		
 		// Handle files being dropped into this scene.
 		scene.setOnDragOver((DragEvent event) -> {

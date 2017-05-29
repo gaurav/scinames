@@ -88,8 +88,9 @@ public class ProjectSceneController {
 	 * 
 	 * @return 
 	 */
-	public MenuBar createMenuBar() {
-		MenuBar mb = new MenuBar();		
+	public MenuBar setupMenuBar() {
+		MenuBar mb = menuBar;	
+		mb.getMenus().clear();
 		
 		// File
 		Menu fileMenu = new Menu("File");
@@ -180,6 +181,9 @@ public class ProjectSceneController {
 	 * On initializable, set up the table and a few focus-lose callbacks.
 	 */
 	public void initialize() {
+		// Update the menubar!
+		setupMenuBar();
+		
 		// If projectName loses focus, check to see if it
 		// changed -- if so, fire off an event.
 		projectName.focusedProperty().addListener((ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) -> {
@@ -277,6 +281,9 @@ public class ProjectSceneController {
 	
 	@FXML
 	private TableView<Dataset> timepointTable;
+	
+	@FXML
+	private MenuBar menuBar;
 	
 	@FXML
 	private ProgressBar progressBar;
