@@ -19,6 +19,7 @@ package com.ggvaidya.scinames.ui;
 import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.logging.Logger;
@@ -34,6 +35,7 @@ import com.ggvaidya.scinames.model.change.ChangeTypeStringConverter;
 import com.ggvaidya.scinames.model.change.NameSetStringConverter;
 import com.ggvaidya.scinames.model.change.PotentialChange;
 import com.ggvaidya.scinames.model.change.RenamesByIdChangeGenerator;
+import com.ggvaidya.scinames.model.change.SynonymsFromColumnChangeGenerator;
 import com.ggvaidya.scinames.model.filters.ChangeFilter;
 import com.ggvaidya.scinames.util.SimplifiedDate;
 
@@ -78,9 +80,11 @@ public class BulkChangeEditorController {
 		comboBoxNameIdentifiers.setItems(FXCollections.observableArrayList(columns));
 		
 		comboBoxMethods.getSelectionModel().selectedItemProperty().addListener((a, b, c) -> {
-			if(c.equals("Find renames using a name identifier field")) {
+			if(methodsThatNeedAColumn.contains(c)) {
+				// Activate it if this method needs a column
 				comboBoxNameIdentifiers.setDisable(false);
 			} else {
+				// Otherwise 
 				comboBoxNameIdentifiers.setDisable(true);
 			}
 		});
@@ -133,7 +137,12 @@ public class BulkChangeEditorController {
 		"Find renames using a name identifier field",
 		"Find renames using subspecific names",
 		"Find renames using species name changes",
+		"Find renames using a synonym column",
 		"Find lumps/splits using renames"
+	));
+	private final HashSet<String> methodsThatNeedAColumn = new HashSet<>(Arrays.asList(
+		"Find renames using a name identifier field",
+		"Find renames using a synonym column"
 	));
 	
 	private ObservableList<PotentialChange> foundChanges = FXCollections.observableList(new LinkedList<>());
@@ -173,6 +182,22 @@ public class BulkChangeEditorController {
 				break;
 		
 			case "Find renames using species name changes":
+				break;
+				
+			case "Find renames using a synonym column":
+				if(dataset == ALL) {
+					foundChanges.setAll(
+						new SynonymsFromColumnChangeGenerator(comboBoxNameIdentifiers.getSelectionModel().getSelectedItem())
+							.generate(project)
+							.collect(Collectors.toList())
+					);
+				} else {
+					foundChanges.setAll(
+						new SynonymsFromColumnChangeGenerator(comboBoxNameIdentifiers.getSelectionModel().getSelectedItem())
+							.generate(project, dataset)
+							.collect(Collectors.toList())
+					);
+				}
 				break;
 				
 			case "Find lumps/splits using renames":
