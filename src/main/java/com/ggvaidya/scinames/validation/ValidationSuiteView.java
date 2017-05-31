@@ -29,12 +29,16 @@ import com.ggvaidya.scinames.tabulardata.TabularDataViewController;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.logging.Level;
 import java.util.stream.Collectors;
 import javafx.beans.property.ReadOnlyStringWrapper;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.scene.Scene;
+import javafx.scene.control.Label;
 import javafx.scene.control.TableColumn;
+import javafx.scene.control.TableColumn.SortType;
+import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.input.MouseButton;
 import javafx.stage.Stage;
 import javafx.util.Callback;
@@ -61,6 +65,7 @@ public final class ValidationSuiteView {
 		// Set up validators.
 		validators.add(new ChangeValidator());
 		validators.add(new NameClustersValidator());
+		validators.add(new DatasetValidator());
 		
 		// Set up controller
 		controller = TabularDataViewController.createTabularDataView();
@@ -104,6 +109,14 @@ public final class ValidationSuiteView {
 		));
 		
 		// Set up table columns.
+		TableColumn<ValidationError, Level> colSeverity = new TableColumn<>("Severity");
+		colSeverity.setSortable(true);
+		colSeverity.setSortType(SortType.DESCENDING);
+		colSeverity.setEditable(false);
+		colSeverity.setPrefWidth(100.0);
+		colSeverity.setCellValueFactory(new PropertyValueFactory<>("Severity"));
+		cols.add(colSeverity);
+		
 		cols.add(createTableColumnForValidationError("Validator", ve -> ve.getValidator().getName()));
 		cols.add(createTableColumnForValidationError("Dataset", ve -> {
 			Optional<Dataset> dataset = ve.getDataset();
@@ -121,6 +134,9 @@ public final class ValidationSuiteView {
 		col = createTableColumnForValidationError("Target", ve -> ve.getTarget().toString());
 		col.setPrefWidth(500.0);
 		cols.add(col);
+		
+		controller.getTableView().getSortOrder().setAll(colSeverity);
+		controller.getTableView().setPlaceholder(new Label("No validation errors reported!"));
 		
 		// Double-click on rows should take you to the entry.
 		controller.getTableView().setOnMouseClicked(evt -> {

@@ -23,6 +23,7 @@
 package com.ggvaidya.scinames.validation;
 
 import java.util.Optional;
+import java.util.logging.Level;
 
 import com.ggvaidya.scinames.model.Change;
 import com.ggvaidya.scinames.model.Dataset;
@@ -37,6 +38,9 @@ import com.ggvaidya.scinames.model.Project;
 public class ValidationError<T> {
 	private Project project;
 	public Project getProject() { return project; }
+	
+	private Level severity;
+	public Level getSeverity() { return severity; }
 	
 	private Validator validator;
 	public Validator getValidator() { return validator; }
@@ -64,6 +68,11 @@ public class ValidationError<T> {
 	}
 	
 	public ValidationError(Validator v, Project p, String m, T t) {
+		this(Level.WARNING, v, p, m, t);
+	}
+	
+	public ValidationError(Level level, Validator v, Project p, String m, T t) {
+		severity = level;
 		validator = v;
 		project = p;
 		message = m;

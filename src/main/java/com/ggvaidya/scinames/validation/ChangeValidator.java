@@ -35,6 +35,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
+import java.util.logging.Level;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -88,7 +89,7 @@ public class ChangeValidator implements Validator {
 			
 			// Specifically, names should be convertible to ASCII.
 			if(!asciiEncoder.canEncode(str)) {
-				errors.add(new ValidationError<Change>(this, p, "Change '" + ch + "' cannot be rendered in ASCII", ch));
+				errors.add(new ValidationError<Change>(Level.INFO, this, p, "Change '" + ch + "' cannot be rendered in ASCII", ch));
 			}
 			
 			return errors.stream();
