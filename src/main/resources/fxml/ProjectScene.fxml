@@ -31,7 +31,7 @@
       <Button layoutX="1.0" layoutY="722.0" mnemonicParsing="false" onAction="#addDataset" text="Add" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" />
       <Button layoutX="38.0" layoutY="575.0" mnemonicParsing="false" onAction="#removeDataset" text="Remove" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="38.0" />
       <Button layoutX="246.0" layoutY="575.0" mnemonicParsing="false" onAction="#displayLumpsAndSplits" text="Lumps/Splits" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="246.0" />
-      <Button layoutX="730.0" layoutY="575.0" mnemonicParsing="false" onAction="#displayTimepointSimilarity" text="Name stability" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="730.0" />
+      <Button layoutX="730.0" layoutY="575.0" mnemonicParsing="false" onAction="#displayNameStability" text="Name stability" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="730.0" />
       <ProgressBar fx:id="progressBar" layoutX="7.0" layoutY="4.0" prefHeight="33.0" prefWidth="900.0" visible="false" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
       <Button layoutX="894.0" layoutY="27.0" mnemonicParsing="false" onAction="#clearExistingProject" text="Clear" AnchorPane.rightAnchor="85.0" AnchorPane.topAnchor="27.0" />
       <Button layoutX="649.0" layoutY="575.0" mnemonicParsing="false" onAction="#displayProjectTabularView" text="Project stats" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="649.0" />

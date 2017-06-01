@@ -82,7 +82,9 @@ public final class NameClustersView {
 		
 		// Set up columns.
 		TableColumn<NameCluster, String> colClusterName = new TableColumn<>("Name");
-		colClusterName.setCellValueFactory(new PropertyValueFactory<>("name"));
+		colClusterName.setCellValueFactory(
+			(TableColumn.CellDataFeatures<NameCluster, String> features) -> new ReadOnlyStringWrapper(features.getValue().getName().toString())
+		);
 		colClusterName.setSortType(TableColumn.SortType.ASCENDING);
 		colClusterName.setPrefWidth(100.0);
 		cols.add(colClusterName);

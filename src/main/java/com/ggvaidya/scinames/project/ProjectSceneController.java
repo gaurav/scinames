@@ -32,6 +32,7 @@ import com.ggvaidya.scinames.summary.ChangesListView;
 import com.ggvaidya.scinames.summary.DatasetSimilarityView;
 import com.ggvaidya.scinames.summary.LumpsAndSplitsView;
 import com.ggvaidya.scinames.summary.NameClustersView;
+import com.ggvaidya.scinames.summary.NameStabilityView;
 import com.ggvaidya.scinames.summary.ProjectCountsView;
 import com.ggvaidya.scinames.summary.SpeciesNamesView;
 import com.ggvaidya.scinames.summary.TaxonConceptsView;
@@ -493,6 +494,12 @@ public class ProjectSceneController {
 	private void displayLumpsAndSplits(ActionEvent evt) {
 		LumpsAndSplitsView splumpsView = new LumpsAndSplitsView(projectView);
 		splumpsView.getStage().show();
+	}
+	
+	@FXML
+	private void displayNameStability(ActionEvent evt) {
+		NameStabilityView nameStabilityView = new NameStabilityView(projectView);
+		nameStabilityView.getStage().show();
 	}
 	
 	@FXML

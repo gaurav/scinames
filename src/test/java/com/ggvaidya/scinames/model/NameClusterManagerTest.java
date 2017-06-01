@@ -20,6 +20,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -72,7 +73,7 @@ public class NameClusterManagerTest {
 				
 		assertEquals(ncm.getClusters().count(), 2);
 		List<Dataset> earliest = ncm.getClusters().map(cl -> cl.getFoundInSorted().get(0)).collect(Collectors.toList());
-		assertEquals(earliest, Arrays.asList(ds2, ds1));
+		assertEquals(new HashSet<>(earliest), new HashSet<>(Arrays.asList(ds2, ds1)));
 		
 		ncm.addCluster(new Synonymy(
 			Name.get("Ornithorhynchus", "paradoxus"),

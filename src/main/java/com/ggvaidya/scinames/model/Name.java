@@ -347,6 +347,13 @@ public class Name implements Comparable<Name> {
 		return genus;
 	}
 	
+	public Stream<Name> asGenus() {
+		if(genus == null)
+			return Stream.empty();
+		else
+			return Stream.of(Name.getFromGenus(genus));
+	}
+	
 	public String getSpecificEpithet() {
 		return specificEpithet;
 	}
