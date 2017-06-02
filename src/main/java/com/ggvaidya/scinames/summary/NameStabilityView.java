@@ -24,15 +24,19 @@
 package com.ggvaidya.scinames.summary;
 
 import java.math.BigDecimal;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.ListIterator;
+import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import org.apache.commons.math3.ode.nonstiff.ClassicalRungeKuttaFieldIntegrator;
 import org.apache.commons.math3.stat.Frequency;
 import org.apache.commons.math3.stat.descriptive.rank.Median;
 
@@ -116,9 +120,13 @@ public final class NameStabilityView {
 		cols.add(createTableColumnFromPrecalc(precalc, "count_binomial"));
 		cols.add(createTableColumnFromPrecalc(precalc, "count_genera"));
 		cols.add(createTableColumnFromPrecalc(precalc, "names_added"));
+		cols.add(createTableColumnFromPrecalc(precalc, "names_added_list"));
 		cols.add(createTableColumnFromPrecalc(precalc, "names_deleted"));
+		cols.add(createTableColumnFromPrecalc(precalc, "names_deleted_list"));
 		cols.add(createTableColumnFromPrecalc(precalc, "species_added"));
+		cols.add(createTableColumnFromPrecalc(precalc, "species_added_list"));
 		cols.add(createTableColumnFromPrecalc(precalc, "species_deleted"));
+		cols.add(createTableColumnFromPrecalc(precalc, "species_deleted_list"));
 		cols.add(createTableColumnFromPrecalc(precalc, "mean_binomials_per_genera"));
 		cols.add(createTableColumnFromPrecalc(precalc, "median_binomials_per_genera"));
 		cols.add(createTableColumnFromPrecalc(precalc, "mode_binomials_per_genera_list"));
@@ -145,8 +153,14 @@ public final class NameStabilityView {
 		cols.add(createTableColumnFromPrecalc(precalc, "names_identical_to_last_pc_union"));		
 		cols.add(createTableColumnFromPrecalc(precalc, "clusters_identical_to_last"));
 		cols.add(createTableColumnFromPrecalc(precalc, "clusters_identical_to_last_pc_this"));	
-		cols.add(createTableColumnFromPrecalc(precalc, "clusters_identical_to_last_pc_union"));		
+		cols.add(createTableColumnFromPrecalc(precalc, "clusters_identical_to_last_pc_union"));
 		
+		Set<String> recognitionColumns = new HashSet<>();
+
+		// Calculate binomials per dataset.
+		Map<Name, Set<Dataset>> datasetsPerName = new HashMap<>();
+		
+		List<Dataset> prevDatasets = new LinkedList<>();
 		Dataset firstDataset = project.getDatasets().get(0);
 		Dataset lastDataset = project.getDatasets().get(project.getDatasets().size() - 1);
 		int index = -1;
@@ -162,7 +176,7 @@ public final class NameStabilityView {
 						
 			Set<Name> recognizedBinomials = project.getRecognizedNames(ds).stream().flatMap(n -> n.asBinomial()).collect(Collectors.toSet());
 			precalc.put(ds, "count_binomial", String.valueOf(recognizedBinomials.size()));
-		
+			
 			Set<Name> recognizedGenera = recognizedBinomials.stream().flatMap(n -> n.asGenus()).collect(Collectors.toSet());
 			precalc.put(ds, "count_genera", String.valueOf(recognizedGenera.size()));
 			precalc.put(ds, "mean_binomials_per_genera", new BigDecimal(((double)recognizedBinomials.size())/recognizedGenera.size()).setScale(2, BigDecimal.ROUND_HALF_EVEN).toPlainString());
@@ -171,8 +185,12 @@ public final class NameStabilityView {
 			Set<Name> namesAdded = ds.getChanges(project).filter(ch -> ch.getType().equals(ChangeType.ADDITION)).flatMap(ch -> ch.getToStream()).collect(Collectors.toSet());
 			Set<Name> namesDeleted = ds.getChanges(project).filter(ch -> ch.getType().equals(ChangeType.DELETION)).flatMap(ch -> ch.getFromStream()).collect(Collectors.toSet());
 			
-			precalc.put(ds, "names_added", namesAdded.size() == 0 ? "" : namesAdded.size() + ": " + namesAdded.stream().sorted().map(n -> n.getFullName()).collect(Collectors.joining(", ")));
-			precalc.put(ds, "names_deleted", namesDeleted.size() == 0 ? "" : namesDeleted.size() + ": " + namesDeleted.stream().sorted().map(n -> n.getFullName()).collect(Collectors.joining(", ")));
+			// TODO: This isn't so useful -- the more useful measure would be the number of all species added
+			// and all species deleted, making sure there isn't a cluster-al overlap.
+			precalc.put(ds, "names_added", String.valueOf(namesAdded.size()));
+			precalc.put(ds, "names_added_list", namesAdded.stream().sorted().map(n -> n.getFullName()).collect(Collectors.joining(", ")));
+			precalc.put(ds, "names_deleted", String.valueOf(namesDeleted.size()));
+			precalc.put(ds, "names_deleted_list", namesDeleted.stream().sorted().map(n -> n.getFullName()).collect(Collectors.joining(", ")));
 			
 			// Eliminate names that are still represented in the checklist by a species cluster.
 			// (Note that this includes cases where a subspecies is removed, but another subspecies
@@ -186,8 +204,11 @@ public final class NameStabilityView {
 			Set<Name> currentlyRecognizedNames = project.getNameClusterManager().getClusters(project.getRecognizedNames(ds)).stream().flatMap(nc -> nc.getNames().stream()).collect(Collectors.toSet());
 			Set<Name> speciesDeleted = namesDeleted.stream().filter(n -> currentlyRecognizedNames.contains(n)).collect(Collectors.toSet());
 			
-			precalc.put(ds, "species_added", speciesAdded.size() == 0 ? "" : speciesAdded.size() + ": " + speciesAdded.stream().sorted().map(n -> n.getFullName()).collect(Collectors.joining(", ")));
-			precalc.put(ds, "species_deleted", speciesDeleted.size() == 0 ? "" : speciesDeleted.size() + ": " + speciesDeleted.stream().sorted().map(n -> n.getFullName()).collect(Collectors.joining(", ")));
+			precalc.put(ds, "species_added", String.valueOf(speciesAdded.size()));
+			precalc.put(ds, "species_added_list", speciesAdded.stream().sorted().map(n -> n.getFullName()).collect(Collectors.joining(", ")));
+			precalc.put(ds, "species_deleted", String.valueOf(speciesDeleted.size()));
+			precalc.put(ds, "species_deleted_list", speciesDeleted.stream().sorted().map(n -> n.getFullName()).collect(Collectors.joining(", ")));
+			
 			
 			// Measures of species per genera
 			java.util.Map<String, Set<Name>> binomialsPerGenera = recognizedBinomials.stream().collect(
@@ -283,6 +304,39 @@ public final class NameStabilityView {
 				precalc.put(ds, "clusters_identical_to_next_pc_this", new BigDecimal((double)getBinomialClustersIntersection(project, ds, nextDataset).size()/clustersForDataset * 100).setScale(2, BigDecimal.ROUND_HALF_EVEN).toPlainString());
 				precalc.put(ds, "clusters_identical_to_next_pc_union", new BigDecimal((double)getBinomialClustersIntersection(project, ds, nextDataset).size()/getBinomialClustersUnion(project, ds, nextDataset).size() * 100).setScale(2, BigDecimal.ROUND_HALF_EVEN).toPlainString());
 			}
+			
+			// For the visualization thingie.
+			int total = prevDatasets.size();
+			List<Integer> counts = new LinkedList<>();
+			for(Name name: recognizedBinomials) {
+				int prevRecognized = 0;
+				
+				if(!datasetsPerName.containsKey(name)) {
+					datasetsPerName.put(name, new HashSet<>());
+				} else {
+					prevRecognized = datasetsPerName.get(name).size();
+				}
+				
+				datasetsPerName.get(name).add(ds);
+				counts.add(
+					(int)(
+						((double)prevRecognized)/total*100
+					)
+				);
+			}
+			
+			Map<Integer, List<Integer>> countsByPercentage = counts.stream().sorted().collect(Collectors.groupingBy(n -> (int)(n/10)*10));
+			for(int percentage: countsByPercentage.keySet()) {
+				precalc.put(ds, "previously_recognized_" + percentage + "pc", String.valueOf(countsByPercentage.get(percentage).size()));	
+				recognitionColumns.add("previously_recognized_" + percentage + "pc");
+			}
+			prevDatasets.add(ds);
+		}
+		
+		LinkedList<String> recognitionColumnsList = new LinkedList<>(recognitionColumns);
+		recognitionColumnsList.sort(null);		
+		for(String colName: recognitionColumnsList) {
+			cols.add(createTableColumnFromPrecalc(precalc, colName));
 		}
 		
 		// Set table items.
