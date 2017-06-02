@@ -154,7 +154,11 @@ public class TabularDataViewController {
 			// Add the data.
 			for(int x = 0; x < tableView.getItems().size(); x++) {
 				ObservableValue cellObservableValue = col.getCellObservableValue(x);
-				column.add(cellObservableValue.getValue().toString());
+				Object val = cellObservableValue.getValue();
+				if(val == null)
+					column.add("NA");
+				else
+					column.add(val.toString());
 			}
 			
 			result.add(column);

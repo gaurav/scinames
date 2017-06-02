@@ -31,10 +31,12 @@ import java.util.Set;
 import java.util.function.Function;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.apache.commons.math3.stat.Frequency;
 import org.apache.commons.math3.stat.descriptive.rank.Median;
 
+import com.ggvaidya.scinames.model.ChangeType;
 import com.ggvaidya.scinames.model.Dataset;
 import com.ggvaidya.scinames.model.Name;
 import com.ggvaidya.scinames.model.NameCluster;
@@ -113,6 +115,10 @@ public final class NameStabilityView {
 		cols.add(createTableColumnFromPrecalc(precalc, "year"));
 		cols.add(createTableColumnFromPrecalc(precalc, "count_binomial"));
 		cols.add(createTableColumnFromPrecalc(precalc, "count_genera"));
+		cols.add(createTableColumnFromPrecalc(precalc, "names_added"));
+		cols.add(createTableColumnFromPrecalc(precalc, "names_deleted"));
+		cols.add(createTableColumnFromPrecalc(precalc, "species_added"));
+		cols.add(createTableColumnFromPrecalc(precalc, "species_deleted"));
 		cols.add(createTableColumnFromPrecalc(precalc, "mean_binomials_per_genera"));
 		cols.add(createTableColumnFromPrecalc(precalc, "median_binomials_per_genera"));
 		cols.add(createTableColumnFromPrecalc(precalc, "mode_binomials_per_genera_list"));
@@ -153,7 +159,7 @@ public final class NameStabilityView {
 			precalc.put(ds, "dataset", ds.getName());
 			precalc.put(ds, "date", ds.getDate().toString());
 			precalc.put(ds, "year", ds.getDate().getYearAsString());
-			
+						
 			Set<Name> recognizedBinomials = project.getRecognizedNames(ds).stream().flatMap(n -> n.asBinomial()).collect(Collectors.toSet());
 			precalc.put(ds, "count_binomial", String.valueOf(recognizedBinomials.size()));
 		
@@ -161,6 +167,29 @@ public final class NameStabilityView {
 			precalc.put(ds, "count_genera", String.valueOf(recognizedGenera.size()));
 			precalc.put(ds, "mean_binomials_per_genera", new BigDecimal(((double)recognizedBinomials.size())/recognizedGenera.size()).setScale(2, BigDecimal.ROUND_HALF_EVEN).toPlainString());
 			
+			// Species added and deleted
+			Set<Name> namesAdded = ds.getChanges(project).filter(ch -> ch.getType().equals(ChangeType.ADDITION)).flatMap(ch -> ch.getToStream()).collect(Collectors.toSet());
+			Set<Name> namesDeleted = ds.getChanges(project).filter(ch -> ch.getType().equals(ChangeType.DELETION)).flatMap(ch -> ch.getFromStream()).collect(Collectors.toSet());
+			
+			precalc.put(ds, "names_added", namesAdded.size() == 0 ? "" : namesAdded.size() + ": " + namesAdded.stream().sorted().map(n -> n.getFullName()).collect(Collectors.joining(", ")));
+			precalc.put(ds, "names_deleted", namesDeleted.size() == 0 ? "" : namesDeleted.size() + ": " + namesDeleted.stream().sorted().map(n -> n.getFullName()).collect(Collectors.joining(", ")));
+			
+			// Eliminate names that are still represented in the checklist by a species cluster.
+			// (Note that this includes cases where a subspecies is removed, but another subspecies
+			// or the nominal species is still recognized!)
+			Set<Name> speciesAdded = namesAdded;
+			if(prevDataset != null) {
+				Set<Name> prevRecognizedNames = project.getNameClusterManager().getClusters(project.getRecognizedNames(prevDataset)).stream().flatMap(nc -> nc.getNames().stream()).collect(Collectors.toSet());
+				speciesAdded = namesAdded.stream().filter(n -> !prevRecognizedNames.contains(n)).collect(Collectors.toSet());
+			}
+			
+			Set<Name> currentlyRecognizedNames = project.getNameClusterManager().getClusters(project.getRecognizedNames(ds)).stream().flatMap(nc -> nc.getNames().stream()).collect(Collectors.toSet());
+			Set<Name> speciesDeleted = namesDeleted.stream().filter(n -> currentlyRecognizedNames.contains(n)).collect(Collectors.toSet());
+			
+			precalc.put(ds, "species_added", speciesAdded.size() == 0 ? "" : speciesAdded.size() + ": " + speciesAdded.stream().sorted().map(n -> n.getFullName()).collect(Collectors.joining(", ")));
+			precalc.put(ds, "species_deleted", speciesDeleted.size() == 0 ? "" : speciesDeleted.size() + ": " + speciesDeleted.stream().sorted().map(n -> n.getFullName()).collect(Collectors.joining(", ")));
+			
+			// Measures of species per genera
 			java.util.Map<String, Set<Name>> binomialsPerGenera = recognizedBinomials.stream().collect(
 				Collectors.toMap(
 					n -> n.getGenus(),

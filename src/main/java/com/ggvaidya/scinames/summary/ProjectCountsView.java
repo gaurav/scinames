@@ -24,10 +24,13 @@
 package com.ggvaidya.scinames.summary;
 
 import com.ggvaidya.scinames.model.Dataset;
+import com.ggvaidya.scinames.model.Project;
+import com.ggvaidya.scinames.model.filters.ChangeFilter;
 import com.ggvaidya.scinames.model.ChangeType;
 import com.ggvaidya.scinames.project.ProjectView;
 import com.ggvaidya.scinames.tabulardata.TabularDataViewController;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javafx.beans.property.ReadOnlyStringWrapper;
@@ -100,20 +103,42 @@ public final class ProjectCountsView {
 			dataset -> String.valueOf(
 				dataset.getRecognizedNames(projectView.getProject())
 					.filter(n -> n.hasSpecificEpithet())
-					.map(n -> n.getBinomialName())
+					.flatMap(n -> n.asBinomial())
 					.distinct()
 					.count()
 			)
 		));
-		Stream<ChangeType> changes = projectView.getProject().getChanges().map(ch -> ch.getType()).distinct().sorted();
-		changes.collect(Collectors.toList()).forEach(chType -> 
+		
+		Project project = projectView.getProject();
+		ChangeFilter cf = project.getChangeFilter();
+		cols.add(createTableColumnForDataset("count_changes_filtered", ds -> String.valueOf(ds.getAllChanges().filter(ch -> !cf.test(ch)).count())));
+		cols.add(createTableColumnForDataset("count_changes_explicit", ds -> String.valueOf(ds.getChanges(project).filter(ch -> !ds.isChangeImplicit(ch)).count())));
+		cols.add(createTableColumnForDataset("count_changes_implicit", ds -> String.valueOf(ds.getChanges(project).filter(ch -> ds.isChangeImplicit(ch)).count())));
+		
+		Stream<ChangeType> changeTypes = projectView.getProject().getChanges().map(ch -> ch.getType()).distinct().sorted();
+		changeTypes.collect(Collectors.toList()).forEach(chType -> {
 			cols.add(
 				createTableColumnForDataset(
-					"count_" + chType.getType(), 
-					ds -> String.valueOf(ds.getChanges(projectView.getProject()).filter(ch -> ch.getType().equals(chType)).count())
+					"count_implicit_" + chType.getType(), 
+					ds -> String.valueOf(
+						ds.getChanges(projectView.getProject())
+							.filter(ch -> ds.isChangeImplicit(ch) && ch.getType().equals(chType))
+							.count()
+					)
 				)
-			)
-		);
+			);
+			
+			cols.add(
+					createTableColumnForDataset(
+						"count_explicit_" + chType.getType(), 
+						ds -> String.valueOf(
+							ds.getChanges(projectView.getProject())
+								.filter(ch -> !ds.isChangeImplicit(ch) && ch.getType().equals(chType))
+								.count()
+						)
+					)
+				);
+		});
 		
 		// Set table items.
 		List<Dataset> timepoints = projectView.getProject().getDatasets();

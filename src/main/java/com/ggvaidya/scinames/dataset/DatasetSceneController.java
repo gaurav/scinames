@@ -253,6 +253,15 @@ public class DatasetSceneController {
 		colChangeTo.setEditable(true);
 		tv.getColumns().add(colChangeTo);
 		
+		TableColumn<Change, String> colExplicit = new TableColumn<>("Explicit or implicit?");
+		colExplicit.setCellValueFactory(
+			(TableColumn.CellDataFeatures<Change, String> features) -> 
+				new ReadOnlyStringWrapper(
+					features.getValue().getDataset().isChangeImplicit(features.getValue()) ? "Implicit" : "Explicit"
+				)
+		);
+		tv.getColumns().add(colExplicit);
+		
 		ChangeFilter cf = datasetView.getProjectView().getProject().getChangeFilter();
 		TableColumn<Change, String> colFiltered = new TableColumn<>("Eliminated by filter?");
 		colFiltered.setCellValueFactory(

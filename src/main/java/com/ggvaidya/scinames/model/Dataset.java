@@ -111,6 +111,10 @@ public class Dataset implements Citable, Comparable<Dataset> {
 	public BooleanProperty isChecklistProperty() { return isChecklistProperty; }
 	
 	/* Higher order accessors */
+	public boolean isChangeImplicit(Change ch) {
+		return implicitChanges.contains(ch);
+	}
+	
 	@Override
 	public int compareTo(Dataset tp) {
 		int compare = getDate().compareTo(tp.getDate());
