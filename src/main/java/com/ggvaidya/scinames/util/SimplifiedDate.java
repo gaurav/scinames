@@ -25,6 +25,7 @@ import java.time.format.DateTimeParseException;
 import java.time.format.TextStyle;
 import java.util.Locale;
 import java.util.Map;
+
 import org.w3c.dom.Element;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
@@ -158,14 +159,20 @@ public class SimplifiedDate implements Comparable<SimplifiedDate> {
 	public SimplifiedDate(String simplifiedDate) throws DateTimeParseException {
 		// Try for yyyy-MM-dd
 		LocalDate d;
+		DateTimeFormatter parser;
+		
 		try {
-			d = LocalDate.parse(simplifiedDate, DateTimeFormatter.ISO_DATE);
+			parser = DateTimeFormatter.ofPattern("yyyy-M-d");
+			
+			d = parser.parse(simplifiedDate, LocalDate::from);
 			
 		} catch(DateTimeParseException e) {
 			YearMonth ym;
 			
 			try {
-				ym = YearMonth.parse(simplifiedDate);
+				parser = DateTimeFormatter.ofPattern("yyyy-M");
+				
+				ym = parser.parse(simplifiedDate, YearMonth::from);
 				
 			} catch(DateTimeParseException ex) {
 				Year y = Year.parse(simplifiedDate);

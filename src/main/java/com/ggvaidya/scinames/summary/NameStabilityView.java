@@ -164,7 +164,7 @@ public final class NameStabilityView {
 		Dataset firstDataset = project.getDatasets().get(0);
 		Dataset lastDataset = project.getDatasets().get(project.getDatasets().size() - 1);
 		int index = -1;
-		for(Dataset ds: project.getDatasets()) {
+		for(Dataset ds: project.getChecklists()) {
 			index++;
 			
 			Dataset prevDataset = ds.getPreviousDataset();

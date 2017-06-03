@@ -131,6 +131,10 @@ public class Project {
 	public ChangeFilter getChangeFilter() { return changeFilterProperty.get(); }
 	public NameClusterManager getNameClusterManager() { return nameClusterManager; }
 	
+	public List<Dataset> getChecklists() {
+		return datasets.stream().filter(ds -> ds.isChecklist()).collect(Collectors.toList());
+	}
+	
 	/* Check if property is set. The default is always false. */
 	public boolean isPropertySetTrue(String propName) {
 		if(!properties.containsKey(propName))
