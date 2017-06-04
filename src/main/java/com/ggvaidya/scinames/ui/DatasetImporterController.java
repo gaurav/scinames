@@ -16,25 +16,41 @@
  */
 package com.ggvaidya.scinames.ui;
 
-import com.ggvaidya.scinames.model.Dataset;
-import com.ggvaidya.scinames.model.DatasetColumn;
-import com.ggvaidya.scinames.model.DatasetRow;
-import com.ggvaidya.scinames.model.Project;
-import com.ggvaidya.scinames.model.rowextractors.NameExtractor;
-import com.ggvaidya.scinames.model.rowextractors.NameExtractorFactory;
-import com.ggvaidya.scinames.model.rowextractors.NameExtractorParseException;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.ResourceBundle;
-import java.util.function.Function;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import org.apache.commons.csv.CSVFormat;
+
+import com.ggvaidya.scinames.model.Dataset;
+import com.ggvaidya.scinames.model.DatasetColumn;
+import com.ggvaidya.scinames.model.DatasetRow;
+import com.ggvaidya.scinames.model.Project;
+import com.ggvaidya.scinames.model.rowextractors.NameExtractorFactory;
+import com.ggvaidya.scinames.model.rowextractors.NameExtractorParseException;
+
+import javafx.beans.InvalidationListener;
+import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.BooleanPropertyBase;
+import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.ReadOnlyBooleanPropertyBase;
 import javafx.beans.property.ReadOnlyStringWrapper;
+import javafx.beans.property.SimpleObjectProperty;
+import javafx.beans.property.SimpleStringProperty;
+import javafx.beans.property.StringProperty;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
@@ -43,12 +59,16 @@ import javafx.scene.control.ComboBox;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
 import javafx.scene.control.TableColumn;
+import javafx.scene.control.TableColumn.CellDataFeatures;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
+import javafx.scene.control.cell.CheckBoxTableCell;
+import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.control.cell.TextFieldTableCell;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
-import org.apache.commons.csv.CSVFormat;
+import javafx.util.Callback;
+import javafx.util.StringConverter;
 
 /**
  * FXML Controller class
@@ -56,8 +76,15 @@ import org.apache.commons.csv.CSVFormat;
  * @author Gaurav Vaidya <gaurav@ggvaidya.com>
  */
 public class DatasetImporterController implements Initializable {
+	private static final Logger LOGGER = Logger.getLogger(DatasetImporterController.class.getSimpleName());
+	
 	private File inputFile;
 	
+	private DatasetColumn columnToSplitBy = null;
+	private ObservableList<MappedColumn> mappedColumns = FXCollections.observableArrayList();
+	
+	private TableColumn<MappedColumn, String> colRenameTo;
+	private TableColumn<MappedColumn, Boolean> colSplitBy;
 	private List<Dataset> datasets = new LinkedList<>();
 	public Stream<Dataset> getImportedDatasets() { return datasets.stream(); }
 	
@@ -68,18 +95,70 @@ public class DatasetImporterController implements Initializable {
 		
 		reloadFile();
 	}
+	
+	/**
+	 * A MappedColumn class to store column mappings.
+	 */
+	public class MappedColumn {
+		public MappedColumn(String from, String to) {
+			fromProperty.set(from);
+			toProperty.set(to);
+		}
+		
+		public MappedColumn(DatasetColumn from, DatasetColumn to) {
+			fromProperty.set(from.getName());
+			toProperty.set(to.getName());
+		}
+		
+		private StringProperty fromProperty = new SimpleStringProperty();
+		private StringProperty toProperty = new SimpleStringProperty();
+		
+		public StringProperty fromProperty() { return fromProperty; }
+		public StringProperty toProperty() { return toProperty; }
+		public BooleanProperty splitOnProperty() {
+			// Only one MappedColumn can be splitOn at a given point in time!
+			MappedColumn thisMappedColumn = this;
+			
+			return new BooleanPropertyBase() {
+				@Override
+				public boolean get() {
+					return (columnToSplitBy != null && columnToSplitBy == DatasetColumn.of(fromProperty.get()));	
+				}
+
+				@Override
+				public void set(boolean value) {
+					if(value) {
+						columnToSplitBy = DatasetColumn.of(fromProperty.get());
+					}
+				}
+
+				@Override
+				public Object getBean() {
+					return thisMappedColumn;
+				}
+
+				@Override
+				public String getName() {
+					return "splitBy";
+				}
+			};
+		}
+	}
 		
 	/**
 	 * Initializes the controller class.
 	 */
 	@Override
 	public void initialize(URL url, ResourceBundle rb) {
+		// Clear out any previous renames.
+		mappedColumns.clear();
+		
 		// Fill in fileFormatComboBox
 		initFileFormatComboBox();
 		
 		// Set up 
-		customExtractorTextField.setOnAction(evt -> {
-			currentNameExtractor = customExtractorTextField.getText();
+		customExtractorsComboBox.setOnAction(evt -> {
+			currentNameExtractor = customExtractorsComboBox.getValue();
 			System.err.println("Custom extractor set to: " + currentNameExtractor);			
 			reloadTextDelimitedFile();
 		});
@@ -95,27 +174,23 @@ public class DatasetImporterController implements Initializable {
 		}
 	}
 	
-	/*
-	private TableColumn<DatasetColumn, String> createColumnForDatasetColumn(String colName, Function<DatasetColumn, String> valFunc) {
-		TableColumn<DatasetColumn, String> column = new TableColumn<>(colName);
-		column.cellValueFactoryProperty().set(
-			(TableColumn.CellDataFeatures<DatasetColumn, String> cdf) -> new ReadOnlyStringWrapper(valFunc.apply(cdf.getValue()))
-		);
-		column.setPrefWidth(100.0);
-		column.setEditable(false);
-		return column;
-	}*/
-	
 	private String currentNameExtractor = null;
 	private void reloadTextDelimitedFile() {
 		datasets.clear();
 		
-		File textDelimitedFile = inputFile;
 		CSVFormat format = getCSVFormatFor(fileFormatComboBox.getSelectionModel().getSelectedItem());
+		
+		// Reload renamedColumns from columns
+		Map<DatasetColumn, DatasetColumn> renamedColumns = mappedColumns.stream().collect(
+			Collectors.toMap(
+				map -> DatasetColumn.of(map.fromProperty().get()), 
+				map -> DatasetColumn.of(map.toProperty().get())
+			)
+		);
 		
 		Dataset dataset;
 		try {
-			dataset = Dataset.fromCSV(format, inputFile);
+			dataset = Dataset.fromCSV(format, inputFile, renamedColumns);
 		} catch(IOException e) {
 			new Alert(Alert.AlertType.ERROR, "Could not read from file '" + inputFile + "': " + e).showAndWait();
 			return;
@@ -135,11 +210,7 @@ public class DatasetImporterController implements Initializable {
 		
 		System.err.println(" - dataset " + dataset + " with name extractor: " + dataset.getNameExtractorsAsString());
 
-		// Display extractors in the delimitedDataTableView.
-		delimitedDataTableView.setEditable(true);
-		delimitedDataTableView.getColumns().clear();
-
-		// Make a list of every unique name extractor string available.
+		// Make a list of every unique name extractor string available and store in customExtractorsComboBox.
 		List<String> nameExtractors = new LinkedList<>();
 
 		if(currentNameExtractor != null && !currentNameExtractor.equals(""))
@@ -153,50 +224,49 @@ public class DatasetImporterController implements Initializable {
 			nameExtractors.addAll(Arrays.asList(props.get(Project.PROP_NAME_EXTRACTORS).split("\\s*;\\s*")));				
 		}
 		nameExtractors.add(NameExtractorFactory.getDefaultExtractorsAsString());		
-		delimitedDataTableView.getItems().setAll(nameExtractors.stream().distinct().collect(Collectors.toList()));
+		customExtractorsComboBox.getItems().setAll(nameExtractors.stream().distinct().collect(Collectors.toList()));
 
 		// Set up columns.
-		TableColumn<String, String> colNameExtractors = new TableColumn<>("Extractors");
-		colNameExtractors.cellValueFactoryProperty().set(
-			(TableColumn.CellDataFeatures<String, String> cdf) -> new ReadOnlyStringWrapper(cdf.getValue())
+		TableColumn<MappedColumn, String> colColumnName = new TableColumn<>("Name");
+		colColumnName.cellValueFactoryProperty().set(new PropertyValueFactory<>("from"));
+		colColumnName.setPrefWidth(400.0);
+		colColumnName.setEditable(false);
+		colColumnName.setCellFactory(TextFieldTableCell.forTableColumn());
+		
+		colRenameTo = new TableColumn<>("Rename to");
+		colRenameTo.cellValueFactoryProperty().set(new PropertyValueFactory<>("to"));
+		colRenameTo.setPrefWidth(200.0);
+		colRenameTo.setEditable(true);
+		colRenameTo.setCellFactory(TextFieldTableCell.forTableColumn());
+		colRenameTo.onEditCommitProperty().addListener(cl -> reloadFile());
+		
+		colSplitBy = new TableColumn<>("Split on");
+		colSplitBy.setEditable(true);
+		colSplitBy.setCellValueFactory(new PropertyValueFactory<>("splitOn"));
+		colSplitBy.setCellFactory(cf -> new CheckBoxTableCell());
+		
+		columnsTableView.getColumns().setAll(
+			colColumnName,
+			colRenameTo,
+			colSplitBy
 		);
-		colNameExtractors.setPrefWidth(400.0);
-		colNameExtractors.setEditable(false);
-		colNameExtractors.cellFactoryProperty().set(TextFieldTableCell.forTableColumn());
-
-		TableColumn<String, String> colStatus = new TableColumn<>("Valid?");
-		colStatus.cellValueFactoryProperty().set(
-			(TableColumn.CellDataFeatures<String, String> cdf) -> {
-				String result;
-				String nameExtractorStr = cdf.getValue();
-
-				try {
-					List<NameExtractor> xs = NameExtractorFactory.getExtractors(nameExtractorStr);
-					result = "Successful (" + xs.size() + " extractors)";
-				} catch(NameExtractorParseException ex) {
-					result = "Failed: " + ex;
-				}
-
-				if(nameExtractorStr != null && nameExtractorStr.equals(dataset.getNameExtractorsAsString()))
-					result += " (currently used)";
-
-				return new ReadOnlyStringWrapper(result);
-			}
-		);
-		colStatus.setPrefWidth(100.0);
-		colStatus.setEditable(false);
-
-		delimitedDataTableView.getColumns().addAll(
-			colNameExtractors,
-			colStatus
-		);
+		columnsTableView.setEditable(true);
+		
+		for(DatasetColumn col: dataset.getColumns()) {
+			if(renamedColumns.containsKey(col))
+				// we've already got one
+				;
+			else
+				mappedColumns.add(new MappedColumn(col, col));
+		}
+		columnsTableView.setItems(mappedColumns);
 
 		// Display in the main table.
 		dataset.displayInTableView(importDataTableView);
 		datasets.add(dataset);
 		
 		// Refresh everything.
-		delimitedDataTableView.refresh();
+		columnsTableView.refresh();
 		importDataTableView.refresh();
 	}
 	
@@ -250,8 +320,8 @@ public class DatasetImporterController implements Initializable {
 	/* FXML objects */
 	@FXML private ComboBox<String> fileFormatComboBox;
 	@FXML private TabPane upperTabPane;
-	@FXML private TableView delimitedDataTableView;
+	@FXML private TableView<MappedColumn> columnsTableView;
 	@FXML private TableView<DatasetRow> importDataTableView;
 	@FXML private TextField statusTextField;
-	@FXML private TextField customExtractorTextField;
+	@FXML private ComboBox<String> customExtractorsComboBox;
 }
