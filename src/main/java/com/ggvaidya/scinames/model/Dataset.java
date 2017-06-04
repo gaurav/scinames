@@ -424,7 +424,7 @@ public class Dataset implements Citable, Comparable<Dataset> {
 			.flatMap(ch -> ch.getFromStream())
 			.collect(Collectors.toSet());
 		
-		return initialNames.stream().filter(n -> {
+		Set<Name> finalList = initialNames.stream().filter(n -> {
 			// Filter out names that have been deleted, EXCEPT those that
 			// have been explicitly added (such as in a lump or split).
 			if(deletedNames.contains(n)) {
@@ -434,7 +434,33 @@ public class Dataset implements Citable, Comparable<Dataset> {
 					return false; // do filter
 			} else 
 				return true; // don't filter
-		}).distinct();
+		}).collect(Collectors.toSet());
+		
+		// This should be the same as the names in a checklist!
+		// Double-check!
+		if(isChecklist() && !finalList.equals(getNamesInAllRows())) {
+			// TODO: OKAY, so this is caused by the following scenario:
+			//	- We explicitly rename "Osteocephalus vilmae" to "Hylomantis buckleyi" within a dataset
+			// 	- We do that because AmphibiaWeb *says* they are duplicates.
+			//	- However, this dataset has rows for *both* vilmae and buckleyi.
+			//	- So how?
+			
+			Set<Name> finalListButNotInRows = new HashSet<>(finalList);
+			finalListButNotInRows.removeAll(getNamesInAllRows());
+			
+			Set<Name> rowNamesButNotFinalList = new HashSet<>(getNamesInAllRows());
+			rowNamesButNotFinalList.removeAll(finalList);
+			
+			LOGGER.severe("Discrepency in calculating recognized names for " + this + ":\n"
+				+ "\t - Final list but not in rows: " + finalListButNotInRows + "\n"
+				+ "\t - Rows but not in final list: " + rowNamesButNotFinalList + "\n"
+				+ "\t - Name count: " + initialNames.size() + " + " + addedNames.size() + " - " + deletedNames.size() + " = " + 
+					(initialNames.size() + addedNames.size() - deletedNames.size())
+				+ " (but should be " + finalList.size() + ")\n"
+			);
+		}
+		
+		return finalList.stream();
 	}
 	
 	/* Display options: provides information on what happened in this dataset for UI purposes */

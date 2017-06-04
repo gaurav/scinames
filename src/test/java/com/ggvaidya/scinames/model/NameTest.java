@@ -121,6 +121,18 @@ public class NameTest {
 			new HashSet<>(Arrays.asList(Name.get("Dryobates", "arizonae"), Name.get("Dryobates", "stricklandi")))
 		);
 	}
+
+	@Test
+	public void testNameSorting() {
+		List<Name> listToSort = Arrays.asList(Name.get("Mus", "musculus"), Name.get("Homo", "sapiens"), Name.EMPTY);
+		listToSort.sort(null);
+		
+		assertEquals(
+			Arrays.asList(Name.EMPTY, Name.get("Homo", "sapiens"), Name.get("Mus", "musculus")),
+			listToSort
+		);
+	}
+
 	
 	@Test
 	public void testInfraspecificEpithets() {
