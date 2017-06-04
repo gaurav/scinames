@@ -641,7 +641,7 @@ public class Dataset implements Citable, Comparable<Dataset> {
 	}
 	
 	public String asTitle() {
-		return getType() + " " + getName() + " (" + getDate()  + ": " + rows.size() + " rows, " + getReferencedNames().count() + " names)";
+		return getType() + " " + getName() + " (" + getDate()  + ": " + rows.size() + " rows, " + getReferencedNames().count() + " referenced names)";
 	}
 	
 	/* Data load */

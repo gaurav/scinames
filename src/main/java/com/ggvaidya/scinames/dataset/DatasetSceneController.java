@@ -47,7 +47,6 @@ import com.ggvaidya.scinames.model.change.ChangeTypeStringConverter;
 import com.ggvaidya.scinames.model.change.NameSetStringConverter;
 import com.ggvaidya.scinames.model.filters.ChangeFilter;
 import com.ggvaidya.scinames.tabulardata.TabularDataViewController;
-import com.ggvaidya.scinames.ui.ProjectView;
 
 import javafx.beans.Observable;
 import javafx.beans.property.ReadOnlyStringWrapper;
@@ -72,7 +71,11 @@ import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 
 /**
- * FXML Controller class for a view of a Timepoint in a project.
+ * FXML Controller class for a view of a Dataset in a project. This does a bunch of cool
+ * things:
+ * 
+ * - 1. We provide editable information on dataset rows for a dataset.
+ * - 2. We provide editable information on changes for a checklist.
  *
  * @author Gaurav Vaidya <gaurav@ggvaidya.com>
  */
@@ -664,10 +667,11 @@ public class DatasetSceneController {
 		TabularDataViewController tdvc = TabularDataViewController.createTabularDataView();
 		
 		// TODO: modify this so we can edit that data, too!
-		tdvc.getHeaderTextProperty().set("Data contained in dataset " + dataset);
+		tdvc.getHeaderTextProperty().set("Data contained in dataset " + dataset); // TODO we can search for names here, dude.
 		fillTableViewWithDatasetRows(tdvc.getTableView());
 		
 		Stage stage = new Stage();
+		stage.setTitle("Rows from " + dataset.asTitle());
 		stage.setScene(tdvc.getScene());
 		stage.show();
 	}
