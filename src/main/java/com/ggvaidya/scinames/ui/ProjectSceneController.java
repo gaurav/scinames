@@ -19,6 +19,7 @@ package com.ggvaidya.scinames.ui;
 import java.io.File;
 import java.io.IOException;
 import java.time.format.DateTimeParseException;
+import java.util.List;
 import java.util.Optional;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
@@ -54,6 +55,7 @@ import javafx.scene.control.TableColumn.CellDataFeatures;
 import javafx.scene.control.TableRow;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
+import javafx.scene.control.cell.ComboBoxTableCell;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.control.cell.TextFieldTableCell;
 import javafx.stage.FileChooser;
@@ -190,37 +192,39 @@ public class ProjectSceneController {
 		});
 		
 		// Set up timepointTable columns.
-		TableColumn<Dataset, String> nameCol = new TableColumn<>("Checklist Name");
+		List<TableColumn<Dataset, ?>> cols = timepointTable.getColumns();
+		cols.clear();
+		
+		TableColumn<Dataset, String> typeCol = new TableColumn<>("Type");
+		typeCol.setCellFactory(ComboBoxTableCell.forTableColumn(
+			Dataset.TYPE_DATASET,
+			Dataset.TYPE_CHECKLIST
+		));
+		typeCol.setCellValueFactory(new PropertyValueFactory<>("type"));
+		typeCol.setPrefWidth(80);
+		typeCol.setEditable(true);
+		cols.add(typeCol);
+		
+		TableColumn<Dataset, String> nameCol = new TableColumn<>("Names");
 		nameCol.setCellFactory(TextFieldTableCell.forTableColumn());
 		nameCol.setCellValueFactory(new PropertyValueFactory<>("name"));
-		nameCol.setPrefWidth(150);
+		nameCol.setPrefWidth(180);
 		nameCol.setEditable(true);
+		cols.add(nameCol);
 		
 		TableColumn<Dataset, SimplifiedDate> dateCol = new TableColumn<>("Date");
-		/*dateCol.setCellFactory(TextFieldTableCell.forTableColumn(new StringConverter<SimplifiedDate>() {
-			@Override
-			public String toString(SimplifiedDate date) {
-				String strYYYYmmDD = date.asYYYYmmDD("-");
-				if(strYYYYmmDD.equals("0"))
-					return "(None)";
-				return strYYYYmmDD;
-			}
-
-			@Override
-			public SimplifiedDate fromString(String string) {
-				try {
-					return new SimplifiedDate(string);
-				} catch(DateTimeParseException ex) {
-					new Alert(Alert.AlertType.ERROR, "Could not parse date '" + string + "': " + ex).showAndWait();
-					return SimplifiedDate.MIN;
-				}
-			}
-		}));*/
 		dateCol.setCellValueFactory(new PropertyValueFactory<>("date"));
-		dateCol.setPrefWidth(100);
+		dateCol.setPrefWidth(150);
 		dateCol.setEditable(true);
-
-		TableColumn<Dataset, String> nameCount = new TableColumn<>("Names");
+		cols.add(dateCol);
+		
+		TableColumn<Dataset, String> rowsCol = new TableColumn<>("Rows");
+		rowsCol.setCellValueFactory(new PropertyValueFactory<>("rowCountSummary"));
+		rowsCol.setPrefWidth(200);
+		rowsCol.setEditable(false);
+		cols.add(rowsCol);		
+		
+		TableColumn<Dataset, String> nameCount = new TableColumn<>("All names");
 		nameCount.setPrefWidth(200);
 		//nameCount.setCellValueFactory(new PropertyValueFactory<>("NameCountSummary"));
 		nameCount.setCellValueFactory((CellDataFeatures<Dataset, String> cdf) -> {
@@ -230,8 +234,9 @@ public class ProjectSceneController {
 				//projectView.getProject().getRecognizedNames(dataset).size() + " (" + dataset.getReferencedNames().count() + " in this dataset)"
 			);
 		});
+		cols.add(nameCount);
 		
-		TableColumn<Dataset, String> binomialCount = new TableColumn<>("Binomials");
+		TableColumn<Dataset, String> binomialCount = new TableColumn<>("Binomial names");
 		binomialCount.setPrefWidth(200);
 		// nameCount.setCellValueFactory(new PropertyValueFactory<>("BinomialCountSummary"));		
 		binomialCount.setCellValueFactory((CellDataFeatures<Dataset, String> cdf) -> {
@@ -241,17 +246,14 @@ public class ProjectSceneController {
 				// projectView.getProject().getRecognizedNames(dataset).stream().map(n -> n.getBinomialName()).distinct().count() + " (" + dataset.getReferencedNames().map(n -> n.getBinomialName()).distinct().count() + " in this dataset)"
 			);
 		});
+		cols.add(binomialCount);
 		
-		TableColumn<Dataset, String> explicitChangesCount = new TableColumn<>("Explicit changes");
+		TableColumn<Dataset, String> explicitChangesCount = new TableColumn<>("Changes");
 		explicitChangesCount.setPrefWidth(400);
-		explicitChangesCount.setCellValueFactory(cvf -> new ReadOnlyStringWrapper(cvf.getValue().getExplicitChangesCountSummary(projectView.getProject())));
-		
-		TableColumn<Dataset, String> implicitChangesCount = new TableColumn<>("Implicit changes");
-		implicitChangesCount.setPrefWidth(400);
-		implicitChangesCount.setCellValueFactory(cvf -> new ReadOnlyStringWrapper(cvf.getValue().getImplicitChangesCountSummary(projectView.getProject())));		
-		
+		explicitChangesCount.setCellValueFactory(cvf -> new ReadOnlyStringWrapper(cvf.getValue().getChangesCountSummary(projectView.getProject())));
+		cols.add(explicitChangesCount);
+				
 		// Set up timepointTable itself.
-		timepointTable.getColumns().setAll(nameCol, dateCol, nameCount, binomialCount, explicitChangesCount, implicitChangesCount);
 		timepointTable.setEditable(true);
 		
 		// Set up behavior for all future rows.

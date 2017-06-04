@@ -233,11 +233,25 @@ public class ProjectXMLReader {
 
 						Map<String, String> attributes = getAllAttributes(nextTag, "name", "is_checklist", "year", "month", "day", "nameExtractors");
 						SimplifiedDate date = new SimplifiedDate(attributes);
+						
+						// What type is it? 
+						String datasetType = Dataset.TYPE_DATASET;
+						
+						// We support both the old style:
+						//		is_checklist: yes or anything else
+						if(attributes.containsKey("is_checklist") && attributes.get("is_checklist").equalsIgnoreCase("yes")) {
+							datasetType = Dataset.TYPE_CHECKLIST;
+						}
+						// as well as the new style:
+						//		type: (type string)
+						else if(attributes.containsKey("type")) {
+							datasetType = attributes.get("type");
+						}
 
 						Dataset dataset = new Dataset(
 							attributes.get("name"), 
 							date, 
-							attributes.containsKey("is_checklist") && attributes.get("is_checklist").equalsIgnoreCase("yes")
+							datasetType
 						);
 						if(attributes.containsKey("nameExtractors")) {
 							try {

@@ -48,12 +48,12 @@ import java.util.function.Predicate;
 public class TaxonConceptTest {
 	public static final Logger LOGGER = Logger.getLogger(TaxonConceptTest.class.getSimpleName());
 	
-	Dataset ds1930 = new Dataset("ds1930", new SimplifiedDate(1930), false);
-	Dataset ds1935 = new Dataset("ds1935", new SimplifiedDate(1935), false);
-	Dataset ds1940 = new Dataset("ds1940", new SimplifiedDate(1940), false);
-	Dataset ds1945 = new Dataset("ds1945", new SimplifiedDate(1945), false);
-	Dataset ds1950 = new Dataset("ds1950", new SimplifiedDate(1950), false);	
-	Dataset ds1960 = new Dataset("ds1960", new SimplifiedDate(1960), false);
+	Dataset ds1930 = new Dataset("ds1930", new SimplifiedDate(1930), Dataset.TYPE_DATASET);
+	Dataset ds1935 = new Dataset("ds1935", new SimplifiedDate(1935), Dataset.TYPE_DATASET);
+	Dataset ds1940 = new Dataset("ds1940", new SimplifiedDate(1940), Dataset.TYPE_DATASET);
+	Dataset ds1945 = new Dataset("ds1945", new SimplifiedDate(1945), Dataset.TYPE_DATASET);
+	Dataset ds1950 = new Dataset("ds1950", new SimplifiedDate(1950), Dataset.TYPE_DATASET);	
+	Dataset ds1960 = new Dataset("ds1960", new SimplifiedDate(1960), Dataset.TYPE_DATASET);
 	
 	private Stream<Change> streamNamesToAdditions(Dataset ds, Name... names) {
 		return Arrays.asList(names).stream().map(n -> new Change(

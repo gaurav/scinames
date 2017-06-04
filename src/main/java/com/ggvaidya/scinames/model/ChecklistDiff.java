@@ -64,7 +64,7 @@ public class ChecklistDiff {
 		String nameStr = m.group(1);
 		String yearStr = m.group(2);
 		
-		Dataset checklistDiff = new Dataset(nameStr, new SimplifiedDate(Integer.parseInt(yearStr), 0, 0), false);
+		Dataset checklistDiff = new Dataset(nameStr, new SimplifiedDate(Integer.parseInt(yearStr), 0, 0), Dataset.TYPE_DATASET);
 		String line;
 		int MARK_READ_AHEAD_LIMIT = 1024 * 1024;
 		if(!r.markSupported()) {

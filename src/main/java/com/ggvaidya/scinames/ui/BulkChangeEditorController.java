@@ -65,7 +65,7 @@ import javafx.stage.FileChooser;
  */
 public class BulkChangeEditorController {
 	private static final Logger LOGGER = Logger.getLogger(BulkChangeEditor.class.getSimpleName());
-	private static final Dataset ALL = new Dataset("All datasets", SimplifiedDate.MIN, false);
+	private static final Dataset ALL = new Dataset("All datasets", SimplifiedDate.MIN, Dataset.TYPE_DATASET);
 	
 	private BulkChangeEditor bulkChangeEditor;
 	private Project project;

@@ -34,15 +34,15 @@ public class DatasetTest {
 	 */
 	@Test
 	public void testSortOrder() {
-		Dataset ds1 = new Dataset("ds1", new SimplifiedDate(1930), false);
-		Dataset ds2 = new Dataset("ds2", new SimplifiedDate(1940), false);
-		Dataset ds3 = new Dataset("ds3", new SimplifiedDate(1950), false);		
+		Dataset ds1 = new Dataset("ds1", new SimplifiedDate(1930), Dataset.TYPE_DATASET);
+		Dataset ds2 = new Dataset("ds2", new SimplifiedDate(1940), Dataset.TYPE_DATASET);
+		Dataset ds3 = new Dataset("ds3", new SimplifiedDate(1950), Dataset.TYPE_DATASET);		
 		
 		assertTrue(ds1.compareTo(ds2) < 0);
 		assertTrue(ds3.compareTo(ds2) > 0);
 		assertTrue(ds3.compareTo(ds1) > 0);
 
-		Dataset ds4 = new Dataset("ds1", new SimplifiedDate(1930), false);
+		Dataset ds4 = new Dataset("ds1", new SimplifiedDate(1930), Dataset.TYPE_DATASET);
 		assertTrue(ds1.compareTo(ds4) != 0);
 	}
 }

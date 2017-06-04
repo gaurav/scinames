@@ -55,7 +55,7 @@ public class DatasetView {
 		controller = loader.getController();
 		controller.setTimepointView(this);
 		
-		stage.setTitle("Dataset " + timepoint + " (" + (timepoint.isChecklist() ? "checklist" : "dataset") + ")");
+		stage.setTitle(timepoint.asTitle());
 		stage.setScene(scene);
 	}
 	

@@ -49,6 +49,8 @@ import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.ReadOnlyStringWrapper;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleObjectProperty;
+import javafx.beans.property.SimpleStringProperty;
+import javafx.beans.property.StringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
@@ -72,12 +74,16 @@ import javafx.scene.control.TableView;
 public class Dataset implements Citable, Comparable<Dataset> {
 	private static final Logger LOGGER = Logger.getLogger(Dataset.class.getSimpleName());
 	
+	/* Constants */
+	public static final String TYPE_DATASET = "Dataset";
+	public static final String TYPE_CHECKLIST = "Checklist";	
+	
 	/* Private variables */
 	private Project project;
 	private String name;
 	private ObjectProperty<SimplifiedDate> dateProperty = new SimpleObjectProperty<>(SimplifiedDate.MIN);
 	private Dataset prevDataset;
-	private BooleanProperty isChecklistProperty = new SimpleBooleanProperty(false);
+	private StringProperty typeProperty = new SimpleStringProperty(TYPE_DATASET);
 	private ModificationTimeProperty lastModified = new ModificationTimeProperty();
 	
 	// Data in this dataset.
@@ -89,7 +95,7 @@ public class Dataset implements Citable, Comparable<Dataset> {
 	{
 		/* Make sure that certain changes trigger modifications. */
 		dateProperty.addListener(c -> lastModified.modified());
-		isChecklistProperty.addListener(c -> lastModified.modified());
+		typeProperty.addListener(c -> lastModified.modified());
 		columns.addListener((Observable c) -> lastModified.modified());
 		rows.addListener((Observable c) -> lastModified.modified());
 		explicitChanges.addListener((Observable o) -> lastModified.modified());
@@ -106,9 +112,11 @@ public class Dataset implements Citable, Comparable<Dataset> {
 	public ObservableList<DatasetColumn> getColumns() { return columns; }
 	public ObservableList<DatasetRow> rowsProperty() { return rows; }
 	public ObservableList<Change> explicitChangesProperty() { return explicitChanges; }
+	public int getRowCount() { return rows.size(); }
 	public Stream<DatasetRow> getRowsAsStream() { return rows.stream(); }
-	public boolean isChecklist() { return isChecklistProperty.get(); }
-	public BooleanProperty isChecklistProperty() { return isChecklistProperty; }
+	public StringProperty typeProperty() { return typeProperty; }
+	public String getType() { return typeProperty.getValue(); }
+	public boolean isChecklist() { return getType().equals(TYPE_CHECKLIST); }
 	
 	/* Higher order accessors */
 	public boolean isChangeImplicit(Change ch) {
@@ -402,28 +410,21 @@ public class Dataset implements Citable, Comparable<Dataset> {
 	 */
 	public Stream<Name> getRecognizedNames(Project proj) {
 		// Start with names we explicitly add.
-		Set<Name> addedNames = getChanges(proj).flatMap(ch -> ch.getToStream()).collect(Collectors.toSet());
-		Stream<Name> names = addedNames.stream();
+		Set<Name> addedNames = getChanges(proj)
+			.flatMap(ch -> ch.getToStream())
+			.collect(Collectors.toSet());
+		Set<Name> initialNames = new HashSet<>(addedNames);
 		
-		// Not sure why I wrote all this, but it's unnecessary -- the implicit changes have already
-		// been set up correctly, so all we have to do is start with the previously recognized
-		// names, filter all changes and boom, we're done.
-		
-		//if(isChecklist()) {
-			// If this is a checklist, then we use the names we have now.
-			// But let's figure out if we need to ignore any of them.
-			// names = Stream.concat(names, getNamesInAllRows().stream());
-		//} else {
-			// If this is not a checklist, then pass through previously recognized names.
-			if(prevDataset != null)
-				names = Stream.concat(names, prevDataset.getRecognizedNames(proj));
-		//}
+		// If this is not a checklist, then pass through previously recognized names.
+		if(prevDataset != null)
+			initialNames.addAll(proj.getRecognizedNames(prevDataset));
 		
 		// Delete names we explicitly delete.
 		Set<Name> deletedNames = getChanges(proj)
 			.flatMap(ch -> ch.getFromStream())
 			.collect(Collectors.toSet());
-		return names.filter(n -> {
+		
+		return initialNames.stream().filter(n -> {
 			// Filter out names that have been deleted, EXCEPT those that
 			// have been explicitly added (such as in a lump or split).
 			if(deletedNames.contains(n)) {
@@ -432,25 +433,32 @@ public class Dataset implements Citable, Comparable<Dataset> {
 				else
 					return false; // do filter
 			} else 
-				return true; // don't filer
+				return true; // don't filter
 		}).distinct();
 	}
 	
 	/* Display options: provides information on what happened in this dataset for UI purposes */
 
+	public String getRowCountSummary() {
+		Map<DatasetRow, Set<Name>> namesByRow = getNamesByRow();
+		long rowsWithNames = namesByRow.values().stream().filter(names -> names.size() > 0).count();
+		
+		return getRowCount() + " rows (" + ((double)rowsWithNames/getRowCount() * 100) + "% named with " + getNamesInAllRows().size() + " distinct names)";
+	}
+	
 	// Calculating this ourselves is too slow, so we hook into Project's cache.
 	public String getNameCountSummary(Project project) {
 		if(isChecklist())
-			return project.getRecognizedNames(this).size() + " (" + getReferencedNames().count() + " in this dataset)";
+			return project.getRecognizedNames(this).size() + " recognized (" + getReferencedNames().count() + " referenced in rows and changes)";
 		else
-			return getReferencedNames().count() + " in this dataset (" + project.getRecognizedNames(this).size() + " recognized)";
+			return getReferencedNames().count() + " referenced (" + project.getRecognizedNames(this).size() + " recognized)";
 	}
 
 	public String getBinomialCountSummary(Project project) {
 		if(isChecklist())
-			return project.getRecognizedNames(this).stream().flatMap(n -> n.asBinomial()).distinct().count() + " (" + getReferencedNames().flatMap(n -> n.asBinomial()).distinct().count() + " in this dataset)";
+			return project.getRecognizedNames(this).stream().flatMap(n -> n.asBinomial()).distinct().count() + " recognized (" + getReferencedNames().flatMap(n -> n.asBinomial()).distinct().count() + " referenced)";
 		else
-			return getReferencedNames().flatMap(n -> n.asBinomial()).distinct().count() + " in this dataset (" + project.getRecognizedNames(this).stream().flatMap(n -> n.asBinomial()).distinct().count() + " recognized)";
+			return getReferencedNames().flatMap(n -> n.asBinomial()).distinct().count() + " referenced (" + project.getRecognizedNames(this).stream().flatMap(n -> n.asBinomial()).distinct().count() + " recognized)";
 	}
 	
 	/** 
@@ -532,6 +540,25 @@ public class Dataset implements Citable, Comparable<Dataset> {
 		return implicitChanges.stream().filter(p.getChangeFilter());
 	}
 	
+	public String getChangesCountSummary(Project p) {
+		if(explicitChanges.size() == 0) {
+			if(implicitChanges.size() == 0) {
+				return "No changes";
+			} else {
+				// Implicit only
+				return getImplicitChangesCountSummary(p);
+			}
+		} else {
+			if(implicitChanges.size() == 0) {
+				// Explicit only
+				return getExplicitChangesCountSummary(p);
+			} else {
+				// Both explicit and implicit changes
+				return getImplicitChangesCountSummary(p) + "; " + getExplicitChangesCountSummary(p);
+			}
+		}
+	}
+	
 	public String getExplicitChangesCountSummary(Project p) {
 		if(getExplicitChanges(p).count() == 0)
 			return "None";
@@ -544,7 +571,7 @@ public class Dataset implements Citable, Comparable<Dataset> {
 				.map(e -> e.getValue() + " " + e.getKey())
 				.collect(Collectors.joining(", "));
 		
-		return getExplicitChanges(p).count() + " (" + changes_by_type + ")";
+		return getExplicitChanges(p).count() + " explicit changes (" + changes_by_type + ")";
 	}
 	
 	public String getImplicitChangesCountSummary(Project p) {
@@ -584,13 +611,11 @@ public class Dataset implements Citable, Comparable<Dataset> {
 	
 	@Override
 	public String toString() {
-		String str_treatAsChecklist = (isChecklistProperty.get() ? "Checklist " : "Dataset ");
-		
-		return str_treatAsChecklist + getCitation();
+		return getType() + " " + getCitation();
 	}
 	
 	public String asTitle() {
-		return toString() + " (" + rows.size() + " rows, " + getReferencedNames().count() + " names)";
+		return getType() + " " + getName() + " (" + getDate()  + ": " + rows.size() + " rows, " + getReferencedNames().count() + " names)";
 	}
 	
 	/* Data load */
@@ -661,10 +686,10 @@ public class Dataset implements Citable, Comparable<Dataset> {
 	}
 	
 	/* Constructor  */
-	public Dataset(String name, SimplifiedDate date, boolean isChecklist) {
+	public Dataset(String name, SimplifiedDate date, String checklistType) {
 		this.name = name;
 		dateProperty.setValue(date);
-		isChecklistProperty.set(isChecklist);
+		typeProperty.setValue(checklistType);
 	}
 	
 	// Blank constructor
@@ -685,7 +710,7 @@ public class Dataset implements Citable, Comparable<Dataset> {
 	 * @throws IOException 
 	 */
 	public static Dataset fromCSV(CSVFormat csvFormat, File csvFile) throws IOException {
-		Dataset dataset = new Dataset(csvFile.getName(), new SimplifiedDate(), true);
+		Dataset dataset = new Dataset(csvFile.getName(), new SimplifiedDate(), Dataset.TYPE_CHECKLIST);
 		
 		CSVParser parser = csvFormat.withHeader().parse(new FileReader(csvFile));
 		Map<String, Integer> headerMap = parser.getHeaderMap();
@@ -711,7 +736,7 @@ public class Dataset implements Citable, Comparable<Dataset> {
 		Element datasetElement = doc.createElement("dataset");
 		
 		datasetElement.setAttribute("name", name);
-		datasetElement.setAttribute("is_checklist", isChecklistProperty.get() ? "yes" : "no");
+		datasetElement.setAttribute("type", getType());
 		dateProperty.getValue().setDateAttributesOnElement(datasetElement);
 		
 		// Properties

@@ -47,7 +47,7 @@ public class Checklist {
 		LineNumberReader r = new LineNumberReader(new BufferedReader(new FileReader(f)));
 		
 		Dataset checklist = new Dataset();
-		checklist.isChecklistProperty().set(true);
+		checklist.typeProperty().set(Dataset.TYPE_CHECKLIST);
 		try {
 			checklist.setNameExtractorsString("genusAndEpithets(genus, specificEpithet, subspecificEpithet)");
 		} catch(NameExtractorParseException ex) {
