@@ -46,6 +46,17 @@ public class SimplifiedDateTest {
 			new SimplifiedDate("2009-04-17").getLocalDate()
 		);
 		
+		// What about longer strings?
+		assertEquals(
+			LocalDate.of(2009, 10, 17),
+			new SimplifiedDate("Oct 17, 2009").getLocalDate()
+		);
+		
+		assertEquals(
+			LocalDate.of(2009, 10, 17),
+			new SimplifiedDate("October 17, 2009").getLocalDate()
+		);
+		
 		// Test whether it supports shorter strings.
 		assertEquals(
 			LocalDate.of(2009, 4, 7),
@@ -55,6 +66,11 @@ public class SimplifiedDateTest {
 		assertEquals(
 			LocalDate.of(2009, 4, 1),
 			new SimplifiedDate("2009-4").getLocalDate()
+		);
+		
+		assertEquals(
+			LocalDate.of(2009, 10, 1),
+			new SimplifiedDate("October 2009").getLocalDate()
 		);
 		
 		assertEquals(

@@ -14,7 +14,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package com.ggvaidya.scinames.project;
+package com.ggvaidya.scinames.ui;
 
 import java.io.File;
 import java.io.IOException;
@@ -36,10 +36,6 @@ import com.ggvaidya.scinames.summary.NameStabilityView;
 import com.ggvaidya.scinames.summary.ProjectCountsView;
 import com.ggvaidya.scinames.summary.SpeciesNamesView;
 import com.ggvaidya.scinames.summary.TaxonConceptsView;
-import com.ggvaidya.scinames.ui.BulkChangeEditor;
-import com.ggvaidya.scinames.ui.DataReconciliatorView;
-import com.ggvaidya.scinames.ui.DatasetImporterView;
-import com.ggvaidya.scinames.ui.PreferencesView;
 import com.ggvaidya.scinames.util.SimplifiedDate;
 import com.ggvaidya.scinames.validation.ValidationSuiteView;
 
@@ -201,7 +197,7 @@ public class ProjectSceneController {
 		nameCol.setEditable(true);
 		
 		TableColumn<Dataset, SimplifiedDate> dateCol = new TableColumn<>("Date");
-		dateCol.setCellFactory(TextFieldTableCell.forTableColumn(new StringConverter<SimplifiedDate>() {
+		/*dateCol.setCellFactory(TextFieldTableCell.forTableColumn(new StringConverter<SimplifiedDate>() {
 			@Override
 			public String toString(SimplifiedDate date) {
 				String strYYYYmmDD = date.asYYYYmmDD("-");
@@ -219,7 +215,7 @@ public class ProjectSceneController {
 					return SimplifiedDate.MIN;
 				}
 			}
-		}));
+		}));*/
 		dateCol.setCellValueFactory(new PropertyValueFactory<>("date"));
 		dateCol.setPrefWidth(100);
 		dateCol.setEditable(true);

@@ -25,8 +25,9 @@ package com.ggvaidya.scinames.summary;
 
 import com.ggvaidya.scinames.model.Name;
 import com.ggvaidya.scinames.model.Dataset;
-import com.ggvaidya.scinames.project.ProjectView;
 import com.ggvaidya.scinames.tabulardata.TabularDataViewController;
+import com.ggvaidya.scinames.ui.ProjectView;
+
 import java.util.List;
 import javafx.beans.property.ReadOnlyStringWrapper;
 import javafx.collections.FXCollections;

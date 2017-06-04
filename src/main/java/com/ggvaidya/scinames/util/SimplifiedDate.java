@@ -23,6 +23,9 @@ import java.time.YearMonth;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.time.format.TextStyle;
+import java.time.temporal.TemporalAccessor;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
@@ -157,43 +160,63 @@ public class SimplifiedDate implements Comparable<SimplifiedDate> {
 	 * @throws DateTimeParseException If the date could not be parsed into a SimplifiedDate.
 	 */
 	public SimplifiedDate(String simplifiedDate) throws DateTimeParseException {
-		// Try for yyyy-MM-dd
-		LocalDate d;
-		DateTimeFormatter parser;
+		// Try a series of DateTimeFormatters.
+		List<DateTimeFormatter> parsers = Arrays.asList(
+			DateTimeFormatter.ofPattern("MMMM d, y"),
+			DateTimeFormatter.ofPattern("MMM d, y"),
+			DateTimeFormatter.ofPattern("MMM y"),
+			DateTimeFormatter.ofPattern("MMMM y"),
+			DateTimeFormatter.ofPattern("y-M-d"),
+			DateTimeFormatter.ofPattern("y-M"),
+			DateTimeFormatter.ofPattern("y")
+		);
 		
-		try {
-			parser = DateTimeFormatter.ofPattern("yyyy-M-d");
-			
-			d = parser.parse(simplifiedDate, LocalDate::from);
-			
-		} catch(DateTimeParseException e) {
-			YearMonth ym;
+		DateTimeParseException firstParseException = null;
+		
+		for(DateTimeFormatter parser: parsers) {
+			TemporalAccessor ta;
 			
 			try {
-				parser = DateTimeFormatter.ofPattern("yyyy-M");
-				
-				ym = parser.parse(simplifiedDate, YearMonth::from);
-				
+				ta = parser.parseBest(simplifiedDate, LocalDate::from, YearMonth::from, Year::from);
 			} catch(DateTimeParseException ex) {
-				Year y = Year.parse(simplifiedDate);
+				if(firstParseException == null)
+					firstParseException = ex;
 				
-				year = y.getValue();
+				continue;
+			}
+			
+			if(ta instanceof LocalDate) {
+				LocalDate ld = (LocalDate) ta;
+				
+				year = ld.getYear();
+				month = ld.getMonthValue();
+				day = ld.getDayOfMonth();
+				
+				return;
+			} else if(ta instanceof YearMonth) {
+				YearMonth ym = (YearMonth) ta;
+				
+				year = ym.getYear();
+				month = ym.getMonthValue();
+				day = 0;
+				
+				return;
+			} else if(ta instanceof Year) {
+				Year yr = (Year) ta;
+				
+				year = yr.getValue();
 				month = 0;
 				day = 0;
 				
 				return;
+			} else {
+				throw new RuntimeException("Unexpected temporal accessor while parsing simplified date '" + simplifiedDate + "': " + ta);
 			}
-			
-			year = ym.getYear();
-			month = ym.getMonthValue();
-			day = 0;
-
-			return;
 		}
 		
-		year = d.getYear();
-		month = d.getMonthValue();
-		day = d.getDayOfMonth();	
+		if(firstParseException == null) {
+			throw new RuntimeException("No exception through, no parser matched; what?");
+		} else throw firstParseException;
 	}
 	
 	/**

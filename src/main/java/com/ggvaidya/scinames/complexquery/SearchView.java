@@ -30,7 +30,7 @@ import java.util.stream.Stream;
 
 import com.ggvaidya.scinames.model.Change;
 import com.ggvaidya.scinames.model.Project;
-import com.ggvaidya.scinames.project.ProjectView;
+import com.ggvaidya.scinames.ui.ProjectView;
 
 import javafx.scene.Scene;
 import javafx.stage.Stage;

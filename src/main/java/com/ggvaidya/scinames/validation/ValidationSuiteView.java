@@ -24,8 +24,9 @@
 package com.ggvaidya.scinames.validation;
 
 import com.ggvaidya.scinames.model.Dataset;
-import com.ggvaidya.scinames.project.ProjectView;
 import com.ggvaidya.scinames.tabulardata.TabularDataViewController;
+import com.ggvaidya.scinames.ui.ProjectView;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;

@@ -27,8 +27,9 @@ import com.ggvaidya.scinames.model.Dataset;
 import com.ggvaidya.scinames.model.Project;
 import com.ggvaidya.scinames.model.filters.ChangeFilter;
 import com.ggvaidya.scinames.model.ChangeType;
-import com.ggvaidya.scinames.project.ProjectView;
 import com.ggvaidya.scinames.tabulardata.TabularDataViewController;
+import com.ggvaidya.scinames.ui.ProjectView;
+
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;

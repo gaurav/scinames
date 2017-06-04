@@ -27,8 +27,9 @@ import com.ggvaidya.scinames.model.Change;
 import com.ggvaidya.scinames.model.NameCluster;
 import com.ggvaidya.scinames.model.Dataset;
 import com.ggvaidya.scinames.model.TaxonConcept;
-import com.ggvaidya.scinames.project.ProjectView;
 import com.ggvaidya.scinames.tabulardata.TabularDataViewController;
+import com.ggvaidya.scinames.ui.ProjectView;
+
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;

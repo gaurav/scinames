@@ -17,7 +17,7 @@
 package com.ggvaidya.scinames.ui;
 
 import com.ggvaidya.scinames.dataset.*;
-import com.ggvaidya.scinames.project.ProjectView;
+
 import java.io.IOException;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;

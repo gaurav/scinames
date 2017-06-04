@@ -16,7 +16,6 @@
  */
 package com.ggvaidya.scinames;
 
-import com.ggvaidya.scinames.project.ProjectView;
 import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
@@ -27,6 +26,9 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import com.ggvaidya.scinames.ui.ProjectView;
+
 import javafx.application.Application;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableMap;

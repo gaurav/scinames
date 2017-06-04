@@ -17,7 +17,6 @@
 package com.ggvaidya.scinames.ui;
 
 import com.ggvaidya.scinames.SciNames;
-import com.ggvaidya.scinames.project.ProjectView;
 import com.ggvaidya.scinames.tabulardata.TabularDataViewController;
 import java.util.Map;
 import javafx.beans.property.ReadOnlyStringWrapper;

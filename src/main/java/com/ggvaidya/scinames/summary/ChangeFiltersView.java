@@ -24,8 +24,9 @@
 package com.ggvaidya.scinames.summary;
 
 import com.ggvaidya.scinames.model.filters.ChangeFilter;
-import com.ggvaidya.scinames.project.ProjectView;
 import com.ggvaidya.scinames.tabulardata.TabularDataViewController;
+import com.ggvaidya.scinames.ui.ProjectView;
+
 import java.util.LinkedList;
 import java.util.List;
 import javafx.collections.FXCollections;

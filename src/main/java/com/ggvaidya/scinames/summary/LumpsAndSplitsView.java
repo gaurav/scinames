@@ -29,8 +29,8 @@ import java.util.stream.Collectors;
 import com.ggvaidya.scinames.model.Change;
 import com.ggvaidya.scinames.model.ChangeType;
 import com.ggvaidya.scinames.model.Project;
-import com.ggvaidya.scinames.project.ProjectView;
 import com.ggvaidya.scinames.tabulardata.TabularDataViewController;
+import com.ggvaidya.scinames.ui.ProjectView;
 import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.Table;
 

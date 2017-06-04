@@ -18,7 +18,7 @@ package com.ggvaidya.scinames.ui;
 
 import com.ggvaidya.scinames.dataset.*;
 import com.ggvaidya.scinames.model.Dataset;
-import com.ggvaidya.scinames.project.ProjectView;
+
 import java.io.File;
 import java.io.IOException;
 import java.util.stream.Stream;
