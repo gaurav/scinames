@@ -120,13 +120,13 @@ public final class NameStabilityView {
 		cols.add(createTableColumnFromPrecalc(precalc, "count_binomial"));
 		cols.add(createTableColumnFromPrecalc(precalc, "count_genera"));
 		cols.add(createTableColumnFromPrecalc(precalc, "names_added"));
-		cols.add(createTableColumnFromPrecalc(precalc, "names_added_list"));
+		//cols.add(createTableColumnFromPrecalc(precalc, "names_added_list"));
 		cols.add(createTableColumnFromPrecalc(precalc, "names_deleted"));
-		cols.add(createTableColumnFromPrecalc(precalc, "names_deleted_list"));
+		//cols.add(createTableColumnFromPrecalc(precalc, "names_deleted_list"));
 		cols.add(createTableColumnFromPrecalc(precalc, "species_added"));
-		cols.add(createTableColumnFromPrecalc(precalc, "species_added_list"));
+		//cols.add(createTableColumnFromPrecalc(precalc, "species_added_list"));
 		cols.add(createTableColumnFromPrecalc(precalc, "species_deleted"));
-		cols.add(createTableColumnFromPrecalc(precalc, "species_deleted_list"));
+		//cols.add(createTableColumnFromPrecalc(precalc, "species_deleted_list"));
 		cols.add(createTableColumnFromPrecalc(precalc, "mean_binomials_per_genera"));
 		cols.add(createTableColumnFromPrecalc(precalc, "median_binomials_per_genera"));
 		cols.add(createTableColumnFromPrecalc(precalc, "mode_binomials_per_genera_list"));
@@ -171,7 +171,7 @@ public final class NameStabilityView {
 			Dataset nextDataset = (index < (project.getDatasets().size() - 1) ? project.getDatasets().get(index + 1) : null);
 			
 			precalc.put(ds, "dataset", ds.getName());
-			precalc.put(ds, "date", ds.getDate().toString());
+			precalc.put(ds, "date", ds.getDate().asYYYYmmDD("-"));
 			precalc.put(ds, "year", ds.getDate().getYearAsString());
 						
 			Set<Name> recognizedBinomials = project.getRecognizedNames(ds).stream().flatMap(n -> n.asBinomial()).collect(Collectors.toSet());
@@ -188,9 +188,9 @@ public final class NameStabilityView {
 			// TODO: This isn't so useful -- the more useful measure would be the number of all species added
 			// and all species deleted, making sure there isn't a cluster-al overlap.
 			precalc.put(ds, "names_added", String.valueOf(namesAdded.size()));
-			precalc.put(ds, "names_added_list", namesAdded.stream().sorted().map(n -> n.getFullName()).collect(Collectors.joining(", ")));
+			//precalc.put(ds, "names_added_list", namesAdded.stream().sorted().map(n -> n.getFullName()).collect(Collectors.joining(", ")));
 			precalc.put(ds, "names_deleted", String.valueOf(namesDeleted.size()));
-			precalc.put(ds, "names_deleted_list", namesDeleted.stream().sorted().map(n -> n.getFullName()).collect(Collectors.joining(", ")));
+			//precalc.put(ds, "names_deleted_list", namesDeleted.stream().sorted().map(n -> n.getFullName()).collect(Collectors.joining(", ")));
 			
 			// Eliminate names that are still represented in the checklist by a species cluster.
 			// (Note that this includes cases where a subspecies is removed, but another subspecies
