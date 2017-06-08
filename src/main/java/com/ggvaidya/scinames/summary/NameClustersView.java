@@ -24,10 +24,20 @@
 package com.ggvaidya.scinames.summary;
 
 import com.ggvaidya.scinames.model.NameCluster;
+import com.ggvaidya.scinames.model.Project;
+import com.ggvaidya.scinames.model.TaxonConcept;
+import com.ggvaidya.scinames.SciNames;
 import com.ggvaidya.scinames.model.ChangeType;
+import com.ggvaidya.scinames.model.Dataset;
+import com.ggvaidya.scinames.model.Name;
 import com.ggvaidya.scinames.tabulardata.TabularDataViewController;
 import com.ggvaidya.scinames.ui.ProjectView;
+import com.ggvaidya.scinames.util.SimplifiedDate;
+import com.google.common.collect.HashBasedTable;
+import com.google.common.collect.Table;
 
+import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 import javafx.beans.property.ReadOnlyStringWrapper;
 import javafx.collections.FXCollections;
@@ -67,6 +77,12 @@ public final class NameClustersView {
 		stage.setScene(scene);
 	}
 	
+	private TableColumn<NameCluster, String> createColumnFromPrecalc(String colName, Table<NameCluster, String, String> precalc) {
+		TableColumn<NameCluster, String> col = new TableColumn<>(colName);
+		col.setCellValueFactory(cvf -> new ReadOnlyStringWrapper(precalc.get(cvf.getValue(), colName)));
+		return col;
+	}
+	
 	public void init() {
 		// Setup stage.
 		stage.setTitle("Name clusters");
@@ -81,68 +97,49 @@ public final class NameClustersView {
 		ObservableList<TableColumn> cols = controller.getTableColumnsProperty();
 		cols.clear();
 		
+		// Precalculate!
+		SciNames.reportMemoryStatus("Started precalculating name clusters");
+		Table<NameCluster, String, String> precalc = HashBasedTable.create();
+		
 		// Set up columns.
-		TableColumn<NameCluster, String> colClusterName = new TableColumn<>("Name");
-		colClusterName.setCellValueFactory(
-			(TableColumn.CellDataFeatures<NameCluster, String> features) -> new ReadOnlyStringWrapper(features.getValue().getName().toString())
-		);
-		colClusterName.setSortType(TableColumn.SortType.ASCENDING);
-		colClusterName.setPrefWidth(100.0);
-		cols.add(colClusterName);
+		cols.add(createColumnFromPrecalc("name", precalc));
+		cols.add(createColumnFromPrecalc("cluster", precalc));
+		cols.add(createColumnFromPrecalc("cluster_count", precalc));
+		cols.add(createColumnFromPrecalc("datasets", precalc));
+		cols.add(createColumnFromPrecalc("dates", precalc));
 		
-		TableColumn<NameCluster, String> colClusterList = new TableColumn<>("Cluster");
-		colClusterList.setCellValueFactory(
-			(TableColumn.CellDataFeatures<NameCluster, String> features) -> 
-				new ReadOnlyStringWrapper(features.getValue().getNames().stream().map(n -> n.getFullName()).collect(Collectors.joining("; ")))
-		);
-		colClusterList.setPrefWidth(200.0);
-		cols.add(colClusterList);
+		cols.add(createColumnFromPrecalc("recognized_in_first_dataset", precalc));
+		cols.add(createColumnFromPrecalc("recognized_in_last_dataset", precalc));		
 		
-		TableColumn<NameCluster, String> colClusterCount = new TableColumn<>("Cluster Count");
-		colClusterCount.setCellValueFactory(
-			(TableColumn.CellDataFeatures<NameCluster, String> features) -> 
-				new ReadOnlyStringWrapper(String.valueOf(features.getValue().getNames().stream().map(n -> n.getFullName()).count()))
-		);
-		colClusterCount.setPrefWidth(100.0);
-		cols.add(colClusterCount);
+		Project project = projectView.getProject();
+		Dataset firstDataset = project.getFirstDataset().orElse(null);
+		Dataset lastDataset = project.getLastDataset().orElse(null);
 		
-		TableColumn<NameCluster, String> colDateRange = new TableColumn<>("Dates");
-		colDateRange.setCellValueFactory((TableColumn.CellDataFeatures<NameCluster, String> features) -> new ReadOnlyStringWrapper(features.getValue().getDateRange())
-		);
-		colClusterList.setPrefWidth(100.0);
-		cols.add(colDateRange);
+		for(NameCluster cluster: project.getSpeciesNameClusters().collect(Collectors.toList())) {
+			precalc.put(cluster, "name", cluster.getName().getFullName());
+			
+			Set<Name> namesInCluster = cluster.getNames();
+			precalc.put(cluster, "cluster", namesInCluster.stream().map(n -> n.getFullName()).collect(Collectors.joining(", ")));
+			precalc.put(cluster, "cluster_count", String.valueOf(namesInCluster.size()));
 		
-		TableColumn<NameCluster, String> colTaxonConceptCount = new TableColumn<>("Taxon Concept Count");
-		colTaxonConceptCount.setCellValueFactory(
-			(TableColumn.CellDataFeatures<NameCluster, String> features) -> 
-				new ReadOnlyStringWrapper(String.valueOf(features.getValue().getTaxonConcepts(projectView.getProject()).size()))
-		);
-		colTaxonConceptCount.setPrefWidth(100.0);
-		cols.add(colTaxonConceptCount);
-		
-		TableColumn<NameCluster, String> colTaxonConcepts = new TableColumn<>("Taxon Concepts");
-		colTaxonConcepts.setCellValueFactory(
-			(TableColumn.CellDataFeatures<NameCluster, String> features) -> 
-				new ReadOnlyStringWrapper(features.getValue().getTaxonConcepts(projectView.getProject()).stream()
-					.map(tc -> "(" + tc.getNames().stream().map(n -> n.getFullName()).collect(Collectors.joining("; ")) + ")")
-					.collect(Collectors.joining(", ")))
-		);
-		colTaxonConcepts.setPrefWidth(200.0);
-		cols.add(colTaxonConcepts);
-		
-		for(ChangeType type: FXCollections.observableArrayList(projectView.getProject().changeTypesProperty()).sorted()) {
-			TableColumn<NameCluster, String> colChangesByType = new TableColumn<>(type.getType());
-			colChangesByType.setCellValueFactory((TableColumn.CellDataFeatures<NameCluster, String> features) -> {
-				NameCluster cluster = features.getValue();
-				long numberOfChanges = projectView.getProject().getDatasets().stream()
-					.flatMap(t -> t.getChanges(projectView.getProject()).filter(ch -> ch.getType().equals(type)))
-					.filter(c -> cluster.containsAny(c.getAllNames()))
-					.count();
-				return new ReadOnlyStringWrapper(String.valueOf(numberOfChanges));
-			});
-			colChangesByType.setPrefWidth(50.0);
-			cols.add(colChangesByType);
+			List<Dataset> datasetsInCluster = cluster.getFoundIn().stream().sorted().collect(Collectors.toList());
+			precalc.put(cluster, "datasets", datasetsInCluster.stream().map(ds -> ds.toString()).collect(Collectors.joining("; ")));
+			
+			List<SimplifiedDate> datesInCluster = datasetsInCluster.stream().map(ds -> ds.getDate()).collect(Collectors.toList());
+			precalc.put(cluster, "dates", datesInCluster.stream().map(date -> date.toString()).distinct().collect(Collectors.joining("; ")));
+
+			List<TaxonConcept> taxonConceptsInCluster = cluster.getTaxonConcepts(projectView.getProject());
+			precalc.put(cluster, "taxon_concepts", taxonConceptsInCluster.stream().map(tc -> tc.toString()).collect(Collectors.joining("; ")));
+			precalc.put(cluster, "taxon_concept_count", String.valueOf(taxonConceptsInCluster.size()));
+			
+			if(firstDataset != null)
+				precalc.put(cluster, "recognized_in_first_dataset", cluster.containsAny(project.getRecognizedNames(firstDataset)) ? "yes" : "no");
+
+			if(lastDataset != null)
+				precalc.put(cluster, "recognized_in_last_dataset", cluster.containsAny(project.getRecognizedNames(lastDataset)) ? "yes" : "no");
 		}
+		
+		SciNames.reportMemoryStatus("Completed precalculating name clusters");
 		
 		// Set table items.
 		SortedList<NameCluster> sorted = FXCollections.observableArrayList(projectView.getProject().getSpeciesNameClusters().collect(Collectors.toList())).sorted();
