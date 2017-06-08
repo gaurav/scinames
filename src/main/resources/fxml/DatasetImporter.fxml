@@ -54,9 +54,9 @@
                       <TableColumn prefWidth="75.0" text="C2" />
                     </columns>
                   </TableView>
-                  <Button layoutY="168.0" mnemonicParsing="false" onAction="#importDataset" text="Import dataset" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" />
-                  <Button layoutX="494.0" layoutY="168.0" mnemonicParsing="false" onAction="#cancelImport" text="Cancel import" AnchorPane.bottomAnchor="0.0" AnchorPane.rightAnchor="0.0" />
-                  <TextField fx:id="statusTextField" editable="false" layoutX="108.0" layoutY="168.0" prefHeight="27.0" prefWidth="387.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="108.0" AnchorPane.rightAnchor="103.0" />
+                  <Button layoutY="168.0" mnemonicParsing="false" onAction="#importDataset" prefHeight="27.0" text="Import dataset" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" />
+                  <Button layoutX="494.0" layoutY="168.0" mnemonicParsing="false" onAction="#cancelImport" prefHeight="27.0" text="Cancel import" AnchorPane.bottomAnchor="0.0" AnchorPane.rightAnchor="0.0" />
+                  <TextField fx:id="statusTextField" editable="false" layoutX="94.0" layoutY="168.0" prefHeight="27.0" prefWidth="715.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="94.0" AnchorPane.rightAnchor="89.0" />
                </children>
             </AnchorPane>
         </items>

@@ -31,16 +31,16 @@
       <Button layoutX="1.0" layoutY="722.0" mnemonicParsing="false" onAction="#addDataset" text="Add" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" />
       <Button layoutX="38.0" layoutY="575.0" mnemonicParsing="false" onAction="#removeDataset" text="Remove" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="38.0" />
       <Button layoutX="246.0" layoutY="575.0" mnemonicParsing="false" onAction="#displayLumpsAndSplits" text="Lumps/Splits" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="246.0" />
-      <Button layoutX="730.0" layoutY="575.0" mnemonicParsing="false" onAction="#displayNameStability" text="Name stability" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="730.0" />
+      <Button layoutX="728.0" layoutY="575.0" mnemonicParsing="false" onAction="#displayNameStability" text="Name stability" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="728.0" />
       <ProgressBar fx:id="progressBar" layoutX="7.0" layoutY="4.0" prefHeight="33.0" prefWidth="900.0" visible="false" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
       <Button layoutX="894.0" layoutY="27.0" mnemonicParsing="false" onAction="#clearExistingProject" text="Clear" AnchorPane.rightAnchor="85.0" AnchorPane.topAnchor="27.0" />
-      <Button layoutX="649.0" layoutY="575.0" mnemonicParsing="false" onAction="#displayProjectTabularView" text="Project stats" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="649.0" />
+      <Button layoutX="647.0" layoutY="575.0" mnemonicParsing="false" onAction="#displayProjectTabularView" text="Project stats" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="647.0" />
       <Button layoutX="103.0" layoutY="575.0" mnemonicParsing="false" onAction="#displaySearch" text="Search" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="103.0" />
-      <Button layoutX="376.0" layoutY="575.0" mnemonicParsing="false" onAction="#displayValidationSuite" text="Validate data" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="376.0" />
-      <Button layoutX="462.0" layoutY="575.0" mnemonicParsing="false" onAction="#reconcileData" text="Reconcile data" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="462.0" />
+      <Button layoutX="372.0" layoutY="575.0" mnemonicParsing="false" onAction="#displayValidationSuite" text="Validate data" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="372.0" />
+      <Button layoutX="458.0" layoutY="575.0" mnemonicParsing="false" onAction="#reconcileData" text="Reconcile data" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="458.0" />
       <Button layoutX="330.0" layoutY="575.0" mnemonicParsing="false" onAction="#displayTaxonConcepts" text="TCs" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="330.0" />
-      <Button layoutX="556.0" layoutY="575.0" mnemonicParsing="false" onAction="#displayBulkChangeEditor" text="Infer changes" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="556.0" />
-      <Button layoutX="822.0" layoutY="575.0" mnemonicParsing="false" text="Concept stability" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="822.0" />
+      <Button layoutX="552.0" layoutY="575.0" mnemonicParsing="false" onAction="#displayBulkChangeEditor" text="Infer changes" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="552.0" />
+      <Button layoutX="820.0" layoutY="575.0" mnemonicParsing="false" text="Concept stability" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="820.0" />
       <Button layoutX="974.0" layoutY="575.0" mnemonicParsing="false" onAction="#displayFilters" text="Filters" AnchorPane.bottomAnchor="0.0" AnchorPane.rightAnchor="0.0" />
       <Button layoutX="155.0" layoutY="575.0" mnemonicParsing="false" onAction="#displayNameClusters" text="Name clusters" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="155.0" />
       <MenuBar fx:id="menuBar" layoutY="2.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
