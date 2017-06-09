@@ -684,4 +684,9 @@ public class DatasetSceneController {
 		
 		changesTableView.getItems().add(selectedIndex, new Change(dataset, ChangeType.ERROR, Stream.empty(), Stream.empty()));
 	}
+	
+	@FXML
+	private void updateNameParsing(ActionEvent evt) {
+		
+	}
 }
