@@ -725,10 +725,6 @@ public class Dataset implements Citable, Comparable<Dataset> {
 
 	/* Serialization */
 	
-	public static Dataset fromCSV(CSVFormat csvFormat, File csvFile) throws IOException {
-		return fromCSV(csvFormat, csvFile, new HashMap<>());
-	}
-	
 	/**
 	 * Load this dataset from a CSV file. We load the entire CSV file, except
 	 * for blank cells.
@@ -740,7 +736,7 @@ public class Dataset implements Citable, Comparable<Dataset> {
 	 * @return
 	 * @throws IOException 
 	 */
-	public static Dataset fromCSV(CSVFormat csvFormat, File csvFile, Map<DatasetColumn, DatasetColumn> renamedColumns) throws IOException {
+	public static Dataset fromCSV(CSVFormat csvFormat, File csvFile) throws IOException {
 		Dataset dataset = new Dataset(csvFile.getName(), new SimplifiedDate(), Dataset.TYPE_CHECKLIST);
 		
 		CSVParser parser = csvFormat.withHeader().parse(new FileReader(csvFile));
@@ -753,13 +749,14 @@ public class Dataset implements Citable, Comparable<Dataset> {
 			return e1.getValue().compareTo(e2.getValue());
 		}).map(e -> e.getKey())
 		.map(colName -> DatasetColumn.of(colName))
+		/*
 		.map(col -> {
 			// Rename any renamedColumns.
 			if(renamedColumns.containsKey(col))
 				return renamedColumns.get(col);
 			else
 				return col;
-		})
+		})*/
 		.collect(Collectors.toList()));
 		
 		dataset.rows.clear();

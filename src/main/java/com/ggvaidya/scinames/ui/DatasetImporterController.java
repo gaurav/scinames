@@ -16,8 +16,12 @@
  */
 package com.ggvaidya.scinames.ui;
 
+import java.awt.image.BufferedImageFilter;
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileReader;
 import java.io.IOException;
+import java.io.LineNumberReader;
 import java.net.URL;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -31,6 +35,8 @@ import java.util.stream.Stream;
 
 import org.apache.commons.csv.CSVFormat;
 
+import com.ggvaidya.scinames.model.Checklist;
+import com.ggvaidya.scinames.model.ChecklistDiff;
 import com.ggvaidya.scinames.model.Dataset;
 import com.ggvaidya.scinames.model.DatasetColumn;
 import com.ggvaidya.scinames.model.DatasetRow;
@@ -54,17 +60,25 @@ import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
+import javafx.geometry.Insets;
 import javafx.scene.control.Alert;
+import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableColumn.CellDataFeatures;
 import javafx.scene.control.TableView;
+import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.scene.control.cell.CheckBoxTableCell;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.control.cell.TextFieldTableCell;
+import javafx.scene.layout.Background;
+import javafx.scene.layout.BackgroundFill;
+import javafx.scene.layout.CornerRadii;
+import javafx.scene.paint.Paint;
+import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
 import javafx.util.Callback;
@@ -78,223 +92,69 @@ import javafx.util.StringConverter;
 public class DatasetImporterController implements Initializable {
 	private static final Logger LOGGER = Logger.getLogger(DatasetImporterController.class.getSimpleName());
 	
-	private File inputFile;
+	private static final Background BACKGROUND_RED = new Background(new BackgroundFill(Paint.valueOf("red"), CornerRadii.EMPTY, Insets.EMPTY));
 	
-	private DatasetColumn columnToSplitBy = null;
-	private ObservableList<MappedColumn> mappedColumns = FXCollections.observableArrayList();
-	
-	private TableColumn<MappedColumn, String> colRenameTo;
-	private TableColumn<MappedColumn, Boolean> colSplitBy;
-	private List<Dataset> datasets = new LinkedList<>();
-	public Stream<Dataset> getImportedDatasets() { return datasets.stream(); }
+	private File currentFile = null;
+	private Dataset currentDataset = null;
+	public Stream<Dataset> getImportedDatasets() { 
+		if(currentDataset == null) return Stream.empty();
+		
+		return Stream.of(currentDataset); 
+	}
 	
 	private DatasetImporterView datasetImporterView;
-	public void setDatasetImporterView(DatasetImporterView div, File f) {
+	public void setDatasetImporterView(DatasetImporterView div) {
 		datasetImporterView = div;
-		inputFile = f;
-		
-		reloadFile();
 	}
-	
-	/**
-	 * A MappedColumn class to store column mappings.
-	 */
-	public class MappedColumn {
-		public MappedColumn(String from, String to) {
-			fromProperty.set(from);
-			toProperty.set(to);
-		}
-		
-		public MappedColumn(DatasetColumn from, DatasetColumn to) {
-			fromProperty.set(from.getName());
-			toProperty.set(to.getName());
-		}
-		
-		private StringProperty fromProperty = new SimpleStringProperty();
-		private StringProperty toProperty = new SimpleStringProperty();
-		
-		public StringProperty fromProperty() { return fromProperty; }
-		public StringProperty toProperty() { return toProperty; }
-		public BooleanProperty splitOnProperty() {
-			// Only one MappedColumn can be splitOn at a given point in time!
-			MappedColumn thisMappedColumn = this;
 			
-			return new BooleanPropertyBase() {
-				@Override
-				public boolean get() {
-					return (columnToSplitBy != null && columnToSplitBy == DatasetColumn.of(fromProperty.get()));	
-				}
-
-				@Override
-				public void set(boolean value) {
-					if(value) {
-						columnToSplitBy = DatasetColumn.of(fromProperty.get());
-					}
-				}
-
-				@Override
-				public Object getBean() {
-					return thisMappedColumn;
-				}
-
-				@Override
-				public String getName() {
-					return "splitBy";
-				}
-			};
-		}
-	}
-		
 	/**
 	 * Initializes the controller class.
 	 */
 	@Override
 	public void initialize(URL url, ResourceBundle rb) {
-		// Clear out any previous renames.
-		mappedColumns.clear();
-		
 		// Fill in fileFormatComboBox
 		initFileFormatComboBox();
-		
-		// Set up 
-		customExtractorsComboBox.setOnAction(evt -> {
-			currentNameExtractor = customExtractorsComboBox.getValue();
-			System.err.println("Custom extractor set to: " + currentNameExtractor);			
-			reloadTextDelimitedFile();
-		});
 	}
 	
-	/** Load and display input file */
-	public void reloadFile() {
-		// Figure out which tab we're in.
-		Tab tab = upperTabPane.getSelectionModel().getSelectedItem();
-		switch(tab.getText()) {
-			case "Import delimited data": reloadTextDelimitedFile(); break;
-			default: System.err.println("Unexpected tab in DatasetImporter: '" + tab.getText() + "'");
+	private void displayPreview() {
+		filePreviewTextArea.setText("");
+		if(currentFile == null) return;
+		
+		try {
+			LineNumberReader reader = new LineNumberReader(new BufferedReader(new FileReader(currentFile)));
+		
+			// Load the first ten lines.
+			StringBuffer head = new StringBuffer();
+			for(int x = 0; x < 10; x++) {
+				head.append(reader.readLine());
+				head.append('\n');
+			}
+		
+			reader.close();
+			filePreviewTextArea.setText(head.toString());
+		} catch(IOException ex) {
+			filePreviewTextArea.setBackground(BACKGROUND_RED);
+			filePreviewTextArea.setText("ERROR: Could not load file '" + currentFile + "': " + ex);
 		}
 	}
 	
-	private String currentNameExtractor = null;
-	private void reloadTextDelimitedFile() {
-		datasets.clear();
+	@FXML
+	private void loadFromFile(ActionEvent e) {
+		if(currentFile == null) return;
 		
-		CSVFormat format = getCSVFormatFor(fileFormatComboBox.getSelectionModel().getSelectedItem());
-		
-		// Reload renamedColumns from columns
-		Map<DatasetColumn, DatasetColumn> renamedColumns = mappedColumns.stream().collect(
-			Collectors.toMap(
-				map -> DatasetColumn.of(map.fromProperty().get()), 
-				map -> DatasetColumn.of(map.toProperty().get())
-			)
-		);
-		
-		Dataset dataset;
 		try {
-			dataset = Dataset.fromCSV(format, inputFile, renamedColumns);
-		} catch(IOException e) {
-			new Alert(Alert.AlertType.ERROR, "Could not read from file '" + inputFile + "': " + e).showAndWait();
+			currentDataset = loadDataset(currentFile);
+		} catch(IOException ex) {
+			statusTextField.setBackground(BACKGROUND_RED);
+			statusTextField.setText("ERROR opening file: " + ex);
+			new Alert(AlertType.ERROR, "Could not open file '" + currentFile + "': " + ex).showAndWait();
 			return;
 		}
 		
-		// TODO: make this flag-controllable!
-		dataset.typeProperty().set(Dataset.TYPE_CHECKLIST);
-		
-		if(currentNameExtractor != null && !currentNameExtractor.equals("")) {
-			try {
-				dataset.setNameExtractorsString(currentNameExtractor);
-			} catch(NameExtractorParseException ex) {
-				System.err.println("ERROR: Could not set name extractors string: " + ex);
-				// never mind
-			}
-		}
-		
-		System.err.println(" - dataset " + dataset + " with name extractor: " + dataset.getNameExtractorsAsString());
-
-		// Make a list of every unique name extractor string available and store in customExtractorsComboBox.
-		List<String> nameExtractors = new LinkedList<>();
-
-		if(currentNameExtractor != null && !currentNameExtractor.equals(""))
-			nameExtractors.add(currentNameExtractor);
-
-		if(dataset.getNameExtractorsAsString() != null && !dataset.getNameExtractorsAsString().equals(""))
-			nameExtractors.add(dataset.getNameExtractorsAsString());
-
-		Map<String, String> props = datasetImporterView.getProjectView().getProject().propertiesProperty();
-		if(props.containsKey(Project.PROP_NAME_EXTRACTORS)) {
-			nameExtractors.addAll(Arrays.asList(props.get(Project.PROP_NAME_EXTRACTORS).split("\\s*;\\s*")));				
-		}
-		nameExtractors.add(NameExtractorFactory.getDefaultExtractorsAsString());		
-		customExtractorsComboBox.getItems().setAll(nameExtractors.stream().distinct().collect(Collectors.toList()));
-
-		// Set up columns.
-		TableColumn<MappedColumn, String> colColumnName = new TableColumn<>("Name");
-		colColumnName.cellValueFactoryProperty().set(new PropertyValueFactory<>("from"));
-		colColumnName.setPrefWidth(400.0);
-		colColumnName.setEditable(false);
-		colColumnName.setCellFactory(TextFieldTableCell.forTableColumn());
-		
-		colRenameTo = new TableColumn<>("Rename to");
-		colRenameTo.cellValueFactoryProperty().set(new PropertyValueFactory<>("to"));
-		colRenameTo.setPrefWidth(200.0);
-		colRenameTo.setEditable(true);
-		colRenameTo.setCellFactory(TextFieldTableCell.forTableColumn());
-		colRenameTo.onEditCommitProperty().addListener(cl -> reloadFile());
-		
-		colSplitBy = new TableColumn<>("Split on");
-		colSplitBy.setEditable(true);
-		colSplitBy.setCellValueFactory(new PropertyValueFactory<>("splitOn"));
-		colSplitBy.setCellFactory(cf -> new CheckBoxTableCell());
-		
-		columnsTableView.getColumns().setAll(
-			colColumnName,
-			colRenameTo,
-			colSplitBy
-		);
-		columnsTableView.setEditable(true);
-		
-		for(DatasetColumn col: dataset.getColumns()) {
-			if(renamedColumns.containsKey(col))
-				// we've already got one
-				;
-			else
-				mappedColumns.add(new MappedColumn(col, col));
-		}
-		columnsTableView.setItems(mappedColumns);
-
-		// Display in the main table.
-		dataset.displayInTableView(importDataTableView);
-		datasets.add(dataset);
-		
-		// Refresh everything.
-		columnsTableView.refresh();
-		importDataTableView.refresh();
-	}
-	
-	/* File format management */
-	private void initFileFormatComboBox() {
-		fileFormatComboBox.getItems().addAll(
-			"Default CSV",
-			"Microsoft Excel CSV",
-			"RFC 4180 CSV",
-			"Oracle MySQL CSV",
-			"Tab-delimited file"
-		);
-		fileFormatComboBox.getSelectionModel().clearAndSelect(0);
-		fileFormatComboBox.getSelectionModel().selectedItemProperty().addListener((a, b, c) -> reloadFile());
-	}
-	private CSVFormat getCSVFormatFor(String format) {
-		if(format == null) return CSVFormat.DEFAULT;
-		
-		switch(format) {
-			case "Default CSV": return CSVFormat.DEFAULT;
-			case "Microsoft Excel CSV": return CSVFormat.EXCEL;
-			case "RFC 4180 CSV": return CSVFormat.RFC4180;
-			case "Oracle MySQL CSV": return CSVFormat.MYSQL;
-			case "Tab-delimited file": return CSVFormat.TDF;
-			default: 
-				System.err.println("File format '" + format + "' not found, using default.");
-				return CSVFormat.DEFAULT;
-		}
+		datasetNameTextField.setText(currentDataset.asTitle());
+		dateTextField.setText(currentDataset.getDate().toString());
+		currentDataset.displayInTableView(datasetTableView);
+		statusTextField.setText("Displaying " + currentDataset.getRowCount() + " rows from " + currentDataset.getColumns().size() + " columns");
 	}
 	
 	@FXML
@@ -317,11 +177,78 @@ public class DatasetImporterController implements Initializable {
         );
 	}
 	
+	/* File format management */
+	private void initFileFormatComboBox() {
+		fileFormatComboBox.getItems().addAll(
+			"List of names",
+			"Default CSV",
+			"Microsoft Excel CSV",
+			"RFC 4180 CSV",
+			"Oracle MySQL CSV",
+			"Tab-delimited file",
+			"TaxDiff file"
+		);
+		fileFormatComboBox.getSelectionModel().clearAndSelect(1);
+	}
+		
+	private Dataset loadDataset(File f) throws IOException {
+		String format = fileFormatComboBox.getSelectionModel().getSelectedItem();
+		CSVFormat csvFormat = null;
+		if(format == null) {
+			csvFormat = CSVFormat.DEFAULT;
+		} else {
+			switch(format) {
+				case "List of names": 		return Checklist.fromListInFile(f);
+				case "Default CSV": 		csvFormat = CSVFormat.DEFAULT; break;
+				case "Microsoft Excel CSV":	csvFormat = CSVFormat.EXCEL; break;
+				case "RFC 4180 CSV":		csvFormat = CSVFormat.RFC4180; break;
+				case "Oracle MySQL CSV": 	csvFormat = CSVFormat.MYSQL; break;
+				case "Tab-delimited file": 	csvFormat = CSVFormat.TDF; break;
+				case "TaxDiff file":		return ChecklistDiff.fromTaxDiffFile(f);
+			}
+		}
+		
+		if(csvFormat == null) {
+			LOGGER.info("Could not determine CSV format from format '" + format + "', using CSV default.");
+			csvFormat = CSVFormat.DEFAULT;
+		}
+		
+		return Dataset.fromCSV(csvFormat, f);
+	}
+	
+	@FXML
+	private void chooseFile(ActionEvent e) {
+		FileChooser chooser = new FileChooser();
+		chooser.getExtensionFilters().addAll(
+			new FileChooser.ExtensionFilter("Comma-separated values (CSV) file", "*.csv"),				
+			new FileChooser.ExtensionFilter("Tab-delimited values file", "*.txt", "*.tab", "*.tsv"),
+			new FileChooser.ExtensionFilter("List of names", "*.txt"),
+			new FileChooser.ExtensionFilter("TaxDiff file", "*.taxdiff")
+		);
+		
+		currentFile = chooser.showOpenDialog(datasetImporterView.getStage());
+		filePathTextField.setText(currentFile.getAbsolutePath());
+		String filterDesc = chooser.getSelectedExtensionFilter().getDescription();
+		
+		if(filterDesc.startsWith("Comma")) {
+			fileFormatComboBox.getSelectionModel().select("Default CSV");
+		} else if(filterDesc.startsWith("Tab")) {
+			fileFormatComboBox.getSelectionModel().select("Tab-delimited file");
+		} else if(filterDesc.startsWith("List of names")) {
+			fileFormatComboBox.getSelectionModel().select("List of names");
+		} else if(filterDesc.startsWith("TaxDiff")) {
+			fileFormatComboBox.getSelectionModel().select("TaxDiff file");
+		}
+		
+		displayPreview();
+	}
+	
 	/* FXML objects */
+	@FXML private TextField filePathTextField;
+	@FXML private TextArea filePreviewTextArea;
 	@FXML private ComboBox<String> fileFormatComboBox;
-	@FXML private TabPane upperTabPane;
-	@FXML private TableView<MappedColumn> columnsTableView;
-	@FXML private TableView<DatasetRow> importDataTableView;
+	@FXML private TextField datasetNameTextField;
+	@FXML private TextField dateTextField;
+	@FXML private TableView<DatasetRow> datasetTableView;
 	@FXML private TextField statusTextField;
-	@FXML private ComboBox<String> customExtractorsComboBox;
 }

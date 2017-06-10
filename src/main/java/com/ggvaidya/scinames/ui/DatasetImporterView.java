@@ -29,21 +29,23 @@ import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 
 /**
- * The DatasetImporterView displays a new dataset and allows it to be imported
- * properly into SciNames.
+ * The DatasetImporterView provides a UI for loading a new dataset into the system.
+ * We're going to divide its functionality up with the DatasetEditor, which allows
+ * you to "reconfigure" that dataset once it's loaded. The easiest way to think about
+ * these two is that you call the DatasetImporter when you want to load something,
+ * and then once you have a loaded Dataset you can send that to a DatasetEditor
+ * to tweak columns or name parsing and other suchlike.
  *
  * @author Gaurav Vaidya <gaurav@ggvaidya.com>
  */
 public class DatasetImporterView {
 	private ProjectView projectView;
-	private File file;
 	private Stage stage;
 	private Scene scene;
 	private DatasetImporterController controller;
 
-	public DatasetImporterView(ProjectView pv, File f) {
+	public DatasetImporterView(ProjectView pv) {
 		projectView = pv;
-		file = f;
 		stage = new Stage(StageStyle.UTILITY);
 		
 		// Load scene from FXML.
@@ -56,7 +58,7 @@ public class DatasetImporterView {
 		}
 		scene = new Scene(ap);
 		controller = loader.getController();
-		controller.setDatasetImporterView(this, file);
+		controller.setDatasetImporterView(this);
 		
 		stage.setOnCloseRequest((event) -> {
 			// Closing this window is fine, but turn off the controller first.
@@ -67,16 +69,12 @@ public class DatasetImporterView {
 			// this.
 		});
 		
-		stage.setTitle("Importing dataset from: " + file.getAbsolutePath());
+		stage.setTitle("Import datasets ...");
 		stage.setScene(scene);
 	}
 
 	public Stage getStage() {
 		return stage;
-	}
-	
-	public File getFile() {
-		return file;
 	}
 	
 	public ProjectView getProjectView() {

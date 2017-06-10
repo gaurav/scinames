@@ -347,17 +347,7 @@ public class ProjectSceneController {
 	
 	@FXML
 	private void addDatasetViaImporter(ActionEvent evt) {
-		FileChooser chooser = new FileChooser();
-		chooser.setTitle("Choose file to add to project ...");
-		chooser.getExtensionFilters().addAll(
-			new FileChooser.ExtensionFilter("Dataset file (*.csv, *.tsv)", "*.csv", "*.tsv"),
-			new FileChooser.ExtensionFilter("TaxDiff file (*.txt)", "*.txt"),			
-			new FileChooser.ExtensionFilter("Checklist (*.txt)", "*.txt")
-		);
-		File f = chooser.showOpenDialog(projectView.getStage());
-		if(f == null) return;
-		
-		DatasetImporterView view = new DatasetImporterView(projectView, f);
+		DatasetImporterView view = new DatasetImporterView(projectView);
 		view.getStage().initModality(Modality.APPLICATION_MODAL);
 		view.getStage().showAndWait();
 		
@@ -437,6 +427,9 @@ public class ProjectSceneController {
 		if(f == null) {
 			FileChooser chooser = new FileChooser();
 			chooser.setTitle("Save project to ...");
+			chooser.getExtensionFilters().setAll(
+				new FileChooser.ExtensionFilter("Project XML.gz file", "*.xml.gz")
+			);
 			chooser.setSelectedExtensionFilter(
 				new FileChooser.ExtensionFilter("Project XML.gz file", "*.xml.gz")
 			);
