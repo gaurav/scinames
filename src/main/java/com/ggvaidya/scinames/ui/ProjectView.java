@@ -255,7 +255,9 @@ public class ProjectView {
 	}
 	
 	public void openDetailedView(Dataset ds) {
-		DatasetView view = new DatasetView(this, ds);
+		//DatasetView view = new DatasetView(this, ds);
+		//view.getStage().show();
+		DatasetEditorView view = new DatasetEditorView(this, ds);
 		view.getStage().show();
 	}
 	

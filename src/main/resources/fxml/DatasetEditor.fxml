@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.AnchorPane?>
+
+<AnchorPane id="AnchorPane" prefHeight="450.0" prefWidth="500.0" xmlns="http://javafx.com/javafx/8.0.111" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.ggvaidya.scinames.ui.DatasetEditorController">
+   <children>
+      <TableView fx:id="datasetTableView" layoutY="134.0" prefHeight="291.0" prefWidth="500.0" AnchorPane.bottomAnchor="25.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="134.0">
+        <columns>
+          <TableColumn prefWidth="75.0" text="C1" />
+          <TableColumn prefWidth="75.0" text="C2" />
+        </columns>
+      </TableView>
+      <TextField layoutY="424.0" prefHeight="25.0" prefWidth="417.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="83.0" />
+      <Label layoutX="2.0" layoutY="32.0" text="Dataset name:" AnchorPane.leftAnchor="2.0" />
+      <TextField fx:id="datasetNameTextField" layoutX="80.0" layoutY="28.0" prefHeight="25.0" prefWidth="420.0" AnchorPane.leftAnchor="92.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="28.0" />
+      <Label layoutX="2.0" layoutY="60.0" text="Date:" AnchorPane.leftAnchor="2.0" />
+      <TextField fx:id="datasetDateTextField" layoutX="80.0" layoutY="56.0" prefHeight="25.0" prefWidth="420.0" AnchorPane.leftAnchor="92.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="56.0" />
+      <Label layoutX="2.0" layoutY="6.0" text="Type:" />
+      <ComboBox fx:id="datasetTypeComboBox" layoutX="80.0" layoutY="1.0" prefHeight="25.0" prefWidth="420.0" AnchorPane.leftAnchor="92.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="1.0" />
+      <Label layoutX="3.0" layoutY="86.0" text="Modify column:" />
+      <ComboBox fx:id="columnComboBox" layoutX="92.0" layoutY="82.0" prefHeight="25.0" prefWidth="296.0" AnchorPane.leftAnchor="92.0" AnchorPane.rightAnchor="112.0" AnchorPane.topAnchor="82.0" />
+      <Button layoutX="389.0" layoutY="82.0" mnemonicParsing="false" onAction="#renameColumn" text="Rename" AnchorPane.rightAnchor="52.0" AnchorPane.topAnchor="82.0" />
+      <Button layoutX="449.0" layoutY="82.0" mnemonicParsing="false" onAction="#deleteColumn" text="Delete" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="82.0" />
+      <Label layoutX="2.0" layoutY="111.0" text="Name extractor:" />
+      <ComboBox fx:id="nameExtractorComboBox" editable="true" layoutX="92.0" layoutY="108.0" prefHeight="25.0" prefWidth="408.0" AnchorPane.leftAnchor="92.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="108.0" />
+      <Button layoutX="449.0" layoutY="424.0" mnemonicParsing="false" onAction="#editChanges" prefHeight="25.0" prefWidth="84.0" text="Edit changes" AnchorPane.bottomAnchor="0.0" AnchorPane.rightAnchor="0.0" />
+   </children>
+</AnchorPane>

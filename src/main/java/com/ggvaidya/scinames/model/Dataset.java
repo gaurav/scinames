@@ -80,7 +80,7 @@ public class Dataset implements Citable, Comparable<Dataset> {
 	
 	/* Private variables */
 	private Project project;
-	private String name;
+	private StringProperty nameProperty = new SimpleStringProperty();
 	private ObjectProperty<SimplifiedDate> dateProperty = new SimpleObjectProperty<>(SimplifiedDate.MIN);
 	private Dataset prevDataset;
 	private StringProperty typeProperty = new SimpleStringProperty(TYPE_DATASET);
@@ -94,6 +94,7 @@ public class Dataset implements Citable, Comparable<Dataset> {
 	
 	{
 		/* Make sure that certain changes trigger modifications. */
+		nameProperty.addListener(c -> lastModified.modified());
 		dateProperty.addListener(c -> lastModified.modified());
 		typeProperty.addListener(c -> lastModified.modified());
 		columns.addListener((Observable c) -> lastModified.modified());
@@ -104,8 +105,9 @@ public class Dataset implements Citable, Comparable<Dataset> {
 	/* Accessors */
 	public Optional<Project> getProject() { return Optional.ofNullable(project); }
 	public void setProject(Project p) { project = p; lastModified.modified(); }
-	public String getName() { return name; }
-	public void setName(String n) { name = n; lastModified.modified(); }
+	public StringProperty nameProperty() { return nameProperty; }
+	public String getName() { return nameProperty.get(); }
+	public void setName(String n) { nameProperty.set(n); }
 	public ObjectProperty<SimplifiedDate> dateProperty() { return dateProperty; }
 	public SimplifiedDate getDate() { return dateProperty.getValue(); }
 	public ModificationTimeProperty lastModifiedProperty() { return lastModified; }
@@ -713,14 +715,14 @@ public class Dataset implements Citable, Comparable<Dataset> {
 	
 	/* Constructor  */
 	public Dataset(String name, SimplifiedDate date, String checklistType) {
-		this.name = name;
+		nameProperty.setValue(name);
 		dateProperty.setValue(date);
 		typeProperty.setValue(checklistType);
 	}
 	
 	// Blank constructor
 	public Dataset() {
-		this.name = "(unnamed)";
+		nameProperty.setValue("(unnamed)");
 	}
 
 	/* Serialization */
@@ -772,7 +774,7 @@ public class Dataset implements Citable, Comparable<Dataset> {
 	public Element serializeToElement(Document doc) {
 		Element datasetElement = doc.createElement("dataset");
 		
-		datasetElement.setAttribute("name", name);
+		datasetElement.setAttribute("name", getName());
 		datasetElement.setAttribute("type", getType());
 		dateProperty.getValue().setDateAttributesOnElement(datasetElement);
 		
