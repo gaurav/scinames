@@ -231,7 +231,7 @@ public class ProjectXMLReader {
 						if(!nextTag.isStartElement() || !nextTag.asStartElement().getName().getLocalPart().equals("dataset"))
 							throw new XMLStreamException("Unexpected content, expected 'dataset': " + nextTag);
 
-						Map<String, String> attributes = getAllAttributes(nextTag, "name", "is_checklist", "year", "month", "day", "nameExtractors");
+						Map<String, String> attributes = getAllAttributes(nextTag, "name", "type", "is_checklist", "year", "month", "day", "nameExtractors");
 						SimplifiedDate date = new SimplifiedDate(attributes);
 						
 						// What type is it? 
