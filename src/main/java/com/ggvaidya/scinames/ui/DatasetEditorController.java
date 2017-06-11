@@ -112,6 +112,9 @@ public class DatasetEditorController implements Initializable {
 		datasetTypeComboBox.getSelectionModel().select(dataset.getType());
 		dataset.typeProperty().bind(datasetTypeComboBox.getSelectionModel().selectedItemProperty());
 		datasetNameTextField.textProperty().bindBidirectional(dataset.nameProperty());
+		
+		// TODO: is the date what's causing the incorrect update? Nope.
+		/*
 		datasetDateTextField.textProperty().bindBidirectional(dataset.dateProperty(), new StringConverter<SimplifiedDate>() {
 
 			@Override
@@ -124,8 +127,13 @@ public class DatasetEditorController implements Initializable {
 				return new SimplifiedDate(string);
 			}
 			
-		});
+		});*/
 		columnComboBox.setItems(dataset.getColumns());
+		
+		// Report.
+		statusTextField.setText(
+			dataset.getRowCount() + " rows in " + dataset.getColumns().size() + " columns; includes changes: " + dataset.getChangesCountSummary(datasetEditorView.getProjectView().getProject())
+		);
 		
 		// TODO: make this editable!
 		dataset.displayInTableView(datasetTableView);
@@ -167,13 +175,22 @@ public class DatasetEditorController implements Initializable {
 		nameExtractorComboBox.getSelectionModel().selectedItemProperty().addListener(ch -> {
 			String strNewNameExtractor = nameExtractorComboBox.getSelectionModel().getSelectedItem();
 			String prevNameExtractor = dataset.getNameExtractorsAsString();
+
+			LOGGER.info("Before changing the name extractor, dataset " + dataset + " has " + dataset.getRowCount() + " rows.");
+			
 			try {
 				dataset.setNameExtractorsString(strNewNameExtractor);
 			} catch(NameExtractorParseException ex) {
 				new Alert(AlertType.ERROR, "Name extractor '" + strNewNameExtractor + "' is not valid: " + ex);
+				return;
 			}
-		//	dataset.displayInTableView(datasetTableView);
+			
+			LOGGER.info("Name extractor changed for " + dataset + ": " + strNewNameExtractor);
+			LOGGER.info("After changing the name extractor, dataset " + dataset + " has " + dataset.getRowCount() + " rows.");			
+			// TODO: why doesn't the following line work?
+			// dataset.displayInTableView(datasetTableView);
 		});
+		nameExtractorComboBox.getSelectionModel().select(dataset.getNameExtractorsAsString());
 	}
 			
 	/**
@@ -194,6 +211,7 @@ public class DatasetEditorController implements Initializable {
 	@FXML private ComboBox<DatasetColumn> columnComboBox;
 	@FXML private ComboBox<String> nameExtractorComboBox;
 	@FXML private TableView<DatasetRow> datasetTableView;
+	@FXML private TextField statusTextField;
 	
 	/* FXML events */
 	@FXML private void renameColumn(ActionEvent e) {

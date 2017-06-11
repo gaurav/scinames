@@ -527,8 +527,9 @@ public class Dataset implements Citable, Comparable<Dataset> {
 			colColumn.setPrefWidth(100.0);
 			cols.add(colColumn);
 		});
+		
 		// Set table items.
-		tv.getItems().clear();
+		// tv.getItems().clear();
 		tv.setItems(rows);
 	}
 	

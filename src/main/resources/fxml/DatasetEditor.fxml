@@ -16,7 +16,7 @@
           <TableColumn prefWidth="75.0" text="C2" />
         </columns>
       </TableView>
-      <TextField layoutY="424.0" prefHeight="25.0" prefWidth="417.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="83.0" />
+      <TextField fx:id="statusTextField" editable="false" layoutY="424.0" prefHeight="25.0" prefWidth="417.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="83.0" />
       <Label layoutX="2.0" layoutY="32.0" text="Dataset name:" AnchorPane.leftAnchor="2.0" />
       <TextField fx:id="datasetNameTextField" layoutX="80.0" layoutY="28.0" prefHeight="25.0" prefWidth="420.0" AnchorPane.leftAnchor="92.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="28.0" />
       <Label layoutX="2.0" layoutY="60.0" text="Date:" AnchorPane.leftAnchor="2.0" />

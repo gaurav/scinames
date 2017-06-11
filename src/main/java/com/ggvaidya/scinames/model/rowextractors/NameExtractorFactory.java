@@ -116,6 +116,19 @@ public class NameExtractorFactory {
 				}
 			);
 			
+			case "binomialName": return new NameExtractor("binomialName", 1, 1, arguments, 
+				(extractor, row) -> {
+					try {
+						return extractor.applyFunction(Name::getFromFullName, 0, row)
+							.stream().flatMap(n -> n.asBinomial()).collect(Collectors.toSet());
+					} catch(NameExtractorParseException ex) {
+						// TODO: create some kind of logging mechanism.
+						LOGGER.severe("Error during name parsing: " + ex);
+						return new HashSet<>();
+					}
+				}
+			);
+			
 			case "genusAndEpithets": return new NameExtractor("genusAndEpithets", 1, 3, arguments, 
 				(extractor, row) -> {
 					HashSet<Name> names = new HashSet<>();
@@ -155,6 +168,7 @@ public class NameExtractorFactory {
 		return 
 			"The following extractors are supported (separated by \"or\"):\n"
 			+ "\t - scientificName(colName): full scientific name\n"
+			+ "\t - binomialName(colName): read as full scientific name, but truncate to binomial name\n"
 			+ "\t - genusAndEpithets(genusCol, specificEpithetCol): genus and species name\n"
 			+ "\t - genusAndEpithets(genusCol, specificEpithetCol, subspecificEpithet): genus, species name and subspecific information\n"				
 		;

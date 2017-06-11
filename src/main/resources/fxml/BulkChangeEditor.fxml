@@ -12,7 +12,7 @@
    <children>
       <Button layoutY="85.0" mnemonicParsing="false" onAction="#findChanges" prefHeight="25.0" prefWidth="798.0" text="Find" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="85.0" />
       <ComboBox fx:id="comboBoxNameIdentifiers" layoutX="200.0" layoutY="29.0" prefHeight="25.0" prefWidth="597.0" AnchorPane.leftAnchor="200.0" AnchorPane.rightAnchor="1.0" AnchorPane.topAnchor="29.0" />
-      <Label layoutY="33.0" text="Column containing name identifiers:" AnchorPane.topAnchor="33.0" />
+      <Label layoutY="33.0" text="Column to use:" AnchorPane.topAnchor="33.0" />
       <Label layoutY="5.0" text="Method to use:" />
       <ComboBox fx:id="comboBoxMethods" layoutX="201.0" layoutY="1.0" prefHeight="25.0" prefWidth="597.0" AnchorPane.leftAnchor="200.0" AnchorPane.rightAnchor="1.0" AnchorPane.topAnchor="1.0" />
       <TableView fx:id="changesTableView" layoutY="109.0" prefHeight="264.0" prefWidth="500.0" AnchorPane.bottomAnchor="27.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="113.0">
@@ -24,7 +24,7 @@
       <Button mnemonicParsing="false" onAction="#addSelectedChanges" text="Add selected changes to dataset" AnchorPane.bottomAnchor="1.0" AnchorPane.rightAnchor="0.0" />
       <Button mnemonicParsing="false" onAction="#backupCurrentDataset" text="Backup current dataset" AnchorPane.bottomAnchor="1.0" AnchorPane.leftAnchor="0.0" />
       <TextField fx:id="statusTextField" editable="false" layoutX="138.0" layoutY="374.0" prefHeight="25.0" prefWidth="173.0" AnchorPane.bottomAnchor="1.0" AnchorPane.leftAnchor="138.0" AnchorPane.rightAnchor="189.0" />
-      <Label layoutY="62.0" text="Dataset to extract names from:" AnchorPane.topAnchor="62.0" />
+      <Label layoutY="62.0" text="Dataset to infer changes from:" AnchorPane.topAnchor="62.0" />
       <ComboBox fx:id="datasetsComboBox" layoutX="200.0" layoutY="57.0" prefHeight="25.0" prefWidth="299.0" AnchorPane.leftAnchor="200.0" AnchorPane.rightAnchor="1.0" AnchorPane.topAnchor="57.0" />
    </children>
 </AnchorPane>

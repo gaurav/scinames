@@ -553,7 +553,7 @@ public class Project {
 			reader.close();
 			
 		} catch (XMLStreamException ex) {
-			throw new IOException("Could not read project from XML file '" + loadFromFile + "': " + ex);
+			throw new IOException("Could not read project from XML file '" + loadFromFile + "': " + ex, ex);
 		}
 		
 		return project;
@@ -642,7 +642,9 @@ public class Project {
 			Transformer t = tfc.newTransformer();
 			DOMSource ds = new DOMSource(docProject);
 			
-			t.setOutputProperty(OutputKeys.ENCODING, "utf8");
+			t.setOutputProperty(OutputKeys.METHOD, "xml");
+			t.setOutputProperty(OutputKeys.VERSION, "1.0");
+			t.setOutputProperty(OutputKeys.ENCODING, "UTF-8");
 			t.setOutputProperty(OutputKeys.STANDALONE, "yes");
 			t.setOutputProperty(OutputKeys.INDENT, "yes");
 			t.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "4");
