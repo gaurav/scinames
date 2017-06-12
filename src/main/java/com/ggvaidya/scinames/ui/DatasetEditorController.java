@@ -113,8 +113,6 @@ public class DatasetEditorController implements Initializable {
 		dataset.typeProperty().bind(datasetTypeComboBox.getSelectionModel().selectedItemProperty());
 		datasetNameTextField.textProperty().bindBidirectional(dataset.nameProperty());
 		
-		// TODO: is the date what's causing the incorrect update? Nope.
-		/*
 		datasetDateTextField.textProperty().bindBidirectional(dataset.dateProperty(), new StringConverter<SimplifiedDate>() {
 
 			@Override
@@ -127,7 +125,7 @@ public class DatasetEditorController implements Initializable {
 				return new SimplifiedDate(string);
 			}
 			
-		});*/
+		});
 		columnComboBox.setItems(dataset.getColumns());
 		
 		// Report.

@@ -36,7 +36,7 @@
       <Button layoutX="894.0" layoutY="27.0" mnemonicParsing="false" onAction="#clearExistingProject" text="Clear" AnchorPane.rightAnchor="85.0" AnchorPane.topAnchor="27.0" />
       <Button layoutX="647.0" layoutY="575.0" mnemonicParsing="false" onAction="#displayProjectTabularView" text="Project stats" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="647.0" />
       <Button layoutX="103.0" layoutY="575.0" mnemonicParsing="false" onAction="#displaySearch" text="Search" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="103.0" />
-      <Button layoutX="388.0" layoutY="574.0" mnemonicParsing="false" onAction="#displayValidationSuite" text="Validation" AnchorPane.bottomAnchor="1.0" AnchorPane.leftAnchor="388.0" />
+      <Button layoutX="388.0" layoutY="574.0" mnemonicParsing="false" onAction="#displayValidationSuite" text="Validation" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="388.0" />
       <Button layoutX="458.0" layoutY="575.0" mnemonicParsing="false" onAction="#reconcileData" text="Reconcile data" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="458.0" />
       <Button layoutX="292.0" layoutY="575.0" mnemonicParsing="false" onAction="#displayTaxonConcepts" text="TCs" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="292.0" />
       <Button layoutX="552.0" layoutY="575.0" mnemonicParsing="false" onAction="#displayBulkChangeEditor" text="Infer changes" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="552.0" />

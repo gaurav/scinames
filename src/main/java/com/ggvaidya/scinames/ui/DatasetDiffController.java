@@ -68,8 +68,9 @@ import javafx.stage.FileChooser;
 public class DatasetDiffController implements Initializable {
 	private static final Logger LOGGER = Logger.getLogger(DatasetDiffController.class.getSimpleName());
 	
-	private static final DatasetColumn DATASET_COLUMN_ALL = DatasetColumn.of("Concatenate all");
-	private static final DatasetColumn DATASET_COLUMN_NAME_ONLY = DatasetColumn.of("Parsed name");
+	private static final DatasetColumn DATASET_COLUMN_ALL = DatasetColumn.fakeColumnFor("All fields");
+	private static final DatasetColumn DATASET_COLUMN_NAME_ONLY = DatasetColumn.fakeColumnFor("Extracted scientific name");
+	private static final DatasetColumn DATASET_COLUMN_NAME_SPECIFIC_EPITHET = DatasetColumn.fakeColumnFor("Subspecific epithet only");
 	
 	private Dataset dataset = null;
 	
@@ -87,6 +88,7 @@ public class DatasetDiffController implements Initializable {
 		ObservableList<DatasetColumn> byUniques = FXCollections.observableArrayList();
 		byUniques.add(DATASET_COLUMN_ALL);
 		byUniques.add(DATASET_COLUMN_NAME_ONLY);
+		byUniques.add(DATASET_COLUMN_NAME_SPECIFIC_EPITHET);
 		byUniques.addAll(project.getDatasets().stream()
 			.flatMap(ds -> ds.getColumns().stream())
 			.distinct()
@@ -200,6 +202,12 @@ public class DatasetDiffController implements Initializable {
 		return col;
 	}
 	
+	private String truncateString(String str, int truncateTo) {
+		if(str == null) return "(none)";
+		if(str.length() < truncateTo) return str;
+		return str.substring(0, truncateTo - 3) + "...";
+	}
+	
 	private void displayRows(List<DatasetRow> rows) {
 		ObservableList<TableColumn> cols = comparisonTableView.getColumns();
 		cols.clear();
@@ -211,7 +219,7 @@ public class DatasetDiffController implements Initializable {
 		
 		// Add the by-unique before the columns.
 		Function<DatasetRow, String> uniqueMap = getByUniqueMap();
-		cols.add(0, createTableColumnForDatasetRow("Unique", row -> uniqueMap.apply(row)));
+		cols.add(0, createTableColumnForDatasetRow("Unique", row -> truncateString(uniqueMap.apply(row), 30)));
 		
 		// Add the dataset after the columns.
 		cols.add(createTableColumnForDatasetRow("Dataset", row -> row.getDataset().getCitation()));
@@ -228,6 +236,8 @@ public class DatasetDiffController implements Initializable {
 			// Note that this will combine rows that have identical names, which is not
 			// what we want.
 			return row -> row.getDataset().getNamesInRow(row).toString();
+		} else if(colByEqual.equals(DATASET_COLUMN_NAME_SPECIFIC_EPITHET)) {
+			return row -> row.getDataset().getNamesInRow(row).stream().map(n -> n.getSpecificEpithet()).collect(Collectors.toSet()).toString();
 		} else {
 			return row -> row.get(colByEqual);
 		}

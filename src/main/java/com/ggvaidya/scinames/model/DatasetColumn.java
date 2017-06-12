@@ -39,6 +39,7 @@ import java.util.Map;
 public class DatasetColumn implements Comparable<DatasetColumn> {
 	/* All identically named columns as the same. */
 	private static Map<String, DatasetColumn> singletons = new HashMap<>();
+	private boolean isFake = false;
 	
 	/**
 	 * Return the DatasetColumn for a particular name. This prevents per-dataset customization of columns,
@@ -57,12 +58,32 @@ public class DatasetColumn implements Comparable<DatasetColumn> {
 		return singletons.get(colName);
 	}
 	
+	/**
+	 * Fake columns are NOT tracked on the singleton table! How cool!
+	 * 
+	 * @param colName
+	 * @return
+	 */
+	public static DatasetColumn fakeColumnFor(String colName) {
+		if(colName == null) throw new IllegalArgumentException("Column name cannot be null");
+		if(colName.equals("")) throw new IllegalArgumentException("Column name cannot be blank");
+		
+		DatasetColumn fakeCol = new DatasetColumn(colName);
+		fakeCol.isFake = true;
+		return fakeCol;
+	}
+	
 	/* Private variables. Mapping, if necessary, comes later. */
 	private final String colName;
 	public String getName() { return colName; }
 	
 	/* Simple accessors */
-	@Override public String toString() { return "column '" + getName() + "'"; }
+	@Override public String toString() {
+		if(isFake)
+			return getName();
+		else
+			return "column '" + getName() + "'";
+	}
 	
 	/* Constructors */
 	private DatasetColumn(String c) {

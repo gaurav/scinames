@@ -191,18 +191,19 @@ public final class NameStabilityView {
 			//precalc.put(ds, "names_added_list", namesAdded.stream().sorted().map(n -> n.getFullName()).collect(Collectors.joining(", ")));
 			precalc.put(ds, "names_deleted", String.valueOf(namesDeleted.size()));
 			//precalc.put(ds, "names_deleted_list", namesDeleted.stream().sorted().map(n -> n.getFullName()).collect(Collectors.joining(", ")));
-			
-			// Eliminate names that are still represented in the checklist by a species cluster.
-			// (Note that this includes cases where a subspecies is removed, but another subspecies
-			// or the nominal species is still recognized!)
+
+			// Eliminate names that have been added, but were previously recognized at the species level.
 			Set<Name> speciesAdded = namesAdded;
 			if(prevDataset != null) {
 				Set<Name> prevRecognizedNames = project.getNameClusterManager().getClusters(project.getRecognizedNames(prevDataset)).stream().flatMap(nc -> nc.getNames().stream()).collect(Collectors.toSet());
 				speciesAdded = namesAdded.stream().filter(n -> !prevRecognizedNames.contains(n)).collect(Collectors.toSet());
 			}
 			
-			Set<Name> currentlyRecognizedNames = project.getNameClusterManager().getClusters(project.getRecognizedNames(ds)).stream().flatMap(nc -> nc.getNames().stream()).collect(Collectors.toSet());
-			Set<Name> speciesDeleted = namesDeleted.stream().filter(n -> currentlyRecognizedNames.contains(n)).collect(Collectors.toSet());
+			// Eliminate names that are still represented in the checklist by a species cluster.
+			// (Note that this includes cases where a subspecies is removed, but another subspecies
+			// or the nominal species is still recognized!)
+			Set<Name> currentlyRecognizedBinomialNames = project.getNameClusterManager().getClusters(project.getRecognizedNames(ds)).stream().flatMap(nc -> nc.getNames().stream()).flatMap(n -> n.asBinomial()).collect(Collectors.toSet());
+			Set<Name> speciesDeleted = namesDeleted.stream().filter(n -> !n.asBinomial().anyMatch(bn -> currentlyRecognizedBinomialNames.contains(bn))).collect(Collectors.toSet());
 			
 			precalc.put(ds, "species_added", String.valueOf(speciesAdded.size()));
 			precalc.put(ds, "species_added_list", speciesAdded.stream().sorted().map(n -> n.getFullName()).collect(Collectors.joining(", ")));
