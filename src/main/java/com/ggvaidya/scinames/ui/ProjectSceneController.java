@@ -544,4 +544,10 @@ public class ProjectSceneController {
 		BulkChangeEditor editor = new BulkChangeEditor(projectView);
 		editor.getStage().show();
 	}
+	
+	@FXML
+	private void diffDatasets(ActionEvent evt) {
+		DatasetDiffView view = new DatasetDiffView(projectView);
+		view.getStage().show();
+	}
 }

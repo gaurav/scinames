@@ -49,6 +49,11 @@ public class DatasetRow {
 			put(key, map.get(key));
 		}
 	}
+	
+	@Override
+	public String toString() {
+		return data.toString();
+	}
 
 	public Dataset getDataset()						{ return dataset; }
 	public String get(DatasetColumn col)			{ return data.get(col); }

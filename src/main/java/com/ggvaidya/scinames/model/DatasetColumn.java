@@ -36,7 +36,7 @@ import java.util.Map;
  * 
  * @author Gaurav Vaidya <gaurav@ggvaidya.com>
  */
-public class DatasetColumn {
+public class DatasetColumn implements Comparable<DatasetColumn> {
 	/* All identically named columns as the same. */
 	private static Map<String, DatasetColumn> singletons = new HashMap<>();
 	
@@ -67,5 +67,10 @@ public class DatasetColumn {
 	/* Constructors */
 	private DatasetColumn(String c) {
 		colName = c;
+	}
+
+	@Override
+	public int compareTo(DatasetColumn other) {
+		return colName.compareTo(other.colName);
 	}
 }
