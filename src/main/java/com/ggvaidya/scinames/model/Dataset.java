@@ -16,10 +16,15 @@
  */
 package com.ggvaidya.scinames.model;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.LineNumberReader;
+import java.io.Reader;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -34,6 +39,7 @@ import java.util.stream.Stream;
 
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
+import org.apache.commons.io.input.BOMInputStream;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
@@ -742,7 +748,17 @@ public class Dataset implements Citable, Comparable<Dataset> {
 	public static Dataset fromCSV(CSVFormat csvFormat, File csvFile) throws IOException {
 		Dataset dataset = new Dataset(csvFile.getName(), new SimplifiedDate(), Dataset.TYPE_CHECKLIST);
 		
-		CSVParser parser = csvFormat.withHeader().parse(new FileReader(csvFile));
+		// Get ready to filter input files.
+		InputStream ins = new FileInputStream(csvFile);
+		
+		// Look for BOMs and discard!
+		ins = new BOMInputStream(ins, false);
+		
+		// Convert into a Reader.
+		Reader reader = new BufferedReader(new InputStreamReader(ins));
+		
+		// Load CSV
+		CSVParser parser = csvFormat.withHeader().parse(reader);
 		Map<String, Integer> headerMap = parser.getHeaderMap();
 		
 		dataset.setColumns(headerMap.entrySet().stream().sorted((Object o1, Object o2) -> {

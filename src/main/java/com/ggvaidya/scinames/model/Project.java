@@ -38,6 +38,8 @@ import java.util.stream.Stream;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 
+import javax.xml.namespace.NamespaceContext;
+import javax.xml.namespace.QName;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -46,6 +48,7 @@ import javax.xml.stream.XMLEventReader;
 import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLReporter;
 import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.XMLStreamReader;
 import javax.xml.transform.OutputKeys;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerConfigurationException;
@@ -54,6 +57,7 @@ import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 
+import org.apache.commons.io.input.XmlStreamReader;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
@@ -544,7 +548,7 @@ public class Project {
 		});
 		
 		try {
-			XMLEventReader reader = factory.createXMLEventReader(new GZIPInputStream(new FileInputStream(loadFromFile)));
+			XMLEventReader reader = factory.createXMLEventReader(new XmlStreamReader(new GZIPInputStream(new FileInputStream(loadFromFile))));
 			
 			project = ProjectXMLReader.read(reader);
 			project.setFile(loadFromFile);
@@ -643,7 +647,7 @@ public class Project {
 			DOMSource ds = new DOMSource(docProject);
 			
 			t.setOutputProperty(OutputKeys.METHOD, "xml");
-			t.setOutputProperty(OutputKeys.VERSION, "1.0");
+			t.setOutputProperty(OutputKeys.VERSION, "1.0"); // Do NOT change to 1.1 -- this leads to complex problems!
 			t.setOutputProperty(OutputKeys.ENCODING, "UTF-8");
 			t.setOutputProperty(OutputKeys.STANDALONE, "yes");
 			t.setOutputProperty(OutputKeys.INDENT, "yes");

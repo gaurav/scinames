@@ -173,6 +173,9 @@ public class DatasetEditorController implements Initializable {
 		nameExtractorComboBox.getSelectionModel().selectedItemProperty().addListener(ch -> {
 			String strNewNameExtractor = nameExtractorComboBox.getSelectionModel().getSelectedItem();
 			String prevNameExtractor = dataset.getNameExtractorsAsString();
+			
+			// No change? Then ignore!
+			if(strNewNameExtractor.trim().equals(prevNameExtractor.trim())) return;
 
 			LOGGER.info("Before changing the name extractor, dataset " + dataset + " has " + dataset.getRowCount() + " rows.");
 			
