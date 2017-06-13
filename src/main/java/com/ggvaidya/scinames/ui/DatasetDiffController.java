@@ -39,8 +39,12 @@ import org.apache.commons.csv.CSVPrinter;
 import com.ggvaidya.scinames.model.Dataset;
 import com.ggvaidya.scinames.model.DatasetColumn;
 import com.ggvaidya.scinames.model.DatasetRow;
+import com.ggvaidya.scinames.model.Name;
+import com.ggvaidya.scinames.model.NameCluster;
+import com.ggvaidya.scinames.model.NameClusterManager;
 import com.ggvaidya.scinames.model.Project;
 import com.google.common.collect.HashBasedTable;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Table;
 
 import javafx.beans.property.ReadOnlyStringWrapper;
@@ -70,7 +74,9 @@ public class DatasetDiffController implements Initializable {
 	
 	private static final DatasetColumn DATASET_COLUMN_ALL = DatasetColumn.fakeColumnFor("All fields");
 	private static final DatasetColumn DATASET_COLUMN_NAME_ONLY = DatasetColumn.fakeColumnFor("Extracted scientific name");
+	private static final DatasetColumn DATASET_COLUMN_BINOMIAL_NAME_CLUSTER = DatasetColumn.fakeColumnFor("Binomial name cluster for extracted scientific name");
 	private static final DatasetColumn DATASET_COLUMN_NAME_SPECIFIC_EPITHET = DatasetColumn.fakeColumnFor("Subspecific epithet only");
+	
 	
 	private Dataset dataset = null;
 	
@@ -86,9 +92,7 @@ public class DatasetDiffController implements Initializable {
 		dataset2ComboBox.getSelectionModel().clearAndSelect(0);
 		
 		ObservableList<DatasetColumn> byUniques = FXCollections.observableArrayList();
-		byUniques.add(DATASET_COLUMN_ALL);
-		byUniques.add(DATASET_COLUMN_NAME_ONLY);
-		byUniques.add(DATASET_COLUMN_NAME_SPECIFIC_EPITHET);
+		addUniqueMaps(byUniques);
 		byUniques.addAll(project.getDatasets().stream()
 			.flatMap(ds -> ds.getColumns().stream())
 			.distinct()
@@ -228,6 +232,13 @@ public class DatasetDiffController implements Initializable {
 		statusTextField.setText("Displaying " + rows.size() + " rows across " + cols.size() + " columns");
 	}
 	
+	private void addUniqueMaps(ObservableList<DatasetColumn> byUniques) {
+		byUniques.add(DATASET_COLUMN_ALL);
+		byUniques.add(DATASET_COLUMN_NAME_ONLY);
+		byUniques.add(DATASET_COLUMN_BINOMIAL_NAME_CLUSTER);
+		byUniques.add(DATASET_COLUMN_NAME_SPECIFIC_EPITHET);
+	}
+	
 	private Function<DatasetRow, String> getByUniqueMap() {
 		DatasetColumn colByEqual = byUniqueComboBox.getValue();
 		if(colByEqual.equals(DATASET_COLUMN_ALL)) {
@@ -236,6 +247,17 @@ public class DatasetDiffController implements Initializable {
 			// Note that this will combine rows that have identical names, which is not
 			// what we want.
 			return row -> row.getDataset().getNamesInRow(row).toString();
+		} else if(colByEqual.equals(DATASET_COLUMN_BINOMIAL_NAME_CLUSTER)) {
+			return row -> {
+				Project project = datasetDiffView.getProjectView().getProject();
+				NameClusterManager ncm = project.getNameClusterManager();
+				
+				List<Name> binomialNames = row.getDataset().getNamesInRow(row).stream().flatMap(n -> n.asBinomial()).collect(Collectors.toList());
+				List<NameCluster> nameClusters = ncm.getClusters(binomialNames);
+				nameClusters.sort(null);
+						
+				return nameClusters.toString();
+			};
 		} else if(colByEqual.equals(DATASET_COLUMN_NAME_SPECIFIC_EPITHET)) {
 			return row -> row.getDataset().getNamesInRow(row).stream().map(n -> n.getSpecificEpithet()).collect(Collectors.toSet()).toString();
 		} else {
