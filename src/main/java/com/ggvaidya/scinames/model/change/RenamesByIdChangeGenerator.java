@@ -106,7 +106,7 @@ public class RenamesByIdChangeGenerator implements ChangeGenerator {
 					return myIds.parallelStream()
 						.filter(id -> rowsByNamePrevDataset.containsKey(id))
 						.flatMap(id -> rowsByNamePrevDataset.get(id).stream())
-						.map(prevName -> new Synonymy(prevName, nameAdded, ds));
+						.map(prevName -> new Synonymy(prevName, nameAdded, ds, "Name added, but previously recognized under the same shared identifier (one of " + myIds + ") in column " + idColumn));
 					/*
 					// Look for a name in the previous checklist that shares the same ID as/
 					// in this checklist -- this might be a rename!
@@ -131,7 +131,7 @@ public class RenamesByIdChangeGenerator implements ChangeGenerator {
 					return myIds.parallelStream()
 						.filter(id -> rowsByNameDataset.containsKey(id))
 						.flatMap(id -> rowsByNameDataset.get(id).stream())
-						.map(currName -> new Synonymy(nameDeleted, currName, ds));
+						.map(currName -> new Synonymy(nameDeleted, currName, ds, "Name deleted, but added under the same shared identifier (one of " + myIds + ") in column " + idColumn));
 					
 					/*
 					// Look for a name in the current checklist that shares the same ID as
@@ -149,6 +149,6 @@ public class RenamesByIdChangeGenerator implements ChangeGenerator {
 			// Remove duplicate synonymy objects.
 			.distinct()
 			// Produce a final list of potential renames.
-			.map(syn -> new PotentialChange(syn.getDataset(), ChangeType.RENAME, Stream.of(syn.getFrom()), Stream.of(syn.getTo())));
+			.map(syn -> new PotentialChange(syn.getDataset(), ChangeType.RENAME, Stream.of(syn.getFrom()), Stream.of(syn.getTo()), RenamesByIdChangeGenerator.class, syn.getNote()));
 	}
 }

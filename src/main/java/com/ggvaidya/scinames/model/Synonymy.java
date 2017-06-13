@@ -26,22 +26,30 @@ public class Synonymy extends NameCluster {
 	private Dataset dataset;
 	private Name fromName;
 	private Name toName;
-	
+	private String note;
+
 	public Synonymy(Name n1, Name n2, Dataset foundIn) {
+		this(n1, n2, foundIn, null);
+	}
+	
+	public Synonymy(Name n1, Name n2, Dataset foundIn, String n) {
 		super(foundIn, n1, n2);
 		
 		fromName = n1;
 		toName = n2;
 		dataset = foundIn;
+		note = n;
 	}
 	
 	public Dataset getDataset() { return dataset; }
 	public Name getFrom() { return fromName; }
 	public Name getTo() { return toName; }
+	public String getNote() { return (note == null) ? "" : note; }
 	
 	/**
 	 * Compare to another Synonymy. Note that the order of the names is important,
-	 * so Synonymy(n1, n2, ds) is different from Synonymy(n2, n1, ds).
+	 * so Synonymy(n1, n2, ds) is different from Synonymy(n2, n1, ds). Notes are
+	 * ignored in comparison.
 	 */
 	public boolean equals(Synonymy other) {
 		if(other.dataset == dataset && other.fromName == fromName && other.toName == toName)

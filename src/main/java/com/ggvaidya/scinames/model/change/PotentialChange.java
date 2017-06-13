@@ -30,8 +30,9 @@ import com.ggvaidya.scinames.model.Dataset;
  * @author Gaurav Vaidya <gaurav@ggvaidya.com>
  */
 public class PotentialChange extends Change {
-	public PotentialChange(Dataset ds, ChangeType type, Stream<Name> fromStream, Stream<Name> toStream) {
+	public PotentialChange(Dataset ds, ChangeType type, Stream<Name> fromStream, Stream<Name> toStream, Class createdBy, String reason) {
 		super(ds, type, fromStream, toStream, false);
+		propertiesProperty().put("note", "Created by " + createdBy.getName() + ": " + reason);
 	}
 	
 	public void submit() {
