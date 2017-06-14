@@ -213,3 +213,79 @@ legend(
     "100%", "90%", "80%", "70%", "60%", "50%", "40%", "30%", "20%", "10%", "0%"
   )
 )
+
+#### Messing around with CITES ####
+setwd("../../CITES")
+getwd()
+cites <- read.csv("Index_of_CITES_Species_2017-06-12 13-47.csv")
+length(cites$TaxonId)
+length(unique(cites$TaxonId))
+
+cites_amphibia <- cites[cites$Class == "Amphibia",]
+write.csv(cites_amphibia, "amphibia.csv")
+
+nrow(cites_amphibia)
+#  - 181 records
+summary(cites_amphibia$RankName)
+# 17 genera, 164 species
+summary(cites_amphibia$CurrentListing)
+# - I: 28, II: 146, II/NC: 1, III: 4, NC: 2
+
+cites_amphibia$FullName
+
+cites_reptilia <- cites[cites$Class == "Reptilia",]
+write.csv(cites_reptilia, "reptilia.csv")
+
+nrow(cites_reptilia)
+# - 1018 records
+
+summary(cites_reptilia$RankName)
+# 12 families, 109 genera, 1 order, 891 species, 5 subspecies.
+summary(cites_reptilia$CurrentListing)
+# - I: 106, I/II: 36, I/III: 1, I/NC: 1, II: 807, III: 67
+
+# Compare to amphibiaweb
+amphibiaweb_last <- read.csv("../AmphibiaWeb/taxonomy-archive-master/amphib_names_20170101.tsv", sep="\t")
+nrow(amphibiaweb_last)
+amphibiaweb_last$sciname <- paste(amphibiaweb_last$genus, amphibiaweb_last$species) 
+head(amphibiaweb_last$sciname)
+
+# Try a merge for amphibia
+merge <- merge(cites_amphibia, amphibiaweb_last, by.x="FullName", by.y="sciname")
+nrow(merge)
+# - 161 out of 164
+161/164
+# - 98.17%
+
+# Compare to amphibiaweb_first
+amphibiaweb_first <- read.csv("../AmphibiaWeb/taxonomy-archive-master/amphib_names_20121001.tsv", sep="\t")
+nrow(amphibiaweb_first)
+amphibiaweb_first$sciname <- paste(amphibiaweb_first$genus, amphibiaweb_first$species) 
+head(amphibiaweb_first$sciname)
+
+# Try a merge for amphibia
+merge <- merge(cites_amphibia, amphibiaweb_first, by.x="FullName", by.y="sciname")
+nrow(merge)
+# - 128 out of 164
+157/164
+# - 95.7%
+
+
+# And with SciNames?
+amphibiaweb_scinames <- read.csv("amphibia_from_scinames.csv")
+nrow(amphibiaweb_scinames)
+summary(amphibiaweb_scinames$first_added_dataset)
+sum(is.na(amphibiaweb_scinames$uri.guid))
+
+# Compare to Reptile Database
+reptiledb <- read.csv("../Reptile Database/CSVs/reptile_checklist_2016_12.csv")
+nrow(reptiledb)
+# - 10,501 rows
+
+# Try a merge for reptile database
+merge_reptiledb <- merge(cites_reptilia, reptiledb, by.x="FullName", by.y="Species")
+nrow(merge_reptiledb)
+# - 824 out of 891 species
+824/891
+# - 92.48%
+

@@ -114,7 +114,7 @@ public class SynonymsFromColumnChangeGenerator implements ChangeGenerator {
 		// Okay! Which synonymies are worthy of import?
 		return synonymies.stream()
 			.filter(syn -> !existingSynonymies.contains(syn))
-			.map((Synonymy syn) -> new PotentialChange(syn.getDataset(), ChangeType.RENAME, Stream.of(syn.getFrom()), Stream.of(syn.getTo())));
+			.map((Synonymy syn) -> new PotentialChange(syn.getDataset(), ChangeType.RENAME, Stream.of(syn.getFrom()), Stream.of(syn.getTo()), SynonymsFromColumnChangeGenerator.class, "Synonym found in column '" + synonymColumn + "'"));
 		
 		/*
 		// Okay, so what we do specifically is:

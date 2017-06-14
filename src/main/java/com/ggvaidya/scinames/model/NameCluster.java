@@ -220,6 +220,17 @@ public class NameCluster {
 	}
 	
 	/**
+	 * Returns a sorted list of datasets these names have been found in.
+	 */
+	public List<Dataset> getFoundInSortedWithDates() {
+		if(foundIn.isEmpty())
+			return new ArrayList<Dataset>();
+		
+		return foundIn.stream().filter(foundIn -> foundIn.getDate().getYear() != 0).sorted().collect(Collectors.toList());
+	}
+	
+	
+	/**
 	 * Returns only those datasets where the relevant changes haven't been filtered out.
 	 */
 	public List<Dataset> getFoundInAfterFiltering(Project project) {

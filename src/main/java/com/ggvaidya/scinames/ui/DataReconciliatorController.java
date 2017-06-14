@@ -88,6 +88,13 @@ public class DataReconciliatorController implements Initializable {
 		// Fill in the comboboxes.
 		Project p = drv.getProjectView().getProject();
 		
+		namesToUseComboBox.getItems().addAll(
+			"Use names in dataset rows",
+			"Use all referenced names",
+			"Use all recognized names"
+		);
+		namesToUseComboBox.getSelectionModel().clearAndSelect(0);
+		
 		ArrayList<Dataset> ds_useNamesFrom = new ArrayList<>(p.getDatasets());
 		ds_useNamesFrom.add(0, ALL); // Hee.
 		ObservableList<Dataset> useNamesFrom = FXCollections.observableList(ds_useNamesFrom);
@@ -171,6 +178,41 @@ public class DataReconciliatorController implements Initializable {
 		List<NameCluster> nameClusters = null;
 		Set<Name> namesInDataset = null;
 		
+		// Set up namesInDataset.
+		switch(namesToUseComboBox.getValue()) {
+			case "Use names in dataset rows":
+				if(namesDataset == ALL) {
+					namesInDataset = project.getDatasets().stream()
+						.flatMap(ds -> ds.getNamesInAllRows().stream())
+						.collect(Collectors.toSet());
+				} else {
+					namesInDataset = namesDataset.getNamesInAllRows();
+				}
+				break;
+				
+			case "Use all referenced names":
+				if(namesDataset == ALL) {
+					namesInDataset = project.getDatasets().stream()
+						.flatMap(ds -> ds.getReferencedNames())
+						.collect(Collectors.toSet());
+				} else {
+					namesInDataset = namesDataset.getReferencedNames().collect(Collectors.toSet());
+				}
+				
+				break;
+				
+			case "Use all recognized names":
+				if(namesDataset == ALL) {
+					namesInDataset = project.getDatasets().stream()
+						.flatMap(ds -> project.getRecognizedNames(ds).stream())
+						.collect(Collectors.toSet());
+				} else {
+					namesInDataset = project.getRecognizedNames(namesDataset);
+				}
+				
+				break;
+		}
+		
 		boolean flag_nameClustersAreTaxonConcepts = false;
 		switch(reconciliationMethod) {
 			case RECONCILE_BY_NAME:
@@ -178,68 +220,27 @@ public class DataReconciliatorController implements Initializable {
 				return;
 			
 			case RECONCILE_BY_SPECIES_NAME_CLUSTER:
-				if(namesDataset == ALL) {
-					nameClusters = project.getNameClusterManager().getSpeciesClustersAfterFiltering(project).collect(Collectors.toList());
-				// TODO: we're going to have to figure this out once AOU is done!
-				// There are logically three states here:
-				//	- is checklist: 
-				//	- is comprehensive: 
-				//	- is neither
-				/*} else if(!namesDataset.isChecklist()) {
-					// Not a checklist? Then referenced names is fine!
-					namesInDataset = namesDataset.getReferencedNames()
-							.filter(n -> n.hasSpecificEpithet())
-							.flatMap(n -> n.asBinomial())
-							.distinct().collect(Collectors.toSet());
-					
-					nameClusters = project.getNameClusterManager().getClusters(
-						namesInDataset
-					);
-				*/
-					
-				} else {
-					// A checklist? Use recognized binomial names.
-					namesInDataset = namesDataset.getRecognizedNames(project)
-							.filter(n -> n.hasSpecificEpithet())
-							.flatMap(n -> n.asBinomial())
-							.distinct().collect(Collectors.toSet());
-					
-					nameClusters = project.getNameClusterManager().getClusters(
-						namesInDataset
-					);
-				}
+				// nameClusters = project.getNameClusterManager().getSpeciesClustersAfterFiltering(project).collect(Collectors.toList());
 				
+				namesInDataset = namesInDataset.stream()
+					.filter(n -> n.hasSpecificEpithet())
+					.flatMap(n -> n.asBinomial())
+					.distinct().collect(Collectors.toSet());
+				
+				nameClusters = project.getNameClusterManager().getClusters(namesInDataset);
+
 				break;
 				
 			case RECONCILE_BY_NAME_CLUSTER:
 				// Note that this includes genus name clusters!
-				if(namesDataset == ALL)
-					// TODO: include filtering here too, I guess.
-					nameClusters = project.getNameClusterManager().getClusters().collect(Collectors.toList());
-				else {
-					nameClusters = project.getNameClusterManager().getClusters(
-						namesDataset.getRecognizedNames(project).collect(Collectors.toList())
-					);
-					
-					namesInDataset = namesDataset.getRecognizedNames(project).collect(Collectors.toSet());					
-				}
+				nameClusters = project.getNameClusterManager().getClusters(namesInDataset);
 				
 				break;	
 				
 			case RECONCILE_BY_SPECIES_TAXON_CONCEPT:
-				if(namesDataset == ALL)
-					nameClusters = project.getNameClusterManager().getSpeciesClustersAfterFiltering(project).flatMap(
-						cl -> cl.getTaxonConcepts(project).stream()).collect(Collectors.toList());
-				else {
-					namesInDataset = namesDataset.getRecognizedNames(project)
-							.filter(n -> n.hasSpecificEpithet())
-							.flatMap(n -> n.asBinomial())
-							.distinct().collect(Collectors.toSet());
-					
-					nameClusters = project.getNameClusterManager().getClusters(
-						namesInDataset
-					).stream().flatMap(cl -> cl.getTaxonConcepts(project).stream()).collect(Collectors.toList());	
-				}
+				nameClusters = project.getNameClusterManager().getClusters(
+					namesInDataset
+				).stream().flatMap(cl -> cl.getTaxonConcepts(project).stream()).collect(Collectors.toList());	
 				
 				flag_nameClustersAreTaxonConcepts = true;
 				
@@ -254,6 +255,10 @@ public class DataReconciliatorController implements Initializable {
 			dataTableView.setItems(FXCollections.emptyObservableList());	
 			return;
 		}
+		
+		LOGGER.info("Name clusters ready to display: " + nameClusters.size() + " clusters");
+		LOGGER.info("Based on " + namesInDataset.size() + " names from " + namesDataset + ": " + namesInDataset);		
+				
 		dataTableView.setItems(FXCollections.observableList(nameClusters));
 		
 		// What columns do we have from the other dataset?
@@ -288,8 +293,12 @@ public class DataReconciliatorController implements Initializable {
 		
 		existingColNames.add("first_added_dataset");
 		existingColNames.add("first_added_year");	
-				
+
+		LOGGER.info("Precalculating name clusters");
+		
 		for(NameCluster cluster: nameClusters) {
+			LOGGER.fine("Precalculating name cluster: " + cluster);			
+			
 			precalc.put(cluster, "id", getOneElementSet(cluster.getId().toString()));
 			
 			// Okay, here's what we need to do:
@@ -342,7 +351,7 @@ public class DataReconciliatorController implements Initializable {
 			}
 			
 			// When was this first added?
-			List<Dataset> foundInSorted = cluster.getFoundInSorted();
+			List<Dataset> foundInSorted = cluster.getFoundInSortedWithDates();
 			if(!foundInSorted.isEmpty()) {
 				precalc.put(cluster, "first_added_dataset", getOneElementSet(foundInSorted.get(0).getCitation()));
 				precalc.put(cluster, "first_added_year", getOneElementSet(foundInSorted.get(0).getDate().getYearAsString()));
@@ -350,7 +359,7 @@ public class DataReconciliatorController implements Initializable {
 			
 			// For name clusters we can also figure out trajectories!
 			if(!flag_nameClustersAreTaxonConcepts) {
-				List<String> trajectorySteps = cluster.getFoundInSorted().stream().map(
+				List<String> trajectorySteps = cluster.getFoundInSortedWithDates().stream().map(
 					dataset -> {
 						String changes = dataset.getChanges(project)
 							.filter(ch -> cluster.containsAny(ch.getAllNames()))
@@ -423,6 +432,8 @@ public class DataReconciliatorController implements Initializable {
 			}
 		}
 		
+		LOGGER.info("Setting up columns: " + existingColNames);
+		
 		dataTableView.getColumns().clear();
 		for(String colName: existingColNames) {
 			dataTableView.getColumns().add(createColumnFromPrecalc(colName, precalc));
@@ -441,6 +452,8 @@ public class DataReconciliatorController implements Initializable {
 		
 		// Fill in status text field.
 		statusTextField.setText(dataTableView.getItems().size() + " rows across " + cols.size() + " reconciled columns");
+		
+		LOGGER.info("All done!");
 	}
 	
 	
@@ -545,6 +558,7 @@ public class DataReconciliatorController implements Initializable {
 	
 	
 	/* FXML objects */
+	@FXML private ComboBox<String> namesToUseComboBox;
 	@FXML private ComboBox<Dataset> useNamesFromComboBox;
 	@FXML private ComboBox<Dataset> includeDataFromComboBox;
 	@FXML private ComboBox<String> reconcileUsingComboBox;	
