@@ -188,8 +188,8 @@ public class DatasetEditorController implements Initializable {
 			
 			LOGGER.info("Name extractor changed for " + dataset + ": " + strNewNameExtractor);
 			LOGGER.info("After changing the name extractor, dataset " + dataset + " has " + dataset.getRowCount() + " rows.");			
-			// TODO: why doesn't the following line work?
-			// dataset.displayInTableView(datasetTableView);
+			
+			dataset.displayInTableView(datasetTableView);
 		});
 		nameExtractorComboBox.getSelectionModel().select(dataset.getNameExtractorsAsString());
 	}

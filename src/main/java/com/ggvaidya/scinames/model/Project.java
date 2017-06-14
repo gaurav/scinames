@@ -68,6 +68,7 @@ import com.ggvaidya.scinames.model.rowextractors.NameExtractor;
 import com.ggvaidya.scinames.model.rowextractors.NameExtractorFactory;
 import com.ggvaidya.scinames.util.ModificationTimeProperty;
 
+import javafx.beans.Observable;
 import javafx.beans.property.ListProperty;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleListProperty;
@@ -96,17 +97,30 @@ public class Project {
 	private ObjectProperty<File> projectFile;
 	private ObservableMap<String, String> properties = FXCollections.observableHashMap();
 	private ObjectProperty<ChangeFilter> changeFilterProperty = new SimpleObjectProperty<ChangeFilter>(ChangeFilterFactory.getNullChangeFilter());
-	private NameClusterManager nameClusterManager = new NameClusterManager();
-	private ObservableSet<ChangeType> changeTypes = FXCollections.observableSet(new HashSet<>());
+	private NameClusterManager nameClusterManager = null;
 	private ListProperty<Dataset> datasets = new SimpleListProperty<>(FXCollections.observableList(new LinkedList<Dataset>()));
 	private ModificationTimeProperty lastModified = new ModificationTimeProperty();
 	
-	{
-		datasets.addListener(new ListChangeListener<Dataset>() {
-			@Override
-			public void onChanged(ListChangeListener.Change<? extends Dataset> c) {
-				lastModified.modified();
+	{	
+		datasets.addListener((ListChangeListener<Dataset>) chl -> {
+			// Rearrange all those prevDataset relationships.
+			Dataset prevDataset = null;
+			for(Dataset ds: chl.getList()) {
+				ds.setPreviousDataset(Optional.of(this), Optional.ofNullable(prevDataset));
+				prevDataset = ds;
+				
+				// If a dataset changes, we should:
+				ds.lastModifiedProperty().addListener(obs -> {
+					// 1. Notify ourselves.
+					lastModified.modified();
+					
+					// 2. Blow away the NameClusterManager.
+					nameClusterManager = null;
+				});
 			}
+			
+			// Fire modified.
+			lastModified.modified();
 		});
 	}
 	
@@ -130,10 +144,8 @@ public class Project {
 	public ObservableMap<Name, List<Dataset>> timepointsByNameProperty() { return timepointsByName; }
 	public ObservableMap<String, String> propertiesProperty() { return properties; }
 	public Stream<NameCluster> getSpeciesNameClusters() { return nameClusterManager.getSpeciesClustersAfterFiltering(this); }
-	public ObservableSet<ChangeType> changeTypesProperty() { return changeTypes; }
 	public ObjectProperty<ChangeFilter> changeFilterProperty() { return changeFilterProperty; }
 	public ChangeFilter getChangeFilter() { return changeFilterProperty.get(); }
-	public NameClusterManager getNameClusterManager() { return nameClusterManager; }
 	
 	public List<Dataset> getChecklists() {
 		return datasets.stream().filter(ds -> ds.isChecklist()).collect(Collectors.toList());
@@ -306,6 +318,9 @@ public class Project {
 	public void addDataset(Dataset ds) {
 		Dataset prev = null;
 		
+		// Blow away the name cluster manager.
+		nameClusterManager = null;
+		
 		if(!datasets.isEmpty())
 			prev = datasets.get(datasets.size() - 1);
 		
@@ -319,11 +334,6 @@ public class Project {
 		// Debugging code!
 		//if(ds.getName().startsWith("aou_1_07"))
 		//	LOGGER.info("Referenced names for aou_1_07: " + ds.getReferencedNames().collect(Collectors.toList()));
-		
-		// Add all referenced names to the nameClusterManager. That way, a name cluster
-		// must exist for each of them (and they'll be lumped in with others if we have
-		// existing renames to that effect).
-		ds.getReferencedNames().forEach(n -> nameClusterManager.addCluster(new NameCluster(ds, n)));
 		
 		// Old debugging code, leaving it just in case I need something like this again.
 		if(ds.getName().startsWith("aou_1.csv")) {
@@ -341,16 +351,6 @@ public class Project {
 			LOGGER.fine("Name cluster for '" + Name.get("Tringa", "ptilocnemis") + "': " + nameClusterManager.getCluster(Name.get("Tringa", "ptilocnemis")));
 		}
 		
-		// Renames lead to synonymies. This is the first time we use getChanges(...), so renames
-		// that are being filtered out will NOT affect name clusters.
-		ds.getChanges(this).filter(ch -> ch.getType().equals(ChangeType.RENAME)).forEach(c ->
-			c.getFrom().forEach(from ->
-				c.getTo().forEach(
-					to -> nameClusterManager.addCluster(new Synonymy(from, to, ds))
-				)
-			)
-		);
-		
 		// Add names referenced in this dataset to our project-level indices.
 		ds.getReferencedNames().forEach((Name n) -> {
 			names.add(n);
@@ -362,16 +362,39 @@ public class Project {
 			timepointsByName.get(n).add(ds);
 		});
 		
-		// Add change types referenced in this dataset to our project-level indices.
-		// As before, filtered changes will be ignored.
-		Set<ChangeType> newChangeTypes = ds.getChanges(this).map(c -> c.getType()).collect(Collectors.toSet());
-		changeTypes.addAll(newChangeTypes);
-		
 		// Finally, changes in the new dataset should change this database.
 		ds.lastModifiedProperty().addListener((a, b, c) -> lastModified.modified());
 		
-		LOGGER.fine("After adding " + ds + ", name clusters look like this: " + getNameClusterManager().toString());
+		// LOGGER.fine("After adding " + ds + ", name clusters look like this: " + getNameClusterManager().toString());
 	}	
+	
+	/* Name cluster manager! */
+	public NameClusterManager getNameClusterManager() {
+		if(nameClusterManager == null) {
+			LOGGER.info("New name cluster manager calculation triggered.");
+
+			// Recreate a name cluster manager based on all the renames in the project.
+			nameClusterManager = new NameClusterManager();
+			
+			for(Dataset ds: getDatasets()) {
+				// Add all referenced names so they'll show up at least once.
+				ds.getReferencedNames().forEach(n -> nameClusterManager.addCluster(new NameCluster(ds, n)));
+			
+				// Add all renames as synonymies, building up clusters as we go.
+				ds.getChanges(this).filter(ch -> ch.getType().equals(ChangeType.RENAME)).forEach(c ->
+					c.getFrom().forEach(from ->
+						c.getTo().forEach(
+							to -> nameClusterManager.addCluster(new Synonymy(from, to, c.getDataset()))
+						)
+					)
+				);
+			}
+			
+			LOGGER.info("New name cluster manager calculation completed.");
+		}
+		
+		return nameClusterManager; 
+	}
 	
 	/* Constructors */
 	
