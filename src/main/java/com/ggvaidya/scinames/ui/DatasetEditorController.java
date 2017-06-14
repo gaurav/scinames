@@ -110,7 +110,9 @@ public class DatasetEditorController implements Initializable {
 		
 		// Set 'em up!
 		datasetTypeComboBox.getSelectionModel().select(dataset.getType());
-		dataset.typeProperty().bind(datasetTypeComboBox.getSelectionModel().selectedItemProperty());
+		datasetTypeComboBox.getSelectionModel().selectedItemProperty().addListener(chl -> {
+			dataset.typeProperty().set(datasetTypeComboBox.getSelectionModel().getSelectedItem());
+		});
 		datasetNameTextField.textProperty().bindBidirectional(dataset.nameProperty());
 		
 		datasetDateTextField.textProperty().bindBidirectional(dataset.dateProperty(), new StringConverter<SimplifiedDate>() {
