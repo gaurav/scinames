@@ -265,6 +265,13 @@ public class Dataset implements Citable, Comparable<Dataset> {
 		namesByRow = null;
 		namesInRows = null;
 		rowsByName = null;
+		
+		// If this is being reset, we've probably been updated.
+		lastModified.modified();
+		
+		// And if we don't know our names, neither should you.
+		if(project != null)
+			project.clearRecognizedNamesCache();
 	}
 	
 	/**

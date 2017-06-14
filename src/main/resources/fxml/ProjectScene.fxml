@@ -24,16 +24,16 @@
             <TableColumn prefWidth="122.0" text="Type" />
         </columns>
       </TableView>
-      <Label layoutX="2.0" layoutY="31.0" text="Current Project:" AnchorPane.leftAnchor="2.0" AnchorPane.topAnchor="31.0" />
-      <TextField fx:id="projectName" layoutX="88.0" layoutY="26.0" onAction="#projectNameChanged" prefHeight="27.0" prefWidth="805.0" AnchorPane.leftAnchor="88.0" AnchorPane.rightAnchor="129.0" AnchorPane.topAnchor="26.0" />
-      <Button layoutX="938.0" layoutY="27.0" mnemonicParsing="false" onAction="#loadProject" text="Load" AnchorPane.rightAnchor="42.0" AnchorPane.topAnchor="27.0" />
-      <Button layoutX="981.0" layoutY="27.0" mnemonicParsing="false" onAction="#saveProject" text="Save" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="27.0" />
+      <Label layoutX="2.0" layoutY="31.0" prefHeight="17.0" prefWidth="105.0" text="Current Project:" AnchorPane.leftAnchor="2.0" AnchorPane.topAnchor="31.0" />
+      <TextField fx:id="projectName" layoutX="112.0" layoutY="26.0" onAction="#projectNameChanged" prefHeight="27.0" prefWidth="662.0" AnchorPane.leftAnchor="112.0" AnchorPane.rightAnchor="248.0" AnchorPane.topAnchor="26.0" />
+      <Button layoutX="836.0" layoutY="26.0" mnemonicParsing="false" onAction="#loadProject" prefHeight="27.0" prefWidth="59.0" text="Load" AnchorPane.rightAnchor="127.0" AnchorPane.topAnchor="26.0" />
+      <Button layoutX="897.0" layoutY="26.0" mnemonicParsing="false" onAction="#saveProject" prefHeight="27.0" prefWidth="53.0" text="Save" AnchorPane.rightAnchor="72.0" AnchorPane.topAnchor="26.0" />
       <Button layoutX="1.0" layoutY="722.0" mnemonicParsing="false" onAction="#addDataset" text="Add" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" />
       <Button layoutX="38.0" layoutY="575.0" mnemonicParsing="false" onAction="#removeDataset" text="Remove" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="38.0" />
       <Button layoutX="208.0" layoutY="575.0" mnemonicParsing="false" onAction="#displayLumpsAndSplits" text="Lumps/Splits" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="208.0" />
       <Button layoutX="728.0" layoutY="575.0" mnemonicParsing="false" onAction="#displayNameStability" text="Name stability" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="728.0" />
       <ProgressBar fx:id="progressBar" layoutX="7.0" layoutY="4.0" prefHeight="33.0" prefWidth="900.0" visible="false" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
-      <Button layoutX="894.0" layoutY="27.0" mnemonicParsing="false" onAction="#clearExistingProject" text="Clear" AnchorPane.rightAnchor="85.0" AnchorPane.topAnchor="27.0" />
+      <Button layoutX="775.0" layoutY="26.0" mnemonicParsing="false" onAction="#clearExistingProject" prefHeight="27.0" prefWidth="59.0" text="Clear" AnchorPane.rightAnchor="188.0" AnchorPane.topAnchor="26.0" />
       <Button layoutX="647.0" layoutY="575.0" mnemonicParsing="false" onAction="#displayProjectTabularView" text="Project stats" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="647.0" />
       <Button layoutX="103.0" layoutY="575.0" mnemonicParsing="false" onAction="#displaySearch" text="Search" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="103.0" />
       <Button layoutX="388.0" layoutY="574.0" mnemonicParsing="false" onAction="#displayValidationSuite" text="Validation" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="388.0" />
@@ -63,5 +63,6 @@
         </menus>
       </MenuBar>
       <Button layoutX="353.0" layoutY="575.0" mnemonicParsing="false" onAction="#diffDatasets" text="Diff" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="353.0" />
+      <Button layoutX="952.0" layoutY="26.0" mnemonicParsing="false" onAction="#refreshProject" prefHeight="27.0" prefWidth="70.0" text="Refresh" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="26.0" />
    </children>
 </AnchorPane>

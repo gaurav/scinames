@@ -171,6 +171,9 @@ public class DatasetEditorController implements Initializable {
 			nameExtractorComboBox.getItems().add(NameExtractorFactory.getDefaultExtractorsAsString());
 		}
 		
+		// Set the current one.
+		nameExtractorComboBox.getSelectionModel().select(dataset.getNameExtractorsAsString());
+		
 		// When this changes, update accordingly.
 		nameExtractorComboBox.getSelectionModel().selectedItemProperty().addListener(ch -> {
 			String strNewNameExtractor = nameExtractorComboBox.getSelectionModel().getSelectedItem();
@@ -179,7 +182,7 @@ public class DatasetEditorController implements Initializable {
 			// No change? Then ignore!
 			if(strNewNameExtractor.trim().equals(prevNameExtractor.trim())) return;
 
-			LOGGER.info("Before changing the name extractor, dataset " + dataset + " has " + dataset.getRowCount() + " rows.");
+			LOGGER.info("Changing name extractor for dataset " + dataset + " from " + prevNameExtractor + " to " + strNewNameExtractor);
 			
 			try {
 				dataset.setNameExtractorsString(strNewNameExtractor);
@@ -188,12 +191,11 @@ public class DatasetEditorController implements Initializable {
 				return;
 			}
 			
-			LOGGER.info("Name extractor changed for " + dataset + ": " + strNewNameExtractor);
-			LOGGER.info("After changing the name extractor, dataset " + dataset + " has " + dataset.getRowCount() + " rows.");			
+			// LOGGER.info("Name extractor changed for " + dataset + ": " + strNewNameExtractor);
+			// LOGGER.info("After changing the name extractor, dataset " + dataset + " has " + dataset.getRowCount() + " rows.");			
 			
 			dataset.displayInTableView(datasetTableView);
 		});
-		nameExtractorComboBox.getSelectionModel().select(dataset.getNameExtractorsAsString());
 	}
 			
 	/**

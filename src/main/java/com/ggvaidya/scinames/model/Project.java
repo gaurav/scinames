@@ -180,7 +180,12 @@ public class Project {
 	// away the cache.
 	private Map<Dataset, Set<Name>> recognizedNamesCache = new HashMap<>();
 	{
-		lastModified.addListener((a, b, c) -> recognizedNamesCache.clear());
+		lastModified.addListener(chl -> clearRecognizedNamesCache());
+	}
+	
+	public void clearRecognizedNamesCache() {
+		LOGGER.info("Clearing recognized names cache");
+		recognizedNamesCache.clear();
 	}
 	
 	/**
@@ -200,6 +205,8 @@ public class Project {
 		recognizedNamesCache.put(d, d.getRecognizedNames(this).collect(Collectors.toSet()));
 		return recognizedNamesCache.get(d);
 	}
+	
+	
 	
 	/**
 	 * @return All the changes in this project.

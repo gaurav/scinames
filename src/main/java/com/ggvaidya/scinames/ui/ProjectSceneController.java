@@ -71,15 +71,6 @@ public class ProjectSceneController {
 	public static final Logger LOGGER = Logger.getLogger(ProjectSceneController.class.getSimpleName());
 	private ProjectView projectView;
 	
-	/**
-	 * Set the ProjectView that this controller is associated with.
-	 * 
-	 * @param p 
-	 */
-	public void setProjectView(ProjectView p) {
-		projectView = p;
-	}
-	
 	/* UI correction */
 	
 	/**
@@ -176,13 +167,37 @@ public class ProjectSceneController {
 		timepointTable.setItems(project.getDatasets());
 	}
 	
+	@FXML
+	private void refreshProject(ActionEvent evt) {
+		updateProject(projectView.getProject());
+		
+		// Warning: this causes name clusters to be recalculated, so
+		// use only when the user can wait a few seconds!
+		timepointTable.refresh();
+	}
+	
 	/**
 	 * On initializable, set up the table and a few focus-lose callbacks.
 	 */
 	public void initialize() {
 		// Update the menubar!
 		setupMenuBar();
+	}
+	
+	/**
+	 * Set the ProjectView that this controller is associated with.
+	 * 
+	 * @param p 
+	 */
+	public void setProjectView(ProjectView p) {
+		projectView = p;
 		
+		// If the project changes, update project.
+		projectView.getProject().lastModifiedProperty().addListener(lm -> {
+			LOGGER.info("Project modified! Updating project view.");
+			updateProject(projectView.getProject());
+		});
+	
 		// If projectName loses focus, check to see if it
 		// changed -- if so, fire off an event.
 		projectName.focusedProperty().addListener((ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) -> {
