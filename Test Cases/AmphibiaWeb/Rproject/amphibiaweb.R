@@ -1,14 +1,47 @@
 getwd()
-name_stability <- read.csv("../name_stability/name_stability_synonyms_from_id_and_synonym_field.csv")
+name_stability <- read.csv("../name_stability/name_stability_initial.csv")
 
-head(name_stability)
-
+#### Overall nums ####
 first <- name_stability[1,]
-last <- name_stability[length(name_stability),]
+last <- name_stability[nrow(name_stability),]
 (last$count_binomial - first$count_binomial)
+# - +575 species
 (last$count_binomial - first$count_binomial)/first$count_binomial
+# - 8.2%
 (last$count_genera - first$count_genera)
+# - +11 genera
 (last$count_genera - first$count_genera)/first$count_genera
+# - 2.0%
+
+# Last to first stability
+last$names_identical_to_first_pc_union
+# - 82.75%
+
+last$names_identical_to_first
+# - 6635
+
+# names not identical 
+last$count_binomial - last$names_identical_to_first
+# 979 names
+
+# Differences with prev
+min(name_stability$names_identical_to_prev_pc_union, na.rm = T)
+min(name_stability$names_identical_to_prev_pc_this, na.rm = T)
+
+#### Different synonymy algorithms ####
+synonymy_by_id <- read.csv("../synonymy/renames_using_name_identifier_field.csv")
+head(synonymy_by_id)
+nrow(synonymy_by_id)
+# - 989 synonyms
+
+table(paste(synonymy_by_id$From, " -> ", synonymy_by_id$To))
+length(unique(paste(synonymy_by_id$From, " -> ", synonymy_by_id$To)))
+# - 491 unique synonyms
+
+synonymy_by_column <- read.csv("../synonymy/renames_using_synonymy_column.csv")
+
+#### With synonymy ####
+name_stability <- read.csv("../name_stability/name_stability_synonyms_from_id_and_synonym_field.csv")
 
 # Visualization take 2: sparklines of recognized species and additions and deletions.
 library(zoo)

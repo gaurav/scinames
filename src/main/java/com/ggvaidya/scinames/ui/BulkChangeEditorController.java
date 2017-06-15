@@ -17,6 +17,7 @@
 package com.ggvaidya.scinames.ui;
 
 import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -24,6 +25,9 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
+
+import org.apache.commons.csv.CSVFormat;
+import org.apache.commons.csv.CSVPrinter;
 
 import com.ggvaidya.scinames.SciNames;
 import com.ggvaidya.scinames.model.ChangeType;
@@ -40,6 +44,7 @@ import com.ggvaidya.scinames.model.filters.ChangeFilter;
 import com.ggvaidya.scinames.util.SimplifiedDate;
 
 import javafx.beans.property.ReadOnlyStringWrapper;
+import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
@@ -358,5 +363,86 @@ public class BulkChangeEditorController {
 			.showAndWait();
 		
 		foundChanges.clear();
+	}
+	
+	/**
+	 * Provide an export of the data in the TableView as a "table". In its
+	 * simplest Java representation, that is a list of columns, with each
+	 * column starting with a column header and then all the rest of the data.
+	 * 
+	 * Warning: this can be a long-running function!
+	 * 
+	 * @return A list of columns of data.
+	 */
+	public List<List<String>> getDataAsTable() {
+		// What columns do we have?
+		List<List<String>> result = new LinkedList<>();		
+		List<TableColumn<PotentialChange, ?>> columns = changesTableView.getColumns();
+		
+		columns.forEach(col -> {
+			List<String> column = new LinkedList<>();
+			
+			// Add the header.
+			column.add(col.getText());
+			
+			// Add the data.
+			for(int x = 0; x < changesTableView.getItems().size(); x++) {
+				ObservableValue cellObservableValue = col.getCellObservableValue(x);
+				Object val = cellObservableValue.getValue();
+				if(val == null)
+					column.add("NA");
+				else
+					column.add(val.toString());
+			}
+			
+			result.add(column);
+		});
+		
+		return result;
+	}
+	
+	private void fillCSVFormat(CSVFormat format, Appendable destination, List<List<String>> data) throws IOException {
+		try (CSVPrinter printer = format.print(destination)) {
+			List<List<String>> dataAsTable = data;
+			if(dataAsTable.isEmpty())
+				return;
+
+			for(int x = 0; x < dataAsTable.get(0).size(); x++) {
+				for(int y = 0; y < dataAsTable.size(); y++) {
+					String value = dataAsTable.get(y).get(x);
+					printer.print(value);
+				}
+				printer.println();
+			}
+		}
+	}	
+	
+	@FXML
+	private void exportToCSV(ActionEvent evt) {
+		FileChooser chooser = new FileChooser();
+		chooser.getExtensionFilters().setAll(
+			new FileChooser.ExtensionFilter("CSV file", "*.csv"),
+			new FileChooser.ExtensionFilter("Tab-delimited file", "*.txt")			
+		);
+		File file = chooser.showSaveDialog(bulkChangeEditor.getStage());
+		if(file != null) {
+			CSVFormat format = CSVFormat.RFC4180;
+			
+			String outputFormat = chooser.getSelectedExtensionFilter().getDescription();
+			if(outputFormat.equalsIgnoreCase("Tab-delimited file"))
+				format = CSVFormat.TDF;
+			
+			try {
+				List<List<String>> dataAsTable = getDataAsTable();
+				fillCSVFormat(format, new FileWriter(file), dataAsTable);
+				
+				Alert window = new Alert(Alert.AlertType.CONFIRMATION, "CSV file '" + file + "' saved with " + (dataAsTable.get(0).size() - 1) + " rows.");
+				window.showAndWait();
+				
+			} catch(IOException e) {
+				Alert window = new Alert(Alert.AlertType.ERROR, "Could not save CSV to '" + file + "': " + e);
+				window.showAndWait();
+			}
+		}
 	}
 }
