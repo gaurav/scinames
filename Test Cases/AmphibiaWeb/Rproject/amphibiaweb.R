@@ -305,10 +305,10 @@ nrow(merge)
 
 
 # And with SciNames?
-amphibiaweb_scinames <- read.csv("amphibia_from_scinames.csv")
+amphibiaweb_scinames <- read.csv("../../CITES/amphibia_from_scinames.csv")
 nrow(amphibiaweb_scinames)
 summary(amphibiaweb_scinames$first_added_dataset)
-sum(is.na(amphibiaweb_scinames$uri.guid))
+amphibiaweb_scinames[which(is.na(amphibiaweb_scinames$uri.guid)),]
 
 # Compare to Reptile Database
 reptiledb <- read.csv("../Reptile Database/CSVs/reptile_checklist_2016_12.csv")

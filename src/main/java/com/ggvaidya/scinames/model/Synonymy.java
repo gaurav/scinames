@@ -57,6 +57,13 @@ public class Synonymy extends NameCluster {
 		else
 			return false;
 	}
+	
+	public boolean equals(Object obj) {
+		if(obj.getClass().isAssignableFrom(Synonymy.class))
+			return equals((Synonymy)obj);
+		else
+			return false;
+	}
 
 	// Based on http://stackoverflow.com/a/113600/27310
 	public int hashCode() {

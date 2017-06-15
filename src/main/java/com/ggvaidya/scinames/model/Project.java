@@ -230,6 +230,13 @@ public class Project {
 	}
 	
 	/**
+	 * Returns all dataset rows.
+	 */
+	public Stream<DatasetRow> getRows() {
+		return getDatasets().stream().flatMap(ds -> ds.getRowsAsStream());
+	}
+	
+	/**
 	 * Returns a list of dataset rows across all datasets for a particular name.
 	 * 
 	 * Note that while the API signature allows for duplicate rows to be summarized, this hasn't

@@ -36,12 +36,12 @@ import com.ggvaidya.scinames.model.Synonymy;
  * 
  * @author Gaurav Vaidya <gaurav@ggvaidya.com>
  */
-public class RenamesByIdChangeGenerator implements ChangeGenerator {
-	private static final Logger LOGGER = Logger.getLogger(RenamesByIdChangeGenerator.class.getSimpleName());
+public class RenamesFromIdsInChanges implements ChangeGenerator {
+	private static final Logger LOGGER = Logger.getLogger(RenamesFromIdsInChanges.class.getSimpleName());
 	
 	private DatasetColumn idColumn;
 	
-	public RenamesByIdChangeGenerator(DatasetColumn col) {
+	public RenamesFromIdsInChanges(DatasetColumn col) {
 		idColumn = col;
 	}
 	
@@ -149,6 +149,6 @@ public class RenamesByIdChangeGenerator implements ChangeGenerator {
 			// Remove duplicate synonymy objects.
 			.distinct()
 			// Produce a final list of potential renames.
-			.map(syn -> new PotentialChange(syn.getDataset(), ChangeType.RENAME, Stream.of(syn.getFrom()), Stream.of(syn.getTo()), RenamesByIdChangeGenerator.class, syn.getNote()));
+			.map(syn -> new PotentialChange(syn.getDataset(), ChangeType.RENAME, Stream.of(syn.getFrom()), Stream.of(syn.getTo()), RenamesFromIdsInChanges.class, syn.getNote()));
 	}
 }

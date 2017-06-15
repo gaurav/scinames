@@ -38,7 +38,8 @@ import com.ggvaidya.scinames.model.Project;
 import com.ggvaidya.scinames.model.change.ChangeTypeStringConverter;
 import com.ggvaidya.scinames.model.change.NameSetStringConverter;
 import com.ggvaidya.scinames.model.change.PotentialChange;
-import com.ggvaidya.scinames.model.change.RenamesByIdChangeGenerator;
+import com.ggvaidya.scinames.model.change.RenamesFromIdsInChanges;
+import com.ggvaidya.scinames.model.change.RenamesFromIdsInData;
 import com.ggvaidya.scinames.model.change.SynonymsFromColumnChangeGenerator;
 import com.ggvaidya.scinames.model.filters.ChangeFilter;
 import com.ggvaidya.scinames.util.SimplifiedDate;
@@ -139,14 +140,13 @@ public class BulkChangeEditorController {
 	 */
 	
 	private final ObservableList<String> availableMethods = FXCollections.observableArrayList(Arrays.asList(
-		"Find renames using a name identifier field",
-		"Find renames using subspecific names",
-		"Find renames using species name changes",
-		"Find renames using a synonym column",
-		"Find lumps/splits using renames"
+		"Find renames using identifiers in additions and deletions",
+		"Find renames using identifiers in data",
+		"Find renames using a synonym column"
 	));
 	private final HashSet<String> methodsThatNeedAColumn = new HashSet<>(Arrays.asList(
-		"Find renames using a name identifier field",
+		"Find renames using identifiers in additions and deletions",
+		"Find renames using identifiers in data",
 		"Find renames using a synonym column"
 	));
 	
@@ -166,16 +166,16 @@ public class BulkChangeEditorController {
 			return;
 		
 		switch(method) {
-			case "Find renames using a name identifier field":
+			case "Find renames using identifiers in additions and deletions":
 				if(dataset == ALL) {
 					foundChanges.setAll(
-						new RenamesByIdChangeGenerator(comboBoxNameIdentifiers.getSelectionModel().getSelectedItem())
+						new RenamesFromIdsInChanges(comboBoxNameIdentifiers.getSelectionModel().getSelectedItem())
 							.generate(project)
 							.collect(Collectors.toList())
 					);
 				} else {
 					foundChanges.setAll(
-						new RenamesByIdChangeGenerator(comboBoxNameIdentifiers.getSelectionModel().getSelectedItem())
+						new RenamesFromIdsInChanges(comboBoxNameIdentifiers.getSelectionModel().getSelectedItem())
 							.generate(project, dataset)
 							.collect(Collectors.toList())
 					);	
@@ -183,12 +183,23 @@ public class BulkChangeEditorController {
 				
 				break;
 				
-			case "Find renames using subspecific names":
-				break;
-		
-			case "Find renames using species name changes":
-				break;
+			case "Find renames using identifiers in data":
+				if(dataset == ALL) {
+					foundChanges.setAll(
+						new RenamesFromIdsInData(comboBoxNameIdentifiers.getSelectionModel().getSelectedItem())
+							.generate(project)
+							.collect(Collectors.toList())
+					);
+				} else {
+					foundChanges.setAll(
+						new RenamesFromIdsInData(comboBoxNameIdentifiers.getSelectionModel().getSelectedItem())
+							.generate(project, dataset)
+							.collect(Collectors.toList())
+					);	
+				}
 				
+				break;
+								
 			case "Find renames using a synonym column":
 				if(dataset == ALL) {
 					foundChanges.setAll(
