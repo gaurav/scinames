@@ -182,7 +182,9 @@ public class Name implements Comparable<Name> {
 		}
 		
 		if(genus == null) {
-			throw new IllegalArgumentException("Cannot create Name without genus name: Name.get(" + genus + ", " + specificEpithet + ", " + subspecificEpithets + ")");
+			// Return the empty name!
+			return EMPTY;
+			// throw new IllegalArgumentException("Cannot create Name without genus name: Name.get(" + genus + ", " + specificEpithet + ", " + subspecificEpithets + ")");
 		}
 		
 		if(specificEpithet != null) {

@@ -69,9 +69,29 @@ changes_by_name_cluster <- read.csv("../overall_changes/changes_by_name_cluster.
 nrow(changes_by_name_cluster)
 summary(changes_by_name_cluster$Dataset)
 # 635 added, 4 deleted
+635/979
+4/404
+
+# When were the additions described?
+# Let's try ITIS!
+
+# Who deleted?
+changes_by_name_cluster[which(endsWith(as.character(changes_by_name_cluster$Dataset), "2012)")),]
+
+# WHO ADDED
+reconciled <- read.csv("../overall_changes/changes_by_name_cluster-reconciled.csv")
+desc_years <- reconciled$description_year
+hist(desc_years)
+hist(desc_years[which(desc_years > 2000)])
+hist(desc_years[which(desc_years > 2010)])
+length(desc_years)
+sum(!is.na(desc_years))
+
+length(which(desc_years > 2010))/sum(!is.na(desc_years))
+summary(desc_years)
 
 #### With synonymy ####
-name_stability <- read.csv("../name_stability/name_stability_synonyms_from_id_and_synonym_field.csv")
+name_stability <- read.csv("../name_stability/name_stability_synonyms_from_three_syn_methods.csv")
 
 # Visualization take 2: sparklines of recognized species and additions and deletions.
 library(zoo)
@@ -123,6 +143,7 @@ plot(
   temp ~ name_stability$date_zoo,
   ylim=c(min(name_stability$clusters_identical_to_prev_pc_union, na.rm=T), 100),
   ylab="% identical name clusters",
+  xlab="Date",
   main="Name clusters relative to previous checklist"
 )
 
@@ -130,19 +151,53 @@ temp2 <- name_stability$names_identical_to_prev_pc_union
 temp2[1] <- 100
 temp2
 
+library(Cairo)
+
+Cairo(file="../name_stability/name_and_name_clusters_relative_to_prev.png",
+      type="png",
+      units="in",
+      dpi=200,
+      width=8,
+      height=4.5
+)
+
 plot(
   type="l",
   temp2 ~ name_stability$date_zoo,
   ylim=c(min(temp2, na.rm=T), 100),
   ylab="% identical names",
-  main="Names relative to previous checklist"
+  xlab="Checklist date",
+  main="Names relative to previous checklist",
+  lty=2
 )
+
+temp3 <- name_stability$clusters_identical_to_prev_pc_union
+temp3[1] <- 100
+temp3
+
+lines(
+  temp3 ~ name_stability$date_zoo,
+  ylim=c(min(temp2, na.rm=T), 100),
+  ylab="% identical names",
+  lty=1
+)
+
+abline(v=name_stability$date_zoo[21], lty=3)
+name_stability$date_zoo[21]
+# 2013-06-01
+
+abline(v=name_stability$date_zoo[36], lty=3)
+name_stability$date_zoo[36]
+# 2015-09-01
+
+dev.off()
 
 barplot(
   temp2 - 100, names=name_stability$date_zoo,
   ylab="% identical names below 100%",
   main="Names relative to previous checklist"
 )
+
 
 plot(
   type="l",
@@ -168,7 +223,7 @@ barplot(
 
 # 1676x501
 #install.packages("Cairo")
-library(Cairo)
+#library(Cairo)
 
 Cairo(file="../name_stability/name_and_name_clusters_relative_to_first.png",
     type="png",
@@ -184,7 +239,7 @@ plot(
   lty=2,
   ylab="% identical names/name clusters",
   xlab="Date",
-  main="Name and name cluster identity relative to first checklist"
+  main="Names identical to first checklist"
 )
 
 lines(
@@ -194,9 +249,13 @@ lines(
 
 legend("bottomleft",
   lty=c(1, 2),
-  legend=c("Name clusters identical to first checklist", "Names identical to first checklist")
+  legend=c("Including synonymy information", "Ignoring synonymy information")
 )
 dev.off()
+
+# Max?
+min(name_stability$names_identical_to_first_pc_union)
+min(name_stability$clusters_identical_to_first_pc_union)
 
 # Visualization!
 recognition_percent <- matrix(c(
@@ -285,7 +344,7 @@ length(cites$TaxonId)
 length(unique(cites$TaxonId))
 
 cites_amphibia <- cites[cites$Class == "Amphibia",]
-write.csv(cites_amphibia, "amphibia.csv")
+#write.csv(cites_amphibia, "amphibia.csv")
 
 nrow(cites_amphibia)
 #  - 181 records
@@ -297,7 +356,7 @@ summary(cites_amphibia$CurrentListing)
 cites_amphibia$FullName
 
 cites_reptilia <- cites[cites$Class == "Reptilia",]
-write.csv(cites_reptilia, "reptilia.csv")
+# write.csv(cites_reptilia, "reptilia.csv")
 
 nrow(cites_reptilia)
 # - 1018 records
@@ -329,15 +388,16 @@ head(amphibiaweb_first$sciname)
 # Try a merge for amphibia
 merge <- merge(cites_amphibia, amphibiaweb_first, by.x="FullName", by.y="sciname")
 nrow(merge)
-# - 128 out of 164
+# - 157 out of 164
 157/164
 # - 95.7%
 
 
 # And with SciNames?
-amphibiaweb_scinames <- read.csv("../../CITES/amphibia_from_scinames.csv")
+amphibiaweb_scinames <- read.csv("amphibia_from_scinames.csv")
 nrow(amphibiaweb_scinames)
 summary(amphibiaweb_scinames$first_added_dataset)
+163/164
 amphibiaweb_scinames[which(is.na(amphibiaweb_scinames$uri.guid)),]
 
 # Compare to Reptile Database
@@ -345,10 +405,28 @@ reptiledb <- read.csv("../Reptile Database/CSVs/reptile_checklist_2016_12.csv")
 nrow(reptiledb)
 # - 10,501 rows
 
+summary(cites_reptilia$RankName)
+# 891 species, 5 subspecies, BUT some of these species contain '"'! Wha?
+cites_reptilia$Species[which(startsWith(as.character(cites_reptilia$Species), '"'))]
+length(cites_reptilia$Species[which(startsWith(as.character(cites_reptilia$Species), '"'))])
+891 - 15
+# 876
+
 # Try a merge for reptile database
 merge_reptiledb <- merge(cites_reptilia, reptiledb, by.x="FullName", by.y="Species")
 nrow(merge_reptiledb)
-# - 824 out of 891 species
-824/891
-# - 92.48%
+# - 824 out of 876 species
+824/876
+# - 94.1%
 
+# And with SciNames?
+reptilia_scinames <- read.csv("reptilia_from_scinames.csv")
+nrow(reptilia_scinames)
+# - 876
+summary(reptilia_scinames$first_added_dataset)
+(876 - 25)
+(876 - 25)/876
+# 97.1%
+reptilia_scinames[which(is.na(reptilia_scinames$uri.guid)),]
+
+# Hard to verify as it's so inconsistent within Reptile Database.
