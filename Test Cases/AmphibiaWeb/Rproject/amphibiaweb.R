@@ -29,16 +29,46 @@ min(name_stability$names_identical_to_prev_pc_union, na.rm = T)
 min(name_stability$names_identical_to_prev_pc_this, na.rm = T)
 
 #### Different synonymy algorithms ####
-synonymy_by_id <- read.csv("../synonymy/renames_using_name_identifier_field.csv")
+synonymy_by_id <- read.csv("../synonymy/renames_using_changes.csv")
 head(synonymy_by_id)
 nrow(synonymy_by_id)
-# - 989 synonyms
+# - 496 synonyms
 
-table(paste(synonymy_by_id$From, " -> ", synonymy_by_id$To))
+# TODO: unsort direction
+which(table(paste(synonymy_by_id$From, " -> ", synonymy_by_id$To)) > 1)
 length(unique(paste(synonymy_by_id$From, " -> ", synonymy_by_id$To)))
 # - 491 unique synonyms
 
+synonymy_by_all_data <- read.csv("../synonymy/renames_using_all_data.csv")
+head(synonymy_by_all_data)
+nrow(synonymy_by_all_data)
+# - 987 synonyms
+
+length(which(table(paste(synonymy_by_all_data$From, " -> ", synonymy_by_all_data$To)) > 1))
+length(unique(paste(synonymy_by_all_data$From, " -> ", synonymy_by_all_data$To)))
+# - 930 unique synonyms
+
 synonymy_by_column <- read.csv("../synonymy/renames_using_synonymy_column.csv")
+head(synonymy_by_column)
+nrow(synonymy_by_column)
+# - 3,670 synonyms
+
+length(which(table(paste(synonymy_by_column$From, " -> ", synonymy_by_column$To)) > 1))
+# - 139 duplicates
+unique(paste(synonymy_by_column$From, " -> ", synonymy_by_column$To))
+length(unique(paste(synonymy_by_column$From, " -> ", synonymy_by_column$To)))
+# - 140 unique synonyms
+
+#### Overall changes ####
+changes_by_name <- read.csv("../overall_changes/changes_by_name_only.csv")
+nrow(changes_by_name)
+summary(changes_by_name$Dataset)
+# 979 in Jan 2017, 404 in Oct 2012
+
+changes_by_name_cluster <- read.csv("../overall_changes/changes_by_name_cluster.csv")
+nrow(changes_by_name_cluster)
+summary(changes_by_name_cluster$Dataset)
+# 635 added, 4 deleted
 
 #### With synonymy ####
 name_stability <- read.csv("../name_stability/name_stability_synonyms_from_id_and_synonym_field.csv")

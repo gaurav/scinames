@@ -100,20 +100,17 @@ public class DataReconciliatorController implements Initializable {
 		ObservableList<Dataset> useNamesFrom = FXCollections.observableList(ds_useNamesFrom);
 		useNamesFromComboBox.setItems(useNamesFrom);
 		useNamesFromComboBox.getSelectionModel().select(0);
-		useNamesFromComboBox.onActionProperty().set((evt) -> reconcileData());
 		
 		ArrayList<Dataset> ds_includeDataFrom = new ArrayList<>(p.getDatasets());
 		ds_includeDataFrom.add(0, ALL); // Hee.
 		includeDataFromComboBox.setItems(FXCollections.observableList(ds_includeDataFrom));
-		includeDataFromComboBox.getSelectionModel().select(0);
-		includeDataFromComboBox.onActionProperty().set((evt) -> reconcileData());		
+		includeDataFromComboBox.getSelectionModel().select(0);		
 		
 		reconcileUsingComboBox.getItems().add(RECONCILE_BY_NAME);
 		reconcileUsingComboBox.getItems().add(RECONCILE_BY_SPECIES_NAME_CLUSTER);
 		reconcileUsingComboBox.getItems().add(RECONCILE_BY_NAME_CLUSTER);		
 		reconcileUsingComboBox.getItems().add(RECONCILE_BY_SPECIES_TAXON_CONCEPT);	
 		reconcileUsingComboBox.getSelectionModel().select(RECONCILE_BY_SPECIES_NAME_CLUSTER);
-		reconcileUsingComboBox.onActionProperty().set((evt) -> reconcileData());
 		
 		// Fill in the table with the defaults.
 		// reconcileData();
@@ -147,7 +144,8 @@ public class DataReconciliatorController implements Initializable {
 		return column;
 	}
 	
-	private void reconcileData() {
+	@FXML
+	private void reconcileData(ActionEvent evt) {
 		// Step 1. Figure out what kind of reconciliation we need to perform.
 		// We skip this step, as there is only one kind.
 		String tabText = upperTabPane.getSelectionModel().getSelectedItem().getText();
@@ -294,10 +292,10 @@ public class DataReconciliatorController implements Initializable {
 		existingColNames.add("first_added_dataset");
 		existingColNames.add("first_added_year");	
 
-		LOGGER.info("Precalculating name clusters");
+		LOGGER.info("Precalculating " + nameClusters.size() + " name clusters");
 		
 		for(NameCluster cluster: nameClusters) {
-			LOGGER.fine("Precalculating name cluster: " + cluster);			
+			LOGGER.info("Precalculating name cluster: " + cluster);			
 			
 			precalc.put(cluster, "id", getOneElementSet(cluster.getId().toString()));
 			
