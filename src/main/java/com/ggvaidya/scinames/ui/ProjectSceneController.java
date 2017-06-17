@@ -228,6 +228,7 @@ public class ProjectSceneController {
 		cols.add(nameCol);
 		
 		TableColumn<Dataset, SimplifiedDate> dateCol = new TableColumn<>("Date");
+		dateCol.setCellFactory(TextFieldTableCell.forTableColumn(new SimplifiedDate.SimplifiedDateStringConverter()));
 		dateCol.setCellValueFactory(new PropertyValueFactory<>("date"));
 		dateCol.setPrefWidth(150);
 		dateCol.setEditable(true);
@@ -237,7 +238,7 @@ public class ProjectSceneController {
 		rowsCol.setCellValueFactory(new PropertyValueFactory<>("rowCountSummary"));
 		rowsCol.setPrefWidth(200);
 		rowsCol.setEditable(false);
-		cols.add(rowsCol);		
+		cols.add(rowsCol);
 		
 		TableColumn<Dataset, String> nameCount = new TableColumn<>("All names");
 		nameCount.setPrefWidth(200);

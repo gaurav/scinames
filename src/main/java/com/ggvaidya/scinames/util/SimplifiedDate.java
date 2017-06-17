@@ -33,6 +33,8 @@ import org.w3c.dom.Element;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 
+import javafx.util.StringConverter;
+
 /**
  * A simplified date is like a LocalDate, but can be a Year or YearMonth as
  * needed. The important thing is that it remembers what has been set, so a
@@ -51,6 +53,16 @@ public class SimplifiedDate implements Comparable<SimplifiedDate> {
 	
 	/* Prearranged SimplifiedDates */
 	public static final SimplifiedDate MIN = new SimplifiedDate(0);
+
+	public static class SimplifiedDateStringConverter extends StringConverter<SimplifiedDate> {
+		public String toString(SimplifiedDate sd) {
+			return sd.toString();
+		}
+
+		public SimplifiedDate fromString(String string) {
+			return new SimplifiedDate(string);
+		}
+	}
 	
 	/* Accessors */
 	public int getYear() { return year; }

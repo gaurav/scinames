@@ -115,19 +115,7 @@ public class DatasetEditorController implements Initializable {
 		});
 		datasetNameTextField.textProperty().bindBidirectional(dataset.nameProperty());
 		
-		datasetDateTextField.textProperty().bindBidirectional(dataset.dateProperty(), new StringConverter<SimplifiedDate>() {
-
-			@Override
-			public String toString(SimplifiedDate sd) {
-				return sd.toString();
-			}
-
-			@Override
-			public SimplifiedDate fromString(String string) {
-				return new SimplifiedDate(string);
-			}
-			
-		});
+		datasetDateTextField.textProperty().bindBidirectional(dataset.dateProperty(), new SimplifiedDate.SimplifiedDateStringConverter());
 		columnComboBox.setItems(dataset.getColumns());
 		
 		// Report.

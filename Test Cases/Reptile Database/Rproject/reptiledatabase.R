@@ -12,8 +12,22 @@ last <- name_stability[nrow(name_stability),]
 
 # Visualization take 2: sparklines of recognized species and additions and deletions.
 library(zoo)
-name_stability$date_formatted <- paste(name_stability$date, "-01", sep="")
-name_stability$date_formatted[8] <- "2016-01-17"
+name_stability$date_formatted <- as.character(name_stability$date)
+name_stability$date_formatted[1]
+name_stability$date_formatted[1] <- paste(name_stability$date_formatted[1], "-01", sep="")
+
+name_stability$date_formatted[2]
+name_stability$date_formatted[2] <- paste(name_stability$date_formatted[2], "-01", sep="")
+
+name_stability$date_formatted[3]
+name_stability$date_formatted[3] <- paste(name_stability$date_formatted[3], "-01", sep="")
+
+name_stability$date_formatted[4]
+name_stability$date_formatted[4] <- paste(name_stability$date_formatted[4], "-01", sep="")
+
+name_stability$date_formatted[5]
+
+name_stability$date_formatted
 name_stability$date_zoo <- as.Date(name_stability$date_formatted)
 
 name_stability$names_added
@@ -98,6 +112,7 @@ plot(
   type="l",
   name_stability$clusters_identical_to_first_pc_union ~ name_stability$date_zoo,
   ylim=c(min(name_stability$clusters_identical_to_first_pc_union, na.rm=T), 100),
+  xlab="Dates",
   ylab="% identical names",
   main="Names relative to first checklist"
 )
@@ -156,6 +171,11 @@ legend("bottomleft",
   legend=c("Name clusters identical to first checklist", "Names identical to first checklist")
 )
 dev.off()
+
+# Additions and deletions
+additions_deletions <- read.csv("../additions_deletions/additions_deletions.csv")
+summary(additions_deletions$Dataset)
+
 
 # Visualization!
 recognition_percent <- matrix(c(
