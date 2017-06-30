@@ -1,9 +1,12 @@
 #
-# ANALYSIS FOR THE AOU PAPER BY YEAR (May 2, 2017)
+# ANALYSIS FOR THE AOU PAPER BY YEAR (June 27, 2017)
 #
 # This analysis file includes instructions for both full analyses as well
 # as pre-1982 analyses. Set the FLAG_PRE1982 = T if you would like to
 # perform this analysis; otherwise, set FLAG_PRE1982 = 
+#
+# Changes:
+#   - June 22, 2017: Check for Poisson overdispersion
 #
 
 # Make sure the taxon concept counts align with the trajectory counts.
@@ -60,6 +63,7 @@ if(FLAG_PRE1982) { get_filename <- function(fn) { return(paste("graphs/pre1982_s
 ##################################
 
 all_splumps <- read.csv("../splumps/list-all.csv")
+
 summary(all_splumps$type)
 # lump: 148
 # splits: 191
@@ -92,6 +96,7 @@ summary(splumps$type)
 
 project_stats <- read.csv("../project_stats/list.csv")
 nrow(project_stats)
+# - 66 (64 checklists + aou_5_34.csv + nacc_5_57.csv)
 data.frame(project_stats$dataset, project_stats$binomial_count)
 
 summary(project_stats$binomial_count)
@@ -101,6 +106,7 @@ binomial_count_by_year <- tapply(
     max
 )
 sort(binomial_count_by_year)
+# 862 currently recognized, max 874 in 1956
 
 # How many of the 862 are extralimital?
 currently_recognized <- read.csv("../currently_recognized/list.csv")
@@ -162,6 +168,8 @@ data.frame(supplement_counts$dataset, supplement_counts$year)
 years <- unique(sort(supplement_counts$year))
 length(years)
 # 64 checklists = 57 supplements + 7 major editions - 1 (because aou_1_07 and aou_2 both take place in 1895) + 1 NACC_latest
+#   - aou_5_34 isn't double-counted, because both files are in the same year.
+#   - basically years is just not a good way to analyse this dataset mmkay
 
 # Find out counts per year.
 library('zoo')
@@ -217,14 +225,68 @@ splumps_by_year_with_zero <- splumps_by_year[splumps_by_year == 0]
 length(splumps_by_year_with_zero)
 # 11 checklists, including 1886 and 2017, which shouldn't count
 splumps_by_year_with_zero
+# - 1886, 1894, 1909, 1912, 1920, 1957, 1983, 1991, 1998, 2009, 2017
 
 #### FIGURE 1a. Bar graph of lumps and splits with cumulative curves ####
 
 library(Hmisc)
-start_export('cumul_lumps_and_splits_bargraph', width=1000, height=600)
+start_export('cumul_lumps_and_splits_bargraph', width=1200, height=600)
 max_ylim <- max(sum(zoo_lumps), sum(zoo_splits))
-par(mfrow=c(1, 1), cex=overall_cex*0.7)
-plot(cumsum(zoo_lumps),
+
+zoo_lumps
+
+previous_margins <- par()$mar
+par(mfrow=c(1, 1), cex=overall_cex*0.7, mar=c(5, 5, 2, 5)) # Margins
+
+# Add barplot for lumps and splits.
+plot(NA,
+     ylim=c(0, max(zoo_lumps, zoo_splits)),
+     xlim=c(1886, 2016),
+     col=2, 
+     ylab="Lumps and splits per checklist", 
+     xlab="Year"
+     # main="Cumulative lumps and splits from 1889 to 2016"
+)
+rect(
+    as.integer(names(zoo_lumps)) - 0.5,
+    rep(0, length(zoo_lumps)),
+    as.integer(names(zoo_lumps)),
+    zoo_lumps,
+    col=2
+    #,
+    #border=2
+)
+rect(
+    as.integer(names(zoo_splits)),
+    rep(0, length(zoo_splits)),
+    as.integer(names(zoo_splits)) + 0.5,
+    zoo_splits,
+    col=4
+    #,
+    #border=4
+)
+par(new=T)
+plot(type="l", cumsum(zoo_lumps), ylim=c(0, max_ylim), col=2, axes=F, xlab=NA, ylab=NA)
+axis(side=4)
+mtext(side=4, line=3, 'Cumulative lumps and splits', cex=overall_cex*0.7)
+par(new=T)
+plot(type="l", cumsum(zoo_splits), ylim=c(0, max_ylim), col=4, axes=F, xlab=NA, ylab=NA)
+#minor.tick(nx=10, ny=0)
+
+points(pty=1, cumsum(zoo_lumps), ylim=c(0, max_ylim), col=1, axes=F, xlab=NA, ylab=NA)
+points(pty=1, cumsum(zoo_splits), ylim=c(0, max_ylim), col=1, axes=F, xlab=NA, ylab=NA)
+
+# Finish
+legend("topleft",
+       lty=c(1, 1),
+       col=c(2, 4),
+       legend=c("Lumps", "Splits")
+)
+
+dev.off()
+
+# Add cumulative plots
+lines(cumsum(zoo_lumps),
      ylim=c(0, max_ylim), 
      col=2, 
      ylab="Number of changes", 
@@ -232,9 +294,12 @@ plot(cumsum(zoo_lumps),
      # main="Cumulative lumps and splits from 1889 to 2016"
 )
 minor.tick(nx=10, ny=0)
-par(new=T)
+lines(cumsum(zoo_splits), ylim=c(0, max_ylim), col=4, ylab=NA, xlab=NA)
+
+#par(new=T)
 #plot(cumsum(zoo_lumps), ylim=c(0, sum(zoo_lumps)), col=2, ylab=NA, xlab=NA, axes=F)
 #points(zoo_lumps, col=2, pch=4)
+if(0) {
 rect(
     as.integer(names(zoo_lumps)) - 0.5,
     rep(0, length(zoo_lumps)),
@@ -254,6 +319,7 @@ rect(
     # , border=4
 )
 #points(zoo_splits, col=4, pch=4)
+}
 
 # Annotations!
 if(0) {
@@ -272,7 +338,7 @@ legend("topleft",
        legend=c("Lumps", "Splits")
 )
 dev.off()
-par(mfrow=c(1, 1), cex=overall_cex)
+par(mfrow=c(1, 1), cex=overall_cex, mar=previous_margins)
 
 #### FIGURE NA: Gap size correlated with post-gap measurement ####
 
@@ -385,12 +451,13 @@ latest_aou_with_descriptions <- merge(latest_aou, original_descs, by = "species_
 nrow(latest_aou_with_descriptions)
 # - 2127
 
-original_descs[351,]$year
-sum(latest_aou$species_lc == "polioptila caerulea")
-sum(original_descs$species_lc == "polioptila caerulea")
+#original_descs[351,]$year
+#sum(latest_aou$species_lc == "polioptila caerulea")
+#sum(original_descs$species_lc == "polioptila caerulea")
 
 # Any missing?
 latest_aou_with_descriptions[which(is.na(latest_aou_with_descriptions$year)),]
+# None!
 
 # How many blank years?
 sum(is.na(latest_aou_with_descriptions$year))
@@ -417,7 +484,7 @@ round(169/2127 * 100, 2)
 # - 169 since 1889 (7.95%) 
 
 round(191/2127 * 100, 2)
-# - 191 since 1885 (8.98%) 
+# - 191 since 1886 (8.98%) 
 
 # What are the proportions of the species in this study?
 name_clusters <- read.csv("../currently_recognized/list.csv")
@@ -461,8 +528,69 @@ round(15/834 * 100, 2)
 round(24/834 * 100, 2)
 # - 24 since 1889 (2.88%) 
 
+round(30/834 * 100, 2)
+# - 30 since 1886
+
 round(31/834 * 100, 2)
 # - 31 since 1885 (3.72%)
+
+#### Figure X. Species description for the 2127 and 834 species. ####
+# TODO: we can extend this curve to 2016!
+
+zoo_years_per_entry_latest_aou <- zoo(names(cumsum(table(latest_aou_with_descriptions$year))))
+min(zoo_years_per_entry_latest_aou)
+
+par(cex = overall_cex * 1.2)
+start_export('species_description_curves')
+plot(NA,
+    ylim=c(0, max(cumsum(table(latest_aou_with_descriptions$year)))),
+    # ylim=c(0, max(cumsum(table(name_clusters_not_extralimital_with_desc$year)))),
+    xlim=c(1758, 2016),
+    # main="Species description curve in North American Birds",
+    ylab="Currently recognized species",
+    xlab="Year"
+)
+
+lines(
+    cumsum(table(latest_aou_with_descriptions$year)) ~ zoo_years_per_entry_latest_aou,
+    col="red",
+    lty=3
+)
+
+if(0) {
+points(
+    pch=7,
+    cumsum(table(latest_aou_with_descriptions$year)) ~ zoo_years_per_entry_latest_aou,
+    col="red"
+)
+}
+
+zoo_years_per_entry_name_clusters_not_extralimital <- zoo(names(cumsum(table(name_clusters_not_extralimital_with_desc$year))))
+lines(
+    cumsum(table(name_clusters_not_extralimital_with_desc$year)) ~ zoo_years_per_entry_name_clusters_not_extralimital,
+    col="blue",
+    lty=1
+)
+
+if(0) {
+points(
+    cumsum(table(name_clusters_not_extralimital_with_desc$year)) ~ zoo_years_per_entry_name_clusters_not_extralimital,
+    col="blue",
+    pch=7
+)
+}
+
+legend("topleft",
+    c(
+        "All currently recognized species (n=2027)",
+        "After eliminating species added after 1981 (n=834)"
+    ),
+    lty=c(3, 1),
+    col=c("red", "blue")
+)
+
+dev.off()
+par(cex = overall_cex)
 
 #############################################
 #### PART 5: PER-DECADE LUMPS AND SPLITS ####
@@ -1376,6 +1504,8 @@ round(pc_splits_reverting_lumps_since_1980, 2)
 #### PART 7. HIERARCHICAL MODEL ####
 ####################################
 
+# - TODO: should the offset be scaled to the number of checklists, rather than the number of years?
+
 # Reload, just 'cos.
 taxon_concepts <- read.csv("../taxon_concepts/list.csv")
 nrow(taxon_concepts)
@@ -1494,64 +1624,165 @@ hist(name_clusters_for_hierarchical_modeling$first_added_year)
 name_clusters_for_hierarchical_modeling$years_in_list <- 2017 - name_clusters_for_hierarchical_modeling$first_added_year 
 hist(name_clusters_for_hierarchical_modeling$years_in_list)
 
+# But instead of years in list, we actually want the number of checklists *since* that year.
+levels(name_clusters_for_hierarchical_modeling$first_added_dataset)
+# - The following will ONLY work if these levels are in EXACTLY the right order!
+
+name_clusters_for_hierarchical_modeling$available_in_checklists <- 
+# How many checklists are we talking about here?
+    length(levels(name_clusters_for_hierarchical_modeling$first_added_dataset))
+# Subtract the index of the first checklist, so we go backwards: 0 means added in last checklist, 1 means in next to last, and so on.
+    - as.integer(name_clusters_for_hierarchical_modeling$first_added_dataset) 
+# So we don't have a zero
+    + 1
+
+# For STAN analyses, we'll be fitting a Poisson, so it makes more sense to
+# think about the number of recircumscriptions, rather than the number
+# of taxon concepts.
+name_clusters_for_hierarchical_modeling$count_redescriptions <- name_clusters_for_hierarchical_modeling$taxon_concept_count - 1
+name_clusters_for_hierarchical_modeling$count_redescriptions
+mean(name_clusters_for_hierarchical_modeling$count_redescriptions)
+# - 0.3908873
+
+var(name_clusters_for_hierarchical_modeling$count_redescriptions)
+# - 0.5673
+
 # Get ready to STAN
-#Sys.setenv(PATH=paste("C:\\Rtools\\bin", "C:\\Rtools\\mingw_64\\bin", Sys.getenv("PATH"), sep=";"))
+Sys.setenv(PATH=paste("C:\\Rtools\\bin", "C:\\Rtools\\mingw_32\\bin", Sys.getenv("PATH"), sep=";"))
 #cat('Sys.setenv(BINPREF = "C:/Program Files/mingw_$(WIN)/bin/")',
 #    file = file.path(Sys.getenv("HOME"), ".Rprofile"), 
 #    sep = "\n", append = TRUE)
-#Sys.getenv("PATH")
-#system("where make")
-#system("where g++")
+Sys.getenv("PATH")
+system("where make")
+system("where g++")
+
+devtools::find_rtools()
 
 library(rstan)
 rstan_options(auto_write = TRUE)
 options(mc.cores = parallel::detectCores())
 
-# Prepare for prior predictive modelling.
+#### Prior predictive modelling ####
+# This is a "true" prior predictive model, in which we generate name cluster values
+# as Poisson values with a known lambda parameter, and see if we can retrieve it.
+
+prior_predictive_lambda_0 <- mean(name_clusters_for_hierarchical_modeling$count_redescriptions)
+prior_predictive_lambda_0
+taxon_concept_count_for_prior <- rpois(nrow(name_clusters_for_hierarchical_modeling), prior_predictive_lambda_0)
+taxon_concept_count_for_prior
+# Looks about right.
+
+mean(taxon_concept_count_for_prior)
+# = 0.3741
+
+# Prior predictive modelling
+stan_d_prior <- list(
+    nobs = nrow(name_clusters_for_hierarchical_modeling),
+    norder = length(levels(name_clusters_for_hierarchical_modeling$order)),
+    nfamily = length(levels(name_clusters_for_hierarchical_modeling$family)),
+    ngenus = length(levels(name_clusters_for_hierarchical_modeling$genus)),
+    y = taxon_concept_count_for_prior,
+    order = as.integer(name_clusters_for_hierarchical_modeling$order),
+    family = as.integer(name_clusters_for_hierarchical_modeling$family),
+    genus = as.integer(name_clusters_for_hierarchical_modeling$genus),
+    years_in_list = name_clusters_for_hierarchical_modeling$available_in_checklists
+)
+
+table(as.integer(name_clusters_for_hierarchical_modeling$family))
+# Any missing? Nope!
+
+model_fit_prior <- stan('counts_per_name_model.stan', data=stan_d_prior, 
+    control = list(
+        adapt_delta = 0.9
+        # 1: There were 1 divergent transitions after warmup. Increasing adapt_delta above 0.8 may help. See
+        # http://mc-stan.org/misc/warnings.html#divergent-transitions-after-warmup 
+    ))
+model_fit_prior
+# - Rhats appear to be at 1.0!
+post <- rstan::extract(model_fit_prior)
+# - no Rhat above 1.1!
+
+# Is this roughly the same as earlier?
+hist(exp(post$log_lambda))
+mean(exp(post$log_lambda))
+# - 0.38097
+prior_predictive_lambda_0
+# - 0.3908
+abline(v=prior_predictive_lambda_0, col="red")
+
+#### Posterior predictive test ####
+# Based on https://github.com/hmods/course/blob/master/slides/4-poisson/wk4_slides.pdf
+post_lambda <- mean(exp(post$log_lambda))
+post_lambda
+
+# For each posterior draw: time until lump/split
+n_time_until <- length(taxon_concept_count_for_prior)
+n_iter <- nrow(post$log_lambda)
+y_resp <- array(dim = c(n_iter, n_time_until))
+var_resp <- rep(NA, n_iter)
+
+for(i in 1:n_iter) {
+    y_resp[i,] <- rpois(n_time_until, exp(post$log_lambda[i,]))
+    var_resp[i] <- var(y_resp[i,])
+}
+
+mean(var_resp)
+# - mean: 0.3809
+hist(var_resp, breaks=40, xlab='Var(y)', main='Posterior predictive check for overdispersion')
+# add red line for empirical variance
+abline(v = var(taxon_concept_count_for_prior), col=2, lwd=3)
+var(taxon_concept_count_for_prior)
+# - 0.4024
+
+#### Manipulated prior predictive modelling ####
+# Now we take those lambda values from earlier and tweak some values to see if we
+# can detect significant changes in particular higher taxa.
+prior_predictive_lambda_0
+# = 0.39088
+
+# Now we manipulate that pure-poisson signal so we actually have
+# some peaks, and see if we can recover them.
 prior_multiplier <- 20
 
-taxon_concept_count_for_prior <- name_clusters_for_hierarchical_modeling
-mean(taxon_concept_count_for_prior$taxon_concept_count)
-taxon_concept_count_for_prior$taxon_concept_count <- rpois(nrow(taxon_concept_count_for_prior), mean(taxon_concept_count_for_prior$taxon_concept_count))    
-taxon_concept_count_for_prior$taxon_concept_count
-mean(taxon_concept_count_for_prior$taxon_concept_count)
-
-# Let's set Branta canadensis, Branta hutchinsii and Grus americana as having 5x as many taxon concepts as it really has.
+prior_predictive_lambda_0 <- mean(name_clusters_for_hierarchical_modeling$count_redescriptions)
+prior_predictive_lambda_0
+taxon_concept_count_for_prior <- as.data.frame(name_clusters_for_hierarchical_modeling)
+taxon_concept_count_for_prior$taxon_concept_count <- rpois(nrow(name_clusters_for_hierarchical_modeling), prior_predictive_lambda_0)
 
 index_branta_canadensis <- which(taxon_concept_count_for_prior$name == "Branta canadensis")
 index_branta_canadensis
-taxon_concept_count_for_prior[index_branta_canadensis,]$taxon_concept_count <- 
-    ceil(prior_multiplier * taxon_concept_count_for_prior[index_branta_canadensis,]$taxon_concept_count)
+taxon_concept_count_for_prior[index_branta_canadensis,]$taxon_concept_count <-
+    ceiling(prior_multiplier * (1 + taxon_concept_count_for_prior[index_branta_canadensis,]$taxon_concept_count))
 
 index_branta_hutchinsii <- which(taxon_concept_count_for_prior$name == "Branta hutchinsii")
 index_branta_hutchinsii
-taxon_concept_count_for_prior[index_branta_hutchinsii,]$taxon_concept_count <- 
-    ceil(prior_multiplier * taxon_concept_count_for_prior[index_branta_hutchinsii,]$taxon_concept_count)
+taxon_concept_count_for_prior[index_branta_hutchinsii,]$taxon_concept_count <-
+    ceiling(prior_multiplier * (1 + taxon_concept_count_for_prior[index_branta_hutchinsii,]$taxon_concept_count))
 
 index_grus_americana <- which(taxon_concept_count_for_prior$name == "Grus americana")
 index_grus_americana
 taxon_concept_count_for_prior[index_grus_americana,]$taxon_concept_count <- 
-    ceil(prior_multiplier * taxon_concept_count_for_prior[index_grus_americana,]$taxon_concept_count)
+    ceiling(prior_multiplier * (1 + taxon_concept_count_for_prior[index_grus_americana,]$taxon_concept_count))
 
 index_gavia_arctica <- which(taxon_concept_count_for_prior$name == "Gavia arctica")
 index_gavia_arctica
 taxon_concept_count_for_prior[index_gavia_arctica,]$taxon_concept_count <- 
-    ceil(prior_multiplier * taxon_concept_count_for_prior[index_gavia_arctica,]$taxon_concept_count)
+    ceiling(prior_multiplier * (1 + taxon_concept_count_for_prior[index_gavia_arctica,]$taxon_concept_count))
 
 index_gavia_pacifica <- which(taxon_concept_count_for_prior$name == "Gavia pacifica")
 index_gavia_pacifica
 taxon_concept_count_for_prior[index_gavia_pacifica,]$taxon_concept_count <- 
-    ceil(prior_multiplier * taxon_concept_count_for_prior[index_gavia_pacifica,]$taxon_concept_count)
+    ceiling(prior_multiplier * (1 + taxon_concept_count_for_prior[index_gavia_pacifica,]$taxon_concept_count))
 
 index_chamaea_fasciata <- which(taxon_concept_count_for_prior$name == "Chamaea fasciata")
 index_chamaea_fasciata
 taxon_concept_count_for_prior[index_chamaea_fasciata,]$taxon_concept_count <- 
-    ceil(prior_multiplier * taxon_concept_count_for_prior[index_chamaea_fasciata,]$taxon_concept_count)
+    ceiling(prior_multiplier * (1 + taxon_concept_count_for_prior[index_chamaea_fasciata,]$taxon_concept_count))
 
 index_phoenicopterus_ruber <- which(taxon_concept_count_for_prior$name == "Phoenicopterus ruber")
 index_phoenicopterus_ruber
 taxon_concept_count_for_prior[index_phoenicopterus_ruber,]$taxon_concept_count <- 
-    ceil(prior_multiplier * taxon_concept_count_for_prior[index_phoenicopterus_ruber,]$taxon_concept_count)
+    ceiling(prior_multiplier * (1 + taxon_concept_count_for_prior[index_phoenicopterus_ruber,]$taxon_concept_count))
 
 # resulting counts:
 taxon_concept_count_for_prior[index_branta_canadensis,]$taxon_concept_count
@@ -1565,16 +1796,16 @@ stan_d_prior <- list(
     norder = length(levels(name_clusters_for_hierarchical_modeling$order)),
     nfamily = length(levels(name_clusters_for_hierarchical_modeling$family)),
     ngenus = length(levels(name_clusters_for_hierarchical_modeling$genus)),
-    y = taxon_concept_count_for_prior$taxon_concept_count,
+    y = taxon_concept_count_for_prior$taxon_concept_count, # no, you don't need to subtract 1 from this!
     order = as.integer(name_clusters_for_hierarchical_modeling$order),
     family = as.integer(name_clusters_for_hierarchical_modeling$family),
     genus = as.integer(name_clusters_for_hierarchical_modeling$genus),
-    years_in_list = name_clusters_for_hierarchical_modeling$years_in_list
+    years_in_list = name_clusters_for_hierarchical_modeling$available_in_checklists
 )
 
 model_fit_prior <- stan('counts_per_name_model.stan', data=stan_d_prior, 
   control = list(
-      adapt_delta = 0.9
+      adapt_delta = 0.99
       # 1: There were 1 divergent transitions after warmup. Increasing adapt_delta above 0.8 may help. See
       # http://mc-stan.org/misc/warnings.html#divergent-transitions-after-warmup 
   ))
@@ -1582,19 +1813,29 @@ model_fit_prior
 # - Rhats appear to be at 1.0!
 post <- rstan::extract(model_fit_prior)
 
-library("shinystan")
-my_sso <- launch_shinystan(model_fit_prior)
-# - no Rhat above 1.1!
+#### Posterior predictive test ####
+# Based on https://github.com/hmods/course/blob/master/slides/4-poisson/wk4_slides.pdf
+mean(exp(post$log_lambda))
+# 0.3986
 
-hist(post$lambda_0)
-lambda_0 <- mean(post$lambda_0)
-lambda_0
-# = -4.44
-exp(lambda_0)
-# = 0.01179
+# For each posterior draw: time until lump/split
+n_time_until <- length(taxon_concept_count_for_prior$taxon_concept_count)
+n_iter <- nrow(post$log_lambda)
+y_resp <- array(dim = c(n_iter, n_time_until))
+var_resp <- rep(NA, n_iter)
 
-1/exp(lambda_0)
-# 84.77
+for(i in 1:n_iter) {
+    y_resp[i,] <- rpois(n_time_until, exp(post$log_lambda[i,]))
+    var_resp[i] <- var(y_resp[i,])
+}
+
+mean(var_resp)
+# - 1.05
+hist(var_resp, breaks=40, xlab='Var(y)', main='Posterior predictive check for overdispersion')
+# add red line for empirical variance
+abline(v = var(taxon_concept_count_for_prior$taxon_concept_count - 1), col=2, lwd=3)
+var(taxon_concept_count_for_prior$taxon_concept_count - 1)
+# - 0.7166
 
 # Order level changes
 library(dplyr)
@@ -1604,9 +1845,16 @@ order_mean <- apply(post$pi_i, 2, mean)
 order_interval_min <- apply(post$pi_i, 2, function(x) { quantile(x, probs=0.025) } )
 order_interval_max <- apply(post$pi_i, 2, function(x) { quantile(x, probs=0.975) } )
 order_interval_width <- order_interval_max - order_interval_min
-count_per_order <- name_clusters_for_hierarchical_modeling %>% group_by(order) %>% summarize(count = length(id))
+count_per_order <- taxon_concept_count_for_prior %>% group_by(order) %>% summarize(
+    count = length(id),
+    
+    sum_redescriptions = sum(taxon_concept_count),
+    mean_redescriptions = mean(taxon_concept_count)
+)
 order_measurements <- data.frame(
     row.names=levels(count_per_order$order),
+    sum_redescriptions = count_per_order$sum_redescriptions,
+    mean_redescriptions = count_per_order$mean_redescriptions,
     count=count_per_order$count,
     min=order_interval_min,
     mean=order_mean,
@@ -1614,7 +1862,7 @@ order_measurements <- data.frame(
     significant=ifelse(((order_interval_min > 0 & order_interval_max > 0) == 1) | ((order_interval_min < 0 & order_interval_max < 0) == 1), "yes", "no"),
     interval_width=order_interval_width
 )
-# order_measurements
+order_measurements
 order_measurements[order_measurements$significant == "yes",]
 
 # Plot
@@ -1626,9 +1874,16 @@ family_mean <- apply(post$tau_j, 2, mean)
 family_interval_min <- apply(post$tau_j, 2, function(x) { quantile(x, probs=0.025) } )
 family_interval_max <- apply(post$tau_j, 2, function(x) { quantile(x, probs=0.975) } )
 family_interval_width <- family_interval_max - family_interval_min
-count_per_family <- name_clusters_for_hierarchical_modeling %>% group_by(family) %>% summarize(count = length(id))
+count_per_family <- taxon_concept_count_for_prior %>% group_by(family) %>% summarize(
+    count = length(id),
+
+    sum_redescriptions = sum(taxon_concept_count),
+    mean_redescriptions = mean(taxon_concept_count)    
+)
 family_measurements <- data.frame(
     row.names=levels(count_per_family$family),
+    sum_redescriptions = count_per_family$sum_redescriptions,
+    mean_redescriptions = count_per_family$mean_redescriptions,
     count=count_per_family$count,
     min=family_interval_min,
     mean=family_mean,
@@ -1636,7 +1891,7 @@ family_measurements <- data.frame(
     significant=ifelse(((family_interval_min > 0 & family_interval_max > 0) == 1) | ((family_interval_min < 0 & family_interval_max < 0) == 1), "yes", "no"),
     interval_width=family_interval_width
 )
-#family_measurements
+family_measurements
 family_measurements[family_measurements$significant == "yes",]
 
 # Plot
@@ -1647,9 +1902,15 @@ genus_mean <- apply(post$rho_k, 2, mean)
 genus_interval_min <- apply(post$rho_k, 2, function(x) { quantile(x, probs=0.025) } )
 genus_interval_max <- apply(post$rho_k, 2, function(x) { quantile(x, probs=0.975) } )
 genus_interval_width <- genus_interval_max - genus_interval_min
-count_per_genus <- name_clusters_for_hierarchical_modeling %>% group_by(genus) %>% summarize(count = length(id))
+count_per_genus <- taxon_concept_count_for_prior %>% group_by(genus) %>% summarize(
+    count = length(id), 
+    sum_redescriptions = sum(taxon_concept_count),
+    mean_redescriptions = mean(taxon_concept_count)
+)
 genus_measurements <- data.frame(
     row.names=levels(count_per_genus$genus),
+    sum_redescriptions=count_per_genus$sum_redescriptions,
+    mean_redescriptions=count_per_genus$mean_redescriptions,    
     count=count_per_genus$count,
     min=genus_interval_min,
     mean=genus_mean,
@@ -1657,11 +1918,21 @@ genus_measurements <- data.frame(
     significant=ifelse(((genus_interval_min > 0 & genus_interval_max > 0) == 1) | ((genus_interval_min < 0 & genus_interval_max < 0) == 1), "yes", "no"),
     interval_width=genus_interval_width
 )
-# genus_measurements
+genus_measurements
 genus_measurements[genus_measurements$significant == "yes",]
 # View(genus_measurements)
 
 prior_multiplier
+
+# CONCLUSION OF PRIOR PREDICTIVE TESTING (TEST 6)
+# - at a prior_multiplier of 2.5 -> 0 genera
+# - at a prior_multiplier of 7 -> 0 genera, which is odd, because we're overdispersed like crazy now. um, well.
+# - at a prior_multiplier of 1.5 -> 90 genera
+# - at a prior_multiplier of 10 -> 5 genera (exactly the genera that I expected!)
+# - at a prior_multiplier of 20 -> 
+
+# CONCLUSION OF PRIOR PREDICTIVE TESTING (TEST 5)
+# - at a prior_multiplier of 2.5 -> 26 genera (presumably because 'test 5' starts with the actual data)
 
 # CONCLUSION OF PRIOR PREDICTIVE TESTING (TEST 4)
 # - at a prior_multiplier of 20 -> two orders, three genera
@@ -1704,9 +1975,9 @@ prior_multiplier
 # - at a prior_multiplier of 1.5 -> four families, no genera or families
 # - at a prior_multiplier of 1.2 -> nothing is significant
 
-
-# y[i] values
-name_clusters_for_hierarchical_modeling$taxon_concept_count - 1
+#### Final model ####
+mean(name_clusters_for_hierarchical_modeling$count_redescriptions)
+# - 0.3908873
 
 # STAN model.
 stan_d <- list(
@@ -1714,16 +1985,16 @@ stan_d <- list(
     norder = length(levels(name_clusters_for_hierarchical_modeling$order)),
     nfamily = length(levels(name_clusters_for_hierarchical_modeling$family)),
     ngenus = length(levels(name_clusters_for_hierarchical_modeling$genus)),
-    y = name_clusters_for_hierarchical_modeling$taxon_concept_count - 1, # So we fit a true poisson (k=0, 1, 2 ...)
+    y = name_clusters_for_hierarchical_modeling$count_redescriptions,
     order = as.integer(name_clusters_for_hierarchical_modeling$order),
     family = as.integer(name_clusters_for_hierarchical_modeling$family),
     genus = as.integer(name_clusters_for_hierarchical_modeling$genus),
-    years_in_list = name_clusters_for_hierarchical_modeling$years_in_list
+    years_in_list = name_clusters_for_hierarchical_modeling$available_in_checklists
 )
 
 model_fit <- stan('counts_per_name_model.stan', data=stan_d, 
     control = list(
-        adapt_delta = 0.95
+        adapt_delta = 0.99
         # 1: There were 1 divergent transitions after warmup. Increasing adapt_delta above 0.8 may help. See
         # http://mc-stan.org/misc/warnings.html#divergent-transitions-after-warmup 
     )
@@ -1732,26 +2003,43 @@ model_fit
 # - Rhats appear to be at 1.0!
 post <- rstan::extract(model_fit)
 
+library(shinystan)
+shinystan::launch_shinystan(model_fit)
+
 # Examine the results of the plot.
-traceplot(model_fit, inc_warmup=T)
+#traceplot(model_fit, inc_warmup=T)
 
-hist(post$sigma_i)
-hist(post$sigma_j)
-hist(post$sigma_k)
+hist(exp(post$log_lambda))
+hist((post$lambda_0))
+hist((post$sigma_i))
+hist((post$sigma_j))
+hist((post$sigma_k))
 
-library("shinystan")
-my_sso <- launch_shinystan(model_fit)
-# - no Rhat above 1.1!
+# Overall rate
+mean(exp(post$log_lambda))
+# - 0.39868
 
-hist(post$lambda_0)
-lambda_0 <- mean(post$lambda_0)
-lambda_0
-# = -6.242
-exp(lambda_0)
-# = 0.001945
+# For each posterior draw: time until lump/split
+n_time_until <- length(name_clusters_for_hierarchical_modeling$count_redescriptions)
+n_iter <- nrow(post$log_lambda)
+y_resp <- array(dim = c(n_iter, n_time_until))
+var_resp <- rep(NA, n_iter)
 
-1/exp(lambda_0)
-# 514.13
+for(i in 1:n_iter) {
+    y_resp[i,] <- rpois(n_time_until, exp(post$log_lambda[i,]))
+    var_resp[i] <- var(y_resp[i,])
+}
+
+mean(y_resp)
+# - 0.3985
+mean(var_resp)
+# - 0.6668
+
+hist(var_resp, breaks=40, xlab='Var(y)', main='Posterior predictive check for overdispersion')
+# add red line for empirical variance
+abline(v = var(name_clusters_for_hierarchical_modeling$count_redescriptions), col=2, lwd=3)
+var(name_clusters_for_hierarchical_modeling$count_redescriptions)
+# - 0.5673
 
 # Order level changes
 library(dplyr)
@@ -1764,9 +2052,16 @@ order_mean <- apply(post$pi_i, 2, mean)
 order_interval_min <- apply(post$pi_i, 2, function(x) { quantile(x, probs=0.025) } )
 order_interval_max <- apply(post$pi_i, 2, function(x) { quantile(x, probs=0.975) } )
 order_interval_width <- order_interval_max - order_interval_min
-count_per_order <- name_clusters_for_hierarchical_modeling %>% group_by(order) %>% summarize(count = length(id))
+count_per_order <- name_clusters_for_hierarchical_modeling %>% group_by(order) %>% summarize(
+    count = length(id),
+    
+    sum_redescriptions = sum(count_redescriptions),
+    mean_redescriptions = mean(count_redescriptions)
+)
 order_measurements <- data.frame(
     row.names=levels(count_per_order$order),
+    sum_redescriptions = count_per_order$sum_redescriptions,
+    mean_redescriptions = count_per_order$mean_redescriptions,
     count=count_per_order$count,
     min=order_interval_min,
     mean=order_mean,
@@ -1775,20 +2070,28 @@ order_measurements <- data.frame(
     interval_width=order_interval_width
 )
 order_measurements
+order_measurements[order_measurements$significant == "yes",]
 write.csv(order_measurements, file=paste(sep="", 'tables/table_s4_hmod_order', filename_postfix, '.csv'))
 
 # Plot
 # count number of observations per order
-#plot(order_interval_width ~ count_per_order$count, ylab="Interval width", xlab="Number of observations per order", main="5% credible interval widths for number of observations")
+plot(order_interval_width ~ count_per_order$count, ylab="Interval width", xlab="Number of observations per order", main="5% credible interval widths for number of observations")
 
 # FAMILY
 family_mean <- apply(post$tau_j, 2, mean)
 family_interval_min <- apply(post$tau_j, 2, function(x) { quantile(x, probs=0.025) } )
 family_interval_max <- apply(post$tau_j, 2, function(x) { quantile(x, probs=0.975) } )
 family_interval_width <- family_interval_max - family_interval_min
-count_per_family <- name_clusters_for_hierarchical_modeling %>% group_by(family) %>% summarize(count = length(id))
+count_per_family <- name_clusters_for_hierarchical_modeling %>% group_by(family) %>% summarize(
+    count = length(id),
+    
+    sum_redescriptions = sum(count_redescriptions),
+    mean_redescriptions = mean(count_redescriptions)
+)
 family_measurements <- data.frame(
     row.names=levels(count_per_family$family),
+    sum_redescriptions = count_per_family$sum_redescriptions,
+    mean_redescriptions = count_per_family$mean_redescriptions,
     count=count_per_family$count,
     min=family_interval_min,
     mean=family_mean,
@@ -1797,19 +2100,27 @@ family_measurements <- data.frame(
     interval_width=family_interval_width
 )
 family_measurements
+family_measurements[family_measurements$significant == "yes",]
 write.csv(family_measurements, file=paste(sep="", 'tables/table_s5_hmod_family', filename_postfix, '.csv'))
 
 # Plot
-# plot(family_interval_width ~ count_per_family$count, ylab="Interval width", xlab="Number of observations per family", main="5% credible interval widths for number of observations")
+plot(family_interval_width ~ count_per_family$count, ylab="Interval width", xlab="Number of observations per family", main="5% credible interval widths for number of observations")
 
 # GENUS
 genus_mean <- apply(post$rho_k, 2, mean)
 genus_interval_min <- apply(post$rho_k, 2, function(x) { quantile(x, probs=0.025) } )
 genus_interval_max <- apply(post$rho_k, 2, function(x) { quantile(x, probs=0.975) } )
 genus_interval_width <- genus_interval_max - genus_interval_min
-count_per_genus <- name_clusters_for_hierarchical_modeling %>% group_by(genus) %>% summarize(count = length(id))
+count_per_genus <- name_clusters_for_hierarchical_modeling %>% group_by(genus) %>% summarize(
+    count = length(id),
+    
+    sum_redescriptions = sum(count_redescriptions),
+    mean_redescriptions = mean(count_redescriptions)
+)
 genus_measurements <- data.frame(
     row.names=levels(count_per_genus$genus),
+    sum_redescriptions = count_per_genus$sum_redescriptions,
+    mean_redescriptions = count_per_genus$mean_redescriptions,
     count=count_per_genus$count,
     min=genus_interval_min,
     mean=genus_mean,
