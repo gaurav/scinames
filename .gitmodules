@@ -1,0 +1,3 @@
+[submodule "Test Cases/AOU Checklists"]
+	path = Test Cases/AOU Checklists
+	url = git@github.com:gaurav/aou_checklists.git
