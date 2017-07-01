@@ -26,6 +26,8 @@ package com.ggvaidya.scinames.model;
 import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * A taxon concept is a NameConcept that is a subset of a parent NameConcept.
@@ -34,6 +36,20 @@ import java.util.List;
  */
 public class TaxonConcept extends NameCluster {
 	private NameCluster nameCluster;
+	
+	@Override
+	public String toString() {
+		Set<Name> names = getNames();
+		Set<Dataset> foundIn = getFoundIn();
+		
+		if(names.size() < 6)
+			return "Taxon concept " + getId() + " containing " + 
+				names.stream().map(n -> "'" + n.getFullName() + "'").collect(Collectors.joining(" and ")) +
+				" found between " + getDateRange() + " in " + foundIn.size() + " datasets (part of name cluster " + nameCluster.getId() + ")";
+		else
+			return "Taxon concept " + getId() + " containing '" + getName() + "' and " + (names.size() - 1) + 
+				" other names between " + getDateRange() + " in " + foundIn.size() + " datasets (part of name cluster " + nameCluster.getId() + ")";
+	}
 	
 	/** Return the name cluster this taxon concept is a subset of. */
 	public NameCluster getNameCluster() { return nameCluster; }

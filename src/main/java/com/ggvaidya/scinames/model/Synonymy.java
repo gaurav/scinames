@@ -45,6 +45,13 @@ public class Synonymy extends NameCluster {
 	public Name getFrom() { return fromName; }
 	public Name getTo() { return toName; }
 	public String getNote() { return (note == null) ? "" : note; }
+
+	@Override
+	public String toString() {
+		return "Synonymy from '" + fromName + 
+			"' to '" + toName + "' in dataset " + dataset + 
+			(note == null ? "" : " (note: " + note + ")");
+	}
 	
 	/**
 	 * Compare to another Synonymy. Note that the order of the names is important,

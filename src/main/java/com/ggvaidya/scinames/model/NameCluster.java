@@ -137,10 +137,10 @@ public class NameCluster {
 		if(names.size() < 6)
 			return "Name cluster " + getId() + " containing " + 
 				names.stream().map(n -> "'" + n.getFullName() + "'").collect(Collectors.joining(" and ")) +
-				" found between " + getDateRange() + " in " + foundIn.size() + " timepoints";
+				" found between " + getDateRange() + " in " + foundIn.size() + " datasets";
 		else
 			return "Name cluster " + getId() + " containing '" + getName() + "' and " + (names.size() - 1) + 
-				" other names between " + getDateRange() + " in " + foundIn.size() + " timepoints";
+				" other names between " + getDateRange() + " in " + foundIn.size() + " datasets";
 	}
 	
 	public int size() {

@@ -198,7 +198,7 @@ public final class LumpsAndSplitsView {
 		cols.add(createTableColumnForTable("year", 100.0, precalc));
 		
 		// Identify reversions, classified as:
-		//  (3) â€œreversion rateâ€� as the proportion of all corrections that partially reverted an earlier correction
+		//  (3) "reversion rate" as the proportion of all corrections that partially reverted an earlier correction
 		//  (4) "perfect revisionary rate", in which a lump is paired with a split that perfectly reverts the change made earlier
 
 		cols.add(createTableColumnForTable("change", 50.0, precalc));
