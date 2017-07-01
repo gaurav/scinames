@@ -152,39 +152,41 @@ public final class LumpsAndSplitsView {
 				) ? "yes" : "no"
 			);	
 			
+			/*
 			// TODO: broken! This returns 'yes' when changes are empty.			
 			precalc.put(change, "reverts_all_previous_changes", 
 				(project.getChangesReversing(change)
 					// Did every change take place before this change?
 					.allMatch(ch -> ch.getDataset().getDate().compareTo(change.getDataset().getDate()) < 0)
 				) ? "yes" : "no"
-			);
+			);*/
 			
-			precalc.put(change, "perfect_reversions", project.getChangesPerfectlyReversing(change)
+			precalc.put(change, "complete_reversions", project.getChangesPerfectlyReversing(change)
 				.map(ch -> ch.toString())
 				.collect(Collectors.joining("; ")));
-			precalc.put(change, "perfect_reversions_summary", project.getPerfectlyReversingSummary(change));
-			precalc.put(change, "perfect_reversion_count", String.valueOf(project.getChangesPerfectlyReversing(change).count()));
-			precalc.put(change, "perfectly_reverts_a_previous_change", 
+			precalc.put(change, "complete_reversions_summary", project.getPerfectlyReversingSummary(change));
+			precalc.put(change, "complete_reversion_count", String.valueOf(project.getChangesPerfectlyReversing(change).count()));
+			precalc.put(change, "completely_reverts_a_previous_change", 
 				(project.getChangesPerfectlyReversing(change)
 					// Did any change take place before this change?
 					.anyMatch(ch -> ch.getDataset().getDate().compareTo(change.getDataset().getDate()) < 0)
 				) ? "yes" : "no"		
 			);
-			precalc.put(change, "perfectly_reverts_a_later_change", 
+			precalc.put(change, "completely_reverts_a_later_change", 
 				(project.getChangesPerfectlyReversing(change)
 					// Did any change take place before this change?
 					.anyMatch(ch -> ch.getDataset().getDate().compareTo(change.getDataset().getDate()) > 0)
 				) ? "yes" : "no"		
 			);
 			
+			/*
 			// TODO: broken! This returns 'yes' when changes are empty.
-			precalc.put(change, "perfectly_reverts_all_previous_changes", 
+			precalc.put(change, "completely_reverts_all_previous_changes", 
 				(project.getChangesPerfectlyReversing(change)
 					// Did every change take place before this change?
 					.allMatch(ch -> ch.getDataset().getDate().compareTo(change.getDataset().getDate()) < 0)
 				) ? "yes" : "no"
-			);
+			);*/
 		}
 		
 		// Set up columns.
@@ -200,17 +202,20 @@ public final class LumpsAndSplitsView {
 		//  (4) "perfect revisionary rate", in which a lump is paired with a split that perfectly reverts the change made earlier
 
 		cols.add(createTableColumnForTable("change", 50.0, precalc));
+		
+		// Partial and complete reversions
 		cols.add(createTableColumnForTable("reversions", 200.0, precalc));
 		cols.add(createTableColumnForTable("reversion_count", 200.0, precalc));
 		cols.add(createTableColumnForTable("reverts_a_previous_change", 100.0, precalc));
 		cols.add(createTableColumnForTable("reverts_a_later_change", 100.0, precalc));
-		
 		//cols.add(createTableColumnForTable("reverts_all_previous_changes", 100.0, precalc));
-		cols.add(createTableColumnForTable("perfect_reversions", 200.0, precalc));
-		cols.add(createTableColumnForTable("perfect_reversions_summary", 200.0, precalc));
-		cols.add(createTableColumnForTable("perfect_reversion_count", 200.0, precalc));
-		cols.add(createTableColumnForTable("perfectly_reverts_a_previous_change", 100.0, precalc));
-		cols.add(createTableColumnForTable("perfectly_reverts_a_later_change", 100.0, precalc));		
+		
+		// Complete reversions
+		cols.add(createTableColumnForTable("complete_reversions", 200.0, precalc));
+		cols.add(createTableColumnForTable("complete_reversions_summary", 200.0, precalc));
+		cols.add(createTableColumnForTable("complete_reversion_count", 200.0, precalc));
+		cols.add(createTableColumnForTable("completely_reverts_a_previous_change", 100.0, precalc));
+		cols.add(createTableColumnForTable("completely_reverts_a_later_change", 100.0, precalc));		
 		// cols.add(createTableColumnForTable("perfectly_reverts_all_previous_changes", 100.0, precalc));
 		
 		// Mainly useful for linking data from this table with others generated in the same run,
