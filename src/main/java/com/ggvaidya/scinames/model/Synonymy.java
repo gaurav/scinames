@@ -58,9 +58,12 @@ public class Synonymy extends NameCluster {
 			return false;
 	}
 	
+	@Override
 	public boolean equals(Object obj) {
-		if(obj.getClass().isAssignableFrom(Synonymy.class))
+		if(obj instanceof Synonymy)
 			return equals((Synonymy)obj);
+		else if(obj instanceof NameCluster)
+			return equals((NameCluster)obj);
 		else
 			return false;
 	}

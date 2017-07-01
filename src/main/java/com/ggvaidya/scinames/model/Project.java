@@ -349,21 +349,22 @@ public class Project {
 		//if(ds.getName().startsWith("aou_1_07"))
 		//	LOGGER.info("Referenced names for aou_1_07: " + ds.getReferencedNames().collect(Collectors.toList()));
 		
-		// Old debugging code, leaving it just in case I need something like this again.
+		/*
 		if(ds.getName().startsWith("aou_1.csv")) {
 			LOGGER.fine("aou_1.csv has been loaded: " + ds.getReferencedNames().count());
-			LOGGER.fine("Name clusters created: " + nameClusterManager.getClusters().count());
 			LOGGER.fine("Is Tringa ptilocnemis referenced? " + 
 				ds.getReferencedNames().filter(n -> n.equals(Name.get("Tringa", "ptilocnemis")))
 					.collect(Collectors.toList())
 			);
+			LOGGER.fine("Name clusters created: " + getNameClusterManager().getClusters().count());
 			LOGGER.fine("Name clusters created for Tringa ptilocnemis: " + 
-				nameClusterManager.getClusters()
+				getNameClusterManager().getClusters()
 					.filter(cluster -> cluster.contains(Name.get("Tringa", "ptilocnemis")))
 					.collect(Collectors.toList())
 			);
-			LOGGER.fine("Name cluster for '" + Name.get("Tringa", "ptilocnemis") + "': " + nameClusterManager.getCluster(Name.get("Tringa", "ptilocnemis")));
+			LOGGER.fine("Name cluster for '" + Name.get("Tringa", "ptilocnemis") + "': " + getNameClusterManager().getCluster(Name.get("Tringa", "ptilocnemis")));
 		}
+		*/
 		
 		// Add names referenced in this dataset to our project-level indices.
 		ds.getReferencedNames().forEach((Name n) -> {
@@ -772,6 +773,6 @@ public class Project {
 			).collect(Collectors.joining(" -> "))
 				
 			// Allows change sequences to be uniquely identified
-			+ " [starting with change id " + perfectlyReversingChanges.get(0).getId() + "]";
+			+ " [starting with change " + perfectlyReversingChanges.get(0) + "]";
 	}
 }

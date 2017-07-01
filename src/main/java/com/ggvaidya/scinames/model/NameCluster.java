@@ -54,6 +54,36 @@ public class NameCluster {
 	// i.e. contains genus-only names.
 	private boolean containsSuperspecificNames = false;
 	
+	// Check equality with another name cluster.
+	public boolean equals(NameCluster cluster) {
+		return 
+			cluster.names.equals(names) &&
+			cluster.foundIn.equals(foundIn)
+		;
+	}
+	
+	@Override
+	public boolean equals(Object obj) {
+		if(obj instanceof NameCluster)
+			return equals((NameCluster)obj);
+		else
+			return false;
+	}
+	
+	// Based on http://stackoverflow.com/a/113600/27310
+	public int hashCode() {
+		int result = 918731;
+		
+		result = 37 * result + names.hashCode();
+		result = 37 * result + foundIn.hashCode();
+		
+		return result;
+	}
+	
+	public String getHashCodeAsString() {
+		return Integer.toHexString(hashCode());
+	}
+	
 	/* Accessors */
 	
 	public UUID getId() {

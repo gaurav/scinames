@@ -122,7 +122,12 @@ public final class LumpsAndSplitsView {
 		// Precalculate.
 		Project project = projectView.getProject();		
 		Table<Change, String, String> precalc = HashBasedTable.create();
+		
+		int index = 0;
 		for(Change change: changes) {
+			index++;
+			
+			precalc.put(change, "index", String.valueOf(index));
 			precalc.put(change, "id", change.getId().toString());
 			precalc.put(change, "type", change.getType().toString());
 			precalc.put(change, "from", change.getFromStream().map(n -> n.getFullName()).collect(Collectors.joining(", ")));
@@ -183,7 +188,7 @@ public final class LumpsAndSplitsView {
 		}
 		
 		// Set up columns.
-		cols.add(createTableColumnForTable("id", 40.0, precalc));		
+		cols.add(createTableColumnForTable("index", 40.0, precalc));		
 		cols.add(createTableColumnForTable("type", 40.0, precalc));
 		cols.add(createTableColumnForTable("from", 200.0, precalc));
 		cols.add(createTableColumnForTable("to", 200.0, precalc));
@@ -207,5 +212,9 @@ public final class LumpsAndSplitsView {
 		cols.add(createTableColumnForTable("perfectly_reverts_a_previous_change", 100.0, precalc));
 		cols.add(createTableColumnForTable("perfectly_reverts_a_later_change", 100.0, precalc));		
 		// cols.add(createTableColumnForTable("perfectly_reverts_all_previous_changes", 100.0, precalc));
+		
+		// Mainly useful for linking data from this table with others generated in the same run,
+		// uncomment if needed I guess.
+		//cols.add(createTableColumnForTable("id", 40.0, precalc));		
 	}
 }

@@ -484,7 +484,19 @@ public class Dataset implements Citable, Comparable<Dataset> {
 		Map<DatasetRow, Set<Name>> namesByRow = getNamesByRow();
 		long rowsWithNames = namesByRow.values().stream().filter(names -> names.size() > 0).count();
 		
-		return getRowCount() + " rows (" + ((double)rowsWithNames/getRowCount() * 100) + "% named with " + getNamesInAllRows().size() + " distinct names)";
+		int rowCount = getRowCount();
+		
+		if(rowCount <= 0)
+			return "No rows";
+		else {
+			String pcNamed;
+			if(rowsWithNames == rowCount)
+				pcNamed = "Completely (100%)";
+			else
+				pcNamed = ((double)rowsWithNames/rowCount * 100) + "%";
+			
+			return rowCount + " rows (" + pcNamed + " named with " + getNamesInAllRows().size() + " distinct names)";
+		}
 	}
 	
 	// Calculating this ourselves is too slow, so we hook into Project's cache.
