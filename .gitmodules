@@ -1,3 +1,6 @@
 [submodule "Test Cases/AOU Checklists"]
 	path = Test Cases/AOU Checklists
 	url = git@github.com:gaurav/aou_checklists.git
+[submodule "Test Cases/Diatoms"]
+	path = Test Cases/Diatoms
+	url = git@github.com:gaurav/ansp_usgs_diatoms.git
