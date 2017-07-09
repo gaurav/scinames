@@ -340,7 +340,7 @@ public class ProjectSceneController {
 		FileChooser chooser = new FileChooser();
 		chooser.setTitle("Choose file to add to project ...");
 		chooser.getExtensionFilters().addAll(
-			new FileChooser.ExtensionFilter("Dataset file (*.csv, *.tsv)", "*.csv", "*.tsv"),
+			new FileChooser.ExtensionFilter("Dataset file (*.csv, *.tsv, *.xls, *.xlsx)", "*.csv", "*.tsv", "*.xls", "*.xlsx"),
 			new FileChooser.ExtensionFilter("TaxDiff file (*.txt)", "*.txt"),			
 			new FileChooser.ExtensionFilter("Checklist (*.txt)", "*.txt")
 		);

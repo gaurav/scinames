@@ -46,6 +46,7 @@ import org.w3c.dom.Element;
 import com.ggvaidya.scinames.model.rowextractors.NameExtractor;
 import com.ggvaidya.scinames.model.rowextractors.NameExtractorFactory;
 import com.ggvaidya.scinames.model.rowextractors.NameExtractorParseException;
+import com.ggvaidya.scinames.util.ExcelImporter;
 import com.ggvaidya.scinames.util.ModificationTimeProperty;
 import com.ggvaidya.scinames.util.SimplifiedDate;
 
@@ -685,58 +686,66 @@ public class Dataset implements Citable, Comparable<Dataset> {
 	 * @throws IOException If there was an error loading the file.
 	 */
 	public static Dataset loadFromFile(Project proj, File f) throws IOException {
-		String firstLine;
-		try (LineNumberReader r = new LineNumberReader(new FileReader(f))) {
-			// Load the first line to try to identify the file type.
-			firstLine = r.readLine();
-		}
+		Dataset ds;
 		
-		// The most basic type of file is a TaxDiff file, which always
-		// begins with:
-		if(ChecklistDiff.pTaxDiffFirstLine.matcher(firstLine).matches()) {
-			return ChecklistDiff.fromTaxDiffFile(f);
-		}
-		
-		// Any file with a '.csv' extension must be a Dataset.
+		// Excel file? Handle separately!
 		String fileName = f.getName().toLowerCase();
-		if(fileName.endsWith(".csv") || fileName.endsWith(".tsv")) {
+		if(fileName.endsWith(".xlsx") || fileName.endsWith(".xls")) {
+			ds = new ExcelImporter(f).asDataset(0);
+		} else if(fileName.endsWith(".csv") || fileName.endsWith(".tsv")) {
 			CSVFormat csvFormat = CSVFormat.DEFAULT;
 			if(fileName.endsWith(".tsv"))
 				csvFormat = CSVFormat.TDF
 					.withQuote(null); // We need this to load the AmphibiaWeb files.
 			
-			Dataset ds = Dataset.fromCSV(csvFormat, f);
-			
-			// Try all name extractors, see which one matches the most names.
-			Set<List<NameExtractor>> allAvailableNameExtractors = proj.getNameExtractors();
-			allAvailableNameExtractors.add(NameExtractorFactory.getDefaultExtractors());
-
-			LOGGER.info("Starting name extractor comparisons");
-			List<NameExtractor> bestExtractor = null;
-			long bestExtractorCount = Long.MIN_VALUE;
-			for(List<NameExtractor> extractor: allAvailableNameExtractors) {
-				long count = ds.rows.stream().flatMap(
-						row -> NameExtractorFactory.extractNamesUsingExtractors(extractor, row).stream()
-				).distinct().count();
-
-				if(count > bestExtractorCount) {
-					bestExtractorCount = count;
-					bestExtractor = extractor;
-				}
-			}
-			LOGGER.info("Finished name extractor comparisons: best extractor at " + bestExtractorCount + " names was " + NameExtractorFactory.serializeExtractorsToString(bestExtractor));
-			
-			try {
-				ds.setNameExtractorsString(NameExtractorFactory.serializeExtractorsToString(bestExtractor));
-			} catch(NameExtractorParseException ex) {
-				// Forget about it. We'll go with the default.
+			ds = Dataset.fromCSV(csvFormat, f);
+		} else {
+			// Text-based file? Try using the first line to figure out what's going on.
+			String firstLine;
+			try (LineNumberReader r = new LineNumberReader(new FileReader(f))) {
+				// Load the first line to try to identify the file type.
+				firstLine = r.readLine();
 			}
 			
-			return ds;
+			// The most basic type of file is a TaxDiff file, which always
+			// begins with:
+			if(ChecklistDiff.pTaxDiffFirstLine.matcher(firstLine).matches()) {
+				// Note that checklist diffs don't need name extractors!
+				return ChecklistDiff.fromTaxDiffFile(f);
+			}
+
+			// If all else fails, try loading it as a checklist. Also don't need name extractors!
+			return Checklist.fromListInFile(f);
 		}
 		
-		// If all else fails, try to parse this as a list of recognized species.
-		return Checklist.fromListInFile(f);
+		// If we're here, we need name extractors.
+			
+		// Try all name extractors, see which one matches the most names.
+		Set<List<NameExtractor>> allAvailableNameExtractors = proj.getNameExtractors();
+		allAvailableNameExtractors.add(NameExtractorFactory.getDefaultExtractors());
+
+		LOGGER.info("Starting name extractor comparisons");
+		List<NameExtractor> bestExtractor = null;
+		long bestExtractorCount = Long.MIN_VALUE;
+		for(List<NameExtractor> extractor: allAvailableNameExtractors) {
+			long count = ds.rows.stream().flatMap(
+					row -> NameExtractorFactory.extractNamesUsingExtractors(extractor, row).stream()
+			).distinct().count();
+
+			if(count > bestExtractorCount) {
+				bestExtractorCount = count;
+				bestExtractor = extractor;
+			}
+		}
+		LOGGER.info("Finished name extractor comparisons: best extractor at " + bestExtractorCount + " names was " + NameExtractorFactory.serializeExtractorsToString(bestExtractor));
+		
+		try {
+			ds.setNameExtractorsString(NameExtractorFactory.serializeExtractorsToString(bestExtractor));
+		} catch(NameExtractorParseException ex) {
+			// Forget about it. We'll go with the default.
+		}
+		
+		return ds;		
 	}
 	
 	/* Constructor  */

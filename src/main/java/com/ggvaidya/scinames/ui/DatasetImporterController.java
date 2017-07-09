@@ -193,7 +193,7 @@ public class DatasetImporterController implements Initializable {
 		if(currentFile == null) return;
 		
 		try {
-			currentDataset = loadDataset(currentFile);
+			currentDataset = loadDataset();
 		} catch(IOException ex) {
 			statusTextField.setBackground(BACKGROUND_RED);
 			statusTextField.setText("ERROR opening file: " + ex);
@@ -242,20 +242,21 @@ public class DatasetImporterController implements Initializable {
 		fileFormatComboBox.getSelectionModel().clearAndSelect(1);
 	}
 		
-	private Dataset loadDataset(File f) throws IOException {
+	private Dataset loadDataset() throws IOException {
 		String format = fileFormatComboBox.getSelectionModel().getSelectedItem();
 		CSVFormat csvFormat = null;
 		if(format == null) {
 			csvFormat = CSVFormat.DEFAULT;
 		} else {
 			switch(format) {
-				case "List of names": 		return Checklist.fromListInFile(f);
+				case "List of names": 		return Checklist.fromListInFile(currentFile);
 				case "Default CSV": 		csvFormat = CSVFormat.DEFAULT; break;
 				case "Microsoft Excel CSV":	csvFormat = CSVFormat.EXCEL; break;
 				case "RFC 4180 CSV":		csvFormat = CSVFormat.RFC4180; break;
 				case "Oracle MySQL CSV": 	csvFormat = CSVFormat.MYSQL; break;
 				case "Tab-delimited file": 	csvFormat = CSVFormat.TDF; break;
-				case "TaxDiff file":		return ChecklistDiff.fromTaxDiffFile(f);
+				case "TaxDiff file":		return ChecklistDiff.fromTaxDiffFile(currentFile);
+				case "Excel file":			return new ExcelImporter(currentFile).asDataset(0);
 			}
 		}
 		
@@ -264,7 +265,7 @@ public class DatasetImporterController implements Initializable {
 			csvFormat = CSVFormat.DEFAULT;
 		}
 		
-		return Dataset.fromCSV(csvFormat, f);
+		return Dataset.fromCSV(csvFormat, currentFile);
 	}
 	
 	@FXML
