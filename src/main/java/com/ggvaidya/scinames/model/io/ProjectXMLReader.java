@@ -292,6 +292,18 @@ public class ProjectXMLReader {
 				StartElement start = nextTag.asStartElement();
 				
 				switch (start.getName().getLocalPart()) {
+					case "properties":
+						List<XMLKeyValue> properties = getTagSeries(reader, "property");
+						
+						dataset.propertiesProperty().putAll(
+							properties.stream().collect(Collectors.toMap(
+								kv -> kv.getAttributes().get("name"),
+								kv -> kv.getValue()
+							))
+						);
+						
+						break;
+				
 					case "changes":
 						while(reader.hasNext()) {
 							nextTag = reader.nextTag();

@@ -58,9 +58,11 @@ import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
+import javafx.beans.property.StringPropertyBase;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
+import javafx.collections.ObservableMap;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 
@@ -97,7 +99,8 @@ public class Dataset implements Citable, Comparable<Dataset> {
 	private ObservableList<DatasetColumn> columns = FXCollections.observableArrayList();
 	private ObservableList<DatasetRow> rows = FXCollections.observableList(new LinkedList<>());
 	private ObservableList<Change> explicitChanges = FXCollections.observableList(new LinkedList<>());
-	private ObservableList<Change> implicitChanges = FXCollections.observableList(new LinkedList<>());	
+	private ObservableList<Change> implicitChanges = FXCollections.observableList(new LinkedList<>());
+	private ObservableMap<String, String> properties = FXCollections.observableHashMap();
 	
 	{
 		/* Make sure that certain changes trigger modifications. */
@@ -107,6 +110,7 @@ public class Dataset implements Citable, Comparable<Dataset> {
 		columns.addListener((Observable c) -> lastModified.modified());
 		rows.addListener((Observable c) -> lastModified.modified());
 		explicitChanges.addListener((Observable o) -> lastModified.modified());
+		properties.addListener((Observable c) -> lastModified.modified());
 	}
 	
 	/* Accessors */
@@ -126,6 +130,8 @@ public class Dataset implements Citable, Comparable<Dataset> {
 	public StringProperty typeProperty() { return typeProperty; }
 	public String getType() { return typeProperty.getValue(); }
 	public boolean isChecklist() { return getType().equals(TYPE_CHECKLIST); }
+	public Map<String, String> getProperties() { return properties; }
+	public ObservableMap<String, String> propertiesProperty() { return properties; }
 	
 	/* Higher order accessors */
 	public boolean isChangeImplicit(Change ch) {
@@ -150,6 +156,37 @@ public class Dataset implements Citable, Comparable<Dataset> {
 		
 		// No? Always pick us, I guess.
 		return -1;
+	}
+	
+	/**
+	 * Used to store notes associated with this change. This is actually a property ("note"), so
+	 * we create a StringProperty to wrap it.
+	 */
+	public StringProperty noteProperty() {
+		Dataset dataset = this;
+		
+		return new StringPropertyBase() {
+			@Override
+			public String getName() {
+				return "note";
+			}
+			
+			@Override
+			public Object getBean() {
+				return dataset;
+			}
+			
+			@Override
+			public String get() {
+				return dataset.getProperties().get("note");
+			}
+
+			@Override
+			public void set(String value) {
+				dataset.getProperties().put("note", value);
+				dataset.lastModified.modified();
+			}
+		};
 	}
 	
 	@Override public void setDate(SimplifiedDate sd) { 
@@ -822,10 +859,17 @@ public class Dataset implements Citable, Comparable<Dataset> {
 		datasetElement.setAttribute("name", getName());
 		datasetElement.setAttribute("type", getType());
 		dateProperty.getValue().setDateAttributesOnElement(datasetElement);
+		datasetElement.setAttribute("nameExtractors", getNameExtractorsAsString());
 		
 		// Properties
-		//  - 1. name extractor
-		datasetElement.setAttribute("nameExtractors", getNameExtractorsAsString());
+		Element propertiesElement = doc.createElement("properties");
+		for(String key: getProperties().keySet()) {
+			Element propertyElement = doc.createElement("property");
+			propertyElement.setAttribute("name", key);
+			propertyElement.setTextContent(getProperties().get(key));
+			propertiesElement.appendChild(propertyElement);
+		}
+		datasetElement.appendChild(propertiesElement);
 		
 		Element changesElement = doc.createElement("changes");
 		for(Change ch: explicitChanges) {

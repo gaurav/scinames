@@ -26,6 +26,7 @@ import java.util.stream.Collectors;
 
 import com.ggvaidya.scinames.SciNames;
 import com.ggvaidya.scinames.complexquery.SearchView;
+import com.ggvaidya.scinames.model.Change;
 import com.ggvaidya.scinames.model.Dataset;
 import com.ggvaidya.scinames.model.Project;
 import com.ggvaidya.scinames.summary.ChangeFiltersView;
@@ -268,6 +269,13 @@ public class ProjectSceneController {
 		explicitChangesCount.setPrefWidth(400);
 		explicitChangesCount.setCellValueFactory(cvf -> new ReadOnlyStringWrapper(cvf.getValue().getChangesCountSummary(projectView.getProject())));
 		cols.add(explicitChangesCount);
+		
+		TableColumn<Dataset, String> colNote = new TableColumn<>("Note");
+		colNote.setCellFactory(TextFieldTableCell.forTableColumn());
+		colNote.setCellValueFactory(new PropertyValueFactory<>("note"));
+		colNote.setPrefWidth(100.0);
+		colNote.setEditable(true);
+		cols.add(colNote);
 				
 		// Set up timepointTable itself.
 		timepointTable.setEditable(true);
