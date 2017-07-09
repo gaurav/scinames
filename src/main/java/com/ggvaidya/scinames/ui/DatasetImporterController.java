@@ -34,6 +34,8 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.apache.commons.csv.CSVFormat;
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.usermodel.Sheet;
 
 import com.ggvaidya.scinames.model.Checklist;
 import com.ggvaidya.scinames.model.ChecklistDiff;
@@ -43,6 +45,7 @@ import com.ggvaidya.scinames.model.DatasetRow;
 import com.ggvaidya.scinames.model.Project;
 import com.ggvaidya.scinames.model.rowextractors.NameExtractorFactory;
 import com.ggvaidya.scinames.model.rowextractors.NameExtractorParseException;
+import com.ggvaidya.scinames.util.ExcelImporter;
 
 import javafx.beans.InvalidationListener;
 import javafx.beans.property.BooleanProperty;
@@ -120,6 +123,53 @@ public class DatasetImporterController implements Initializable {
 		filePreviewTextArea.setText("");
 		if(currentFile == null) return;
 		
+		if(currentFile.getName().endsWith("xls") || currentFile.getName().endsWith("xlsx")) {
+			// Excel files are special! We need to load it special and then preview it.
+			ExcelImporter imp;
+			
+			String excelPreviewText;
+			try {
+				imp = new ExcelImporter(currentFile);
+				List<Sheet> sheets = imp.getWorksheets();
+				
+				StringBuffer preview = new StringBuffer();
+				preview.append("Excel file version " + imp.getWorkbook().getSpreadsheetVersion() + " containing " + sheets.size() + " sheets.\n");
+				for(Sheet sh: sheets) {
+					preview.append(" - " + sh.getSheetName() + " contains " + sh.getPhysicalNumberOfRows() + " rows.\n");
+					
+					// No rows?
+					if(sh.getPhysicalNumberOfRows() == 0) continue;
+					
+					// Header row?
+					Row headerRow = sh.getRow(0);
+					boolean headerEmitted = false;
+					
+					for(int rowIndex = 1; rowIndex < sh.getPhysicalNumberOfRows(); rowIndex++) {
+						if(rowIndex >= 10) break;
+						
+						Row row = sh.getRow(rowIndex);
+						
+						if(!headerEmitted) {
+							preview.append("  - " + String.join("\t", ExcelImporter.getCellsAsValues(headerRow)) + "\n");
+							headerEmitted = true;
+						}
+						preview.append("  - " + String.join("\t", ExcelImporter.getCellsAsValues(row)) + "\n");
+					}
+			
+					preview.append("\n");
+				}
+				
+				excelPreviewText = preview.toString();
+			} catch(IOException ex) {
+				excelPreviewText = "Could not open '" + currentFile + "': " + ex;
+			}
+			
+			filePreviewTextArea.setText(excelPreviewText);
+			
+			return;
+		}
+		
+		// If we're here, then this is some sort of text file, so let's preview the text content directly.
 		try {
 			LineNumberReader reader = new LineNumberReader(new BufferedReader(new FileReader(currentFile)));
 		
@@ -186,7 +236,8 @@ public class DatasetImporterController implements Initializable {
 			"RFC 4180 CSV",
 			"Oracle MySQL CSV",
 			"Tab-delimited file",
-			"TaxDiff file"
+			"TaxDiff file",
+			"Excel file"
 		);
 		fileFormatComboBox.getSelectionModel().clearAndSelect(1);
 	}
@@ -223,10 +274,14 @@ public class DatasetImporterController implements Initializable {
 			new FileChooser.ExtensionFilter("Comma-separated values (CSV) file", "*.csv"),				
 			new FileChooser.ExtensionFilter("Tab-delimited values file", "*.txt", "*.tab", "*.tsv"),
 			new FileChooser.ExtensionFilter("List of names", "*.txt"),
-			new FileChooser.ExtensionFilter("TaxDiff file", "*.taxdiff")
+			new FileChooser.ExtensionFilter("TaxDiff file", "*.taxdiff"),
+			new FileChooser.ExtensionFilter("Excel file", "*.xls", "*.xlsx")
 		);
 		
 		currentFile = chooser.showOpenDialog(datasetImporterView.getStage());
+		if(currentFile == null)
+			return;
+		
 		filePathTextField.setText(currentFile.getAbsolutePath());
 		String filterDesc = chooser.getSelectedExtensionFilter().getDescription();
 		
@@ -238,6 +293,8 @@ public class DatasetImporterController implements Initializable {
 			fileFormatComboBox.getSelectionModel().select("List of names");
 		} else if(filterDesc.startsWith("TaxDiff")) {
 			fileFormatComboBox.getSelectionModel().select("TaxDiff file");
+		} else if(filterDesc.startsWith("Excel")) {
+			fileFormatComboBox.getSelectionModel().select("Excel file");
 		}
 		
 		displayPreview();
