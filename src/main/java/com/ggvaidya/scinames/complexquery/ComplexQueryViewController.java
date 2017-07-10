@@ -42,7 +42,7 @@ import java.util.stream.Stream;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVPrinter;
 
-import com.ggvaidya.scinames.dataset.DatasetView;
+import com.ggvaidya.scinames.dataset.DatasetChangesView;
 import com.ggvaidya.scinames.model.Change;
 import com.ggvaidya.scinames.model.Dataset;
 import com.ggvaidya.scinames.model.DatasetColumn;
@@ -137,7 +137,7 @@ public class ComplexQueryViewController implements Initializable {
 					// Be the change you want to see in the world.
 					Change ch = (Change) row;
 					
-					DatasetView view = new DatasetView(projectView, ch);
+					DatasetChangesView view = new DatasetChangesView(projectView, ch);
 					view.getStage().show();
 				} else {
 					LOGGER.warning("Could not find handler for double-clicking on " + row);

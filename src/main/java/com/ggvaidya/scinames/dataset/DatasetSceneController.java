@@ -82,12 +82,12 @@ import javafx.stage.Stage;
 public class DatasetSceneController {
 	private static final Logger LOGGER = Logger.getLogger(DatasetSceneController.class.getSimpleName());
 	
-	private DatasetView datasetView;
+	private DatasetChangesView datasetView;
 	private Dataset dataset;
 	
 	public DatasetSceneController() {}
 
-	public void setTimepointView(DatasetView tv) {
+	public void setTimepointView(DatasetChangesView tv) {
 		datasetView = tv;
 		dataset = tv.getDataset();
 		

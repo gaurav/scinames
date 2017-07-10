@@ -40,7 +40,7 @@ import java.util.stream.Stream;
 
 import org.apache.commons.csv.CSVFormat;
 
-import com.ggvaidya.scinames.dataset.DatasetView;
+import com.ggvaidya.scinames.dataset.DatasetChangesView;
 import com.ggvaidya.scinames.model.Checklist;
 import com.ggvaidya.scinames.model.ChecklistDiff;
 import com.ggvaidya.scinames.model.Dataset;
@@ -215,7 +215,7 @@ public class DatasetEditorController implements Initializable {
 	}
 	
 	@FXML private void editChanges(ActionEvent e) {
-		DatasetView view = new DatasetView(datasetEditorView.getProjectView(), dataset);
+		DatasetChangesView view = new DatasetChangesView(datasetEditorView.getProjectView(), dataset);
 		view.getStage().show();
 	}
 }

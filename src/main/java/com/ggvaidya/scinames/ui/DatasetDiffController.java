@@ -77,9 +77,6 @@ public class DatasetDiffController implements Initializable {
 	private static final DatasetColumn DATASET_COLUMN_BINOMIAL_NAME_CLUSTER = DatasetColumn.fakeColumnFor("Binomial name cluster for extracted scientific name");
 	private static final DatasetColumn DATASET_COLUMN_NAME_SPECIFIC_EPITHET = DatasetColumn.fakeColumnFor("Subspecific epithet only");
 	
-	
-	private Dataset dataset = null;
-	
 	private DatasetDiffView datasetDiffView;
 	public void setDatasetDiffView(DatasetDiffView ddv) {
 		datasetDiffView = ddv;
@@ -102,7 +99,15 @@ public class DatasetDiffController implements Initializable {
 		byUniqueComboBox.setItems(byUniques);
 		byUniqueComboBox.getSelectionModel().clearAndSelect(0);
 	}
-			
+	
+	public void setFirst(Dataset ds) {
+		dataset1ComboBox.getSelectionModel().select(ds);
+	}
+
+	public void setSecond(Dataset ds) {
+		dataset2ComboBox.getSelectionModel().select(ds);
+	}
+	
 	/**
 	 * Initializes the controller class.
 	 */

@@ -385,27 +385,29 @@ public class Project {
 	
 	/* Name cluster manager! */
 	public NameClusterManager getNameClusterManager() {
-		if(nameClusterManager == null) {
-			LOGGER.info("New name cluster manager calculation triggered.");
-
-			// Recreate a name cluster manager based on all the renames in the project.
-			nameClusterManager = new NameClusterManager();
-			
-			for(Dataset ds: getDatasets()) {
-				// Add all referenced names so they'll show up at least once.
-				ds.getReferencedNames().forEach(n -> nameClusterManager.addCluster(new NameCluster(ds, n)));
-			
-				// Add all renames as synonymies, building up clusters as we go.
-				ds.getChanges(this).filter(ch -> ch.getType().equals(ChangeType.RENAME)).forEach(c ->
-					c.getFrom().forEach(from ->
-						c.getTo().forEach(
-							to -> nameClusterManager.addCluster(new Synonymy(from, to, c.getDataset()))
+		synchronized(this) {
+			if(nameClusterManager == null) {
+				LOGGER.info("New name cluster manager calculation triggered.");
+	
+				// Recreate a name cluster manager based on all the renames in the project.
+				nameClusterManager = new NameClusterManager();
+				
+				for(Dataset ds: getDatasets()) {
+					// Add all referenced names so they'll show up at least once.
+					ds.getReferencedNames().forEach(n -> nameClusterManager.addCluster(new NameCluster(ds, n)));
+				
+					// Add all renames as synonymies, building up clusters as we go.
+					ds.getChanges(this).filter(ch -> ch.getType().equals(ChangeType.RENAME)).forEach(c ->
+						c.getFrom().forEach(from ->
+							c.getTo().forEach(
+								to -> nameClusterManager.addCluster(new Synonymy(from, to, c.getDataset()))
+							)
 						)
-					)
-				);
+					);
+				}
+				
+				LOGGER.info("New name cluster manager calculation completed.");
 			}
-			
-			LOGGER.info("New name cluster manager calculation completed.");
 		}
 		
 		return nameClusterManager; 

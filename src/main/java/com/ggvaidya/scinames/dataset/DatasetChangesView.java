@@ -31,14 +31,14 @@ import javafx.stage.Stage;
  *
  * @author Gaurav Vaidya <gaurav@ggvaidya.com>
  */
-public class DatasetView {
+public class DatasetChangesView {
 	private ProjectView projectView;
 	private Dataset timepoint;
 	private Stage stage;
 	private Scene scene;
 	private DatasetSceneController controller;
 
-	public DatasetView(ProjectView pv, Dataset tp) {
+	public DatasetChangesView(ProjectView pv, Dataset tp) {
 		projectView = pv;
 		timepoint = tp;
 		stage = new Stage();
@@ -59,7 +59,7 @@ public class DatasetView {
 		stage.setScene(scene);
 	}
 	
-	public DatasetView(ProjectView pv, Change ch) {
+	public DatasetChangesView(ProjectView pv, Change ch) {
 		this(pv, ch.getDataset());
 		
 		// select this particular change

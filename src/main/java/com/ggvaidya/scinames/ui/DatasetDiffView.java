@@ -59,6 +59,13 @@ public class DatasetDiffView {
 		stage.setTitle("Dataset comparison");
 		stage.setScene(scene);
 	}
+	
+	public DatasetDiffView(ProjectView pv, Dataset first, Dataset second) {
+		this(pv);
+		
+		controller.setFirst(first);
+		controller.setSecond(second);
+	}
 
 	public Stage getStage() {
 		return stage;

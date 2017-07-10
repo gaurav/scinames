@@ -21,17 +21,24 @@ import java.io.IOException;
 import java.time.format.DateTimeParseException;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Consumer;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
+import javax.swing.JMenuItem;
+import javax.swing.JPopupMenu;
+
 import com.ggvaidya.scinames.SciNames;
 import com.ggvaidya.scinames.complexquery.SearchView;
+import com.ggvaidya.scinames.dataset.DatasetSceneController;
+import com.ggvaidya.scinames.dataset.DatasetChangesView;
 import com.ggvaidya.scinames.model.Change;
 import com.ggvaidya.scinames.model.Dataset;
 import com.ggvaidya.scinames.model.Project;
 import com.ggvaidya.scinames.summary.ChangeFiltersView;
 import com.ggvaidya.scinames.summary.ChangesListView;
 import com.ggvaidya.scinames.summary.DatasetSimilarityView;
+import com.ggvaidya.scinames.summary.DatasetTabularView;
 import com.ggvaidya.scinames.summary.LumpsAndSplitsView;
 import com.ggvaidya.scinames.summary.NameClustersView;
 import com.ggvaidya.scinames.summary.NameStabilityView;
@@ -45,8 +52,11 @@ import javafx.beans.property.ReadOnlyStringWrapper;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
 import javafx.fxml.FXML;
+import javafx.scene.Node;
 import javafx.scene.control.Alert;
+import javafx.scene.control.ContextMenu;
 import javafx.scene.control.Menu;
 import javafx.scene.control.MenuBar;
 import javafx.scene.control.MenuItem;
@@ -285,16 +295,40 @@ public class ProjectSceneController {
 			TableRow<Dataset> row = new TableRow<>();
 			
 			row.setOnMouseClicked(event -> {
-				if(event.getClickCount() == 2 && !row.isEmpty()) {
-					Dataset tp = row.getItem();
+				if(row.isEmpty()) return;
+				Dataset dataset = row.getItem();
+				
+				if(event.getClickCount() == 1 && event.isPopupTrigger()) {
+					ContextMenu contextMenu = new ContextMenu();
 					
-					projectView.openDetailedView(tp);
+					Project project = projectView.getProject();
+					contextMenu.getItems().add(menuItemThat("Display dataset", evt -> new DatasetEditorView(projectView, dataset).getStage().show()));
+					contextMenu.getItems().add(menuItemThat("Display changes", evt -> new DatasetChangesView(projectView, dataset).getStage().show()));
+					
+					Optional<Dataset> datasetFirst = project.getFirstDataset();
+					if(datasetFirst.isPresent())
+						contextMenu.getItems().add(menuItemThat("Diff with first", evt -> new DatasetDiffView(projectView, datasetFirst.get(), dataset).getStage().show()));
+					
+					Optional<Dataset> datasetLast = project.getLastDataset();
+					if(datasetLast.isPresent())
+						contextMenu.getItems().add(menuItemThat("Diff with last", evt -> new DatasetDiffView(projectView, dataset, datasetLast.get()).getStage().show()));
+					
+					contextMenu.show(projectView.getScene().getWindow(), event.getScreenX(), event.getScreenY());
+				} else if(event.getClickCount() == 2) {
+					// So much easier.
+					projectView.openDetailedView(dataset);
 				}
 			});
 			
 			return row;
 		});
 
+	}
+	
+	private MenuItem menuItemThat(String name, EventHandler<ActionEvent> action) {
+		MenuItem mn = new MenuItem(name);
+		mn.setOnAction(action);
+		return mn;
 	}
 	
 	/* FXML variables */

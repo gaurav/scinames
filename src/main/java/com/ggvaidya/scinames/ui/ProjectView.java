@@ -22,7 +22,7 @@ import java.time.Instant;
 import java.util.logging.Logger;
 
 import com.ggvaidya.scinames.SciNames;
-import com.ggvaidya.scinames.dataset.DatasetView;
+import com.ggvaidya.scinames.dataset.DatasetChangesView;
 import com.ggvaidya.scinames.model.Change;
 import com.ggvaidya.scinames.model.Dataset;
 import com.ggvaidya.scinames.model.Project;
@@ -262,7 +262,7 @@ public class ProjectView {
 	}
 	
 	public void openDetailedView(Change ch) {
-		DatasetView view = new DatasetView(this, ch);
+		DatasetChangesView view = new DatasetChangesView(this, ch);
 		view.getStage().show();
 	}
 }
