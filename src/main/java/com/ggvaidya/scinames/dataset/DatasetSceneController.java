@@ -19,8 +19,11 @@ package com.ggvaidya.scinames.dataset;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.lang.reflect.Array;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -54,13 +57,16 @@ import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
+import javafx.collections.ObservableMap;
 import javafx.collections.ObservableSet;
+import javafx.collections.transformation.SortedList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.Alert;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
+import javafx.scene.control.MultipleSelectionModel;
 import javafx.scene.control.SelectionMode;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
@@ -92,135 +98,21 @@ public class DatasetSceneController {
 		dataset = tv.getDataset();
 		
 		// Reinitialize UI to the selected timepoint.
-		updateMainTextArea();
 		fillTableWithChanges(changesTableView, dataset);
-		additionalDataTypeChanged();
+		updateAdditionalData();
 	}
 	
 	/**
 	 * Initializes the controller class.
 	 */
 	public void initialize() {
-		updateMainTextArea();
-		
-		additionalDataCombobox.getItems().setAll(additionalDataTypeNames);
-		additionalDataCombobox.getSelectionModel().selectedItemProperty().addListener((Observable o) -> additionalDataTypeChanged());
-		// additionalDataCombobox.getSelectionModel().select("Data"); // Display the data first.
-		additionalDataCombobox.getSelectionModel().select(0);
-		
-		changesTableView.getSelectionModel().getSelectedItems().addListener(
-			(ListChangeListener<Change>) c -> additionalDataTypeChanged()
-		);
+		initAdditionalData();
 	}
 	
 	/*
 	 * User interface.
 	 */
-	@SuppressWarnings("rawtypes")
-	@FXML private TableView additionalDataTableView;
-	@SuppressWarnings("rawtypes")
-	@FXML private ListView additionalListView;
-	@FXML private ComboBox<String> additionalDataCombobox;
 	@FXML private TableView<Change> changesTableView;
-	
-	private void updateMainTextArea() {
-		// No timepoint, no content.
-		if(dataset == null) {
-			// mainTextArea.setText("No timepoint loaded.");
-			return;
-		}
-		
-		NameClusterManager nameClusterManager = datasetView.getProjectView().getProject().getNameClusterManager();
-		
-		// We have three sections: timepoint, changes and names.
-		StringBuilder timepointInfo = new StringBuilder();
-		StringBuilder changesInfo = new StringBuilder();
-		StringBuilder namesInfo = new StringBuilder();
-		Set<Name> allNames = new HashSet<>();
-		
-		// What do we know about this timepoint?
-		timepointInfo
-			.append("Timepoint: ").append(dataset.getCitation()).append(", published in ").append(dataset.getDate()).append("\n")
-			.append("Names: ").append(dataset.getNameCountSummary(datasetView.getProjectView().getProject())).append("\n")
-			.append("Binomial names: ").append(dataset.getBinomialCountSummary(datasetView.getProjectView().getProject())).append("\n")
-			.append("Explicit changes: ").append(dataset.getExplicitChangesCountSummary(datasetView.getProjectView().getProject())).append("\n")
-			.append("Implicit changes: ").append(dataset.getImplicitChangesCountSummary(datasetView.getProjectView().getProject())).append("\n")	
-		;
-		
-		// What do we know about the selected changes?
-		changesTableView.getSelectionModel().getSelectedItems().forEach((Object oChange) -> {
-			Change change = (Change) oChange;
-			changesInfo.append(" - ").append(change.toString()).append("\n");
-			allNames.addAll(change.getAllNames());
-		});
-		
-		// What do we know about the selected names?
-		// allNames.addAll(prevTimepointTableView.getSelectionModel().getSelectedItems());
-		// allNames.addAll(currTimepointTableView.getSelectionModel().getSelectedItems());		
-			
-		allNames.stream().sorted().forEach((Name name) -> {
-			String clusterInfo = "(not found in clusters)";
-			Optional<NameCluster> cluster = nameClusterManager.getCluster(name);
-			if(cluster.isPresent())
-				clusterInfo = cluster.get().toString();
-				
-			namesInfo.append(" - ").append(name.toString())
-				.append(" in ")
-				.append(clusterInfo)
-				.append("\n");
-			
-			Map<DatasetColumn, Set<String>> dataByColumn = datasetView.getProjectView().getProject().getDataForName(name);
-			for(DatasetColumn col: dataByColumn.keySet()) {
-				List<String> vals = new LinkedList<>(dataByColumn.get(col));
-				Collections.sort(vals);
-				
-				namesInfo.append("\t - ")
-					.append(col.getName())
-					.append(": ")
-					.append(String.join(", ", vals))
-					.append("\n");
-			}
-		});
-		
-		// Put it all together.
-		/*
-		mainTextArea.setText(
-			timepointInfo
-			.append("\n== Selected Changes ==\n").append(changesInfo)
-			.append("\n== Selected Names ==\n").append(namesInfo)
-			.toString()
-		);*/
-	}
-	
-	/*
-	private void fillTableWithNamesFrom(TableView tv, Dataset tp) {
-		tv.setEditable(false);
-		
-		NameClusterManager nameClusterManager = datasetView.getProjectView().getProject().getNameClusterManager();
-		
-		TableColumn<Name, String> colName = new TableColumn<>("Name");
-		colName.setCellValueFactory(new PropertyValueFactory<>("FullName"));
-		colName.setPrefWidth(250.0);
-		
-		TableColumn<Name, String> colCluster = new TableColumn<>("Cluster");
-		colCluster.setCellValueFactory(
-			(TableColumn.CellDataFeatures<Name, String> features) -> 
-				new ReadOnlyStringWrapper(
-					nameClusterManager.getClusters(Arrays.asList(features.getValue())).toString()
-				)
-		);
-		tv.getColumns().setAll(colName, colCluster);
-		
-		// TODO: for now, this only uses recognized names, but eventually we
-		// want all referenced names, and then to use some way of visually
-		// distinguishing the two.
-		if(tp != null) {
-			tv.setItems(FXCollections.observableList(tp.getRecognizedNames(datasetView.getProjectView().getProject()).collect(Collectors.toList())));
-		} else {
-			tv.setItems(FXCollections.emptyObservableList());
-		}
-		tv.getSortOrder().add(colName);
-	}*/
 	
 	private void fillTableWithChanges(TableView<Change> tv, Dataset tp) {
 		tv.setEditable(true);
@@ -324,259 +216,6 @@ public class DatasetSceneController {
 		tv.setItems(FXCollections.observableList(tp.getAllChanges().collect(Collectors.toList())));
 		tv.getSortOrder().add(colChangeType);
 	}
-	
-	/*
-	private void displayAssociatedData(ActionEvent evt) {
-		DatasetTabularView datasetView = new DatasetTabularView(dataset);
-		datasetView.getStage().show();
-	}*/
-	
-	private final List<String> additionalDataTypeNames = Arrays.asList(
-		"All recognized names",
-		"Citations",
-		"Data",
-		"Names with changes",
-		"Names with data"
-	);
-	
-	private void additionalDataTypeChanged() {
-		String selected = (String) additionalDataCombobox.getSelectionModel().getSelectedItem();
-		
-		@SuppressWarnings("rawtypes")
-		ListView listView = additionalListView;
-		@SuppressWarnings("rawtypes")
-		TableView tableView = additionalDataTableView;
-				
-		switch(selected) {
-			case "All recognized names":
-				showAllRecognizedNames(listView, tableView);			
-			
-			case "Citations":
-				showCitationsInTable(listView, tableView);
-				break;
-				
-			case "Data":
-				showDataInTable(listView, tableView);
-				break;
-				
-			case "Names with changes":
-				showNamesWithChangesInTable(listView, tableView);
-				break;
-				
-			case "Names with data":
-				showNamesWithDataInTable(listView, tableView);
-				break;
-		}
-	}
-	
-	private void showCitationsInTable(ListView listView, TableView tableView) {
-		tableView.getItems().clear();
-		
-		// TODO Add a viewer for citations
-	}
-	
-	private void showNamesWithChangesInTable(ListView<Name> listView, TableView tableView) {
-		// Clear table.
-		tableView.editableProperty().set(false);
-		tableView.getColumns().clear();
-		
-		// Choose all the names we're interested in showing off.
-		ObservableList<Change> selectedChanges = changesTableView.getSelectionModel().getSelectedItems();
-		Stream<Name> names = selectedChanges.stream().flatMap(ch -> ch.getAllNames().stream());
-		
-		// Put them into the treeView.
-		listView.getItems().setAll(names.sorted().collect(Collectors.toSet()));
-		listView.getSelectionModel().getSelectedItems().addListener((ListChangeListener<Name>) change -> {
-			/*
-			 * Displays all data associated with this Name.
-			 */
-
-			
-			// Set up table view
-			tableView.editableProperty().set(false);
-			
-			// Set up 
-			
-			// Set up columns.
-			ObservableList<TableColumn> cols = tableView.getColumns();
-			cols.clear();
-			
-			// Columns 
-			
-			// TODO provide this output
-			
-		});
-	}
-	
-	private void showNamesWithDataInTable(ListView<Name> listView, TableView tableView) {
-		// Clear table.
-		tableView.editableProperty().set(false);
-		tableView.getColumns().clear();
-		
-		// Choose all the names we're interested in showing off.
-		ObservableList<Change> selectedChanges = changesTableView.getSelectionModel().getSelectedItems();
-		Stream<Name> names = selectedChanges.stream().flatMap(ch -> ch.getAllNames().stream());
-		
-		// Put them into the treeView.
-		listView.getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
-		listView.getItems().setAll(names.sorted().collect(Collectors.toSet()));
-		listView.getSelectionModel().getSelectedItems().addListener((ListChangeListener<Name>) change -> {
-			/*
-			 * Displays all data associated with this Name.
-			 */
-			
-			Name name = (Name) listView.getSelectionModel().getSelectedItem();
-			Stream<Dataset> timepoints = datasetView.getProjectView().getProject().getDatasets().stream();
-			
-			// Set up table view
-			tableView.editableProperty().set(false);
-			
-			// Set up data.
-			
-			// Set up columns.
-			ObservableList<TableColumn> cols = tableView.getColumns();
-			cols.clear();
-			
-			// Columns 
-			
-			// TODO make this work at some point
-			
-		});
-	}
-	
-	private void showAllRecognizedNames(ListView<Name> listView, TableView<Name> tableView) {
-		// No project view? Don't do nothing.
-		if(datasetView == null || datasetView.getProjectView() == null)
-			return;
-		
-		// List view should be all recognized names.
-		Project project = datasetView.getProjectView().getProject();
-		
-		listView.getItems().setAll(FXCollections.observableArrayList(dataset.getRecognizedNames(project).sorted().collect(Collectors.toList())));
-		listView.getSelectionModel().clearAndSelect(0);
-		
-		// Setup table.
-		tableView.editableProperty().set(false);
-		
-		ObservableList<TableColumn<Name, ?>> cols = tableView.getColumns();
-		cols.clear();
-		
-		// Set up columns.
-		TableColumn<Name, String> colFullName = new TableColumn<>("Name");
-		colFullName.setCellValueFactory((TableColumn.CellDataFeatures<Name, String> features) -> {
-			Name name = features.getValue();
-					
-			return new ReadOnlyStringWrapper(name.getFullName());
-		});
-		colFullName.setPrefWidth(100.0);
-		cols.add(colFullName);
-		
-		NameClusterManager ncm = project.getNameClusterManager();
-		
-		TableColumn<Name, String> colNameCluster = new TableColumn<>("Name cluster");
-		colNameCluster.setCellValueFactory((TableColumn.CellDataFeatures<Name, String> features) -> {
-			Name name = features.getValue();
-					
-			Optional<NameCluster> nc = ncm.getCluster(name);
-			if(nc.isPresent())
-				return new ReadOnlyStringWrapper(nc.get().toString());
-			
-			LOGGER.severe("NO NAME CLUSTER FOUND FOR NAME '" + name + "'!!!");
-			return new ReadOnlyStringWrapper("No name cluster found");
-		});
-		colNameCluster.setPrefWidth(100.0);
-		cols.add(colNameCluster);
-		
-		TableColumn<Name, String> colNameClusterNames = new TableColumn<>("Name cluster names");
-		colNameCluster.setCellValueFactory((TableColumn.CellDataFeatures<Name, String> features) -> {
-			Name name = features.getValue();
-			
-			Optional<NameCluster> nc = ncm.getCluster(name);
-			if(nc.isPresent())
-				return new ReadOnlyStringWrapper(nc.get().getNames().toString());
-			
-			return new ReadOnlyStringWrapper("No name cluster found");
-		});
-		colNameClusterNames.setPrefWidth(200.0);
-		cols.add(colNameClusterNames);
-		
-		TableColumn<Name, String> colNameClusterFoundIn = new TableColumn("Name cluster found in");
-		colNameCluster.setCellValueFactory((TableColumn.CellDataFeatures<Name, String> features) -> {
-			Name name = features.getValue();
-			
-			Optional<NameCluster> nc = ncm.getCluster(name);
-			if(nc.isPresent())
-				return new ReadOnlyStringWrapper(nc.get().getFoundInSorted().toString());
-			
-			return new ReadOnlyStringWrapper("No name cluster found");
-		});
-		colNameClusterFoundIn.setPrefWidth(200.0);
-		cols.add(colNameClusterFoundIn);
-		
-		// What if it's empty?
-		tableView.setPlaceholder(new Label("No names recognized in this dataset."));
-	}
-	
-	private void showDataInTable(ListView<String> listView, TableView<DatasetRow> tableView) {
-		// How did we get here without a dataset?
-		if(dataset == null)
-			return;
-		
-		// We need to precalculate.
-		ObservableList<DatasetRow> rows = dataset.rowsProperty();
-		
-		// List view should be a single item, "Dataset records (<len>)".
-		listView.getItems().setAll("Dataset (" + rows.size() + " rows)");
-		listView.getSelectionModel().clearAndSelect(0);
-		
-		fillTableViewWithDatasetRows(tableView);
-	}
-	
-	private void fillTableViewWithDatasetRows(TableView<DatasetRow> tableView) {
-		// We need to precalculate.
-		ObservableList<DatasetRow> rows = dataset.rowsProperty();
-		
-		// Setup table.
-		tableView.editableProperty().set(false);
-		
-		ObservableList<TableColumn<DatasetRow, ?>> cols = tableView.getColumns();
-		cols.clear();
-		
-		// Set up columns.
-		TableColumn<DatasetRow, String> colRowName = new TableColumn<>("Name");
-		colRowName.setCellValueFactory((TableColumn.CellDataFeatures<DatasetRow, String> features) -> {
-			DatasetRow row = features.getValue();
-			Set<Name> names = dataset.getNamesInRow(row);
-					
-			if(names.isEmpty()) {
-				return new ReadOnlyStringWrapper("(None)");
-			} else {
-				return new ReadOnlyStringWrapper(names.stream().map(n -> n.getFullName()).collect(Collectors.joining("; ")));
-			}
-		});
-		colRowName.setPrefWidth(100.0);
-		cols.add(colRowName);
-		
-		// Create a column for every column here.
-		dataset.getColumns().forEach((DatasetColumn col) -> {
-			String colName = col.getName();
-			TableColumn<DatasetRow, String> colColumn = new TableColumn<>(colName);
-			colColumn.setCellValueFactory((TableColumn.CellDataFeatures<DatasetRow, String> features) -> {
-				DatasetRow row = features.getValue();
-				String val = row.get(colName);
-				
-				return new ReadOnlyStringWrapper(val == null ? "" : val);
-			});
-			colColumn.setPrefWidth(100.0);
-			cols.add(colColumn);
-		});
-		
-		// Set table items.
-		tableView.itemsProperty().set(rows);
-		
-		// What if it's empty?
-		tableView.setPlaceholder(new Label("No data contained in this dataset."));
-	}
 
 	public void selectChange(Change ch) {
 		int row = changesTableView.getItems().indexOf(ch);
@@ -676,6 +315,53 @@ public class DatasetSceneController {
 		stage.show();
 	}
 	
+	// TODO: figure out if we still need this, and delete if necessary.
+	private void fillTableViewWithDatasetRows(TableView<DatasetRow> tableView) {
+		// We need to precalculate.
+		ObservableList<DatasetRow> rows = dataset.rowsProperty();
+		
+		// Setup table.
+		tableView.editableProperty().set(false);
+		
+		ObservableList<TableColumn<DatasetRow, ?>> cols = tableView.getColumns();
+		cols.clear();
+		
+		// Set up columns.
+		TableColumn<DatasetRow, String> colRowName = new TableColumn<>("Name");
+		colRowName.setCellValueFactory((TableColumn.CellDataFeatures<DatasetRow, String> features) -> {
+			DatasetRow row = features.getValue();
+			Set<Name> names = dataset.getNamesInRow(row);
+					
+			if(names.isEmpty()) {
+				return new ReadOnlyStringWrapper("(None)");
+			} else {
+				return new ReadOnlyStringWrapper(names.stream().map(n -> n.getFullName()).collect(Collectors.joining("; ")));
+			}
+		});
+		colRowName.setPrefWidth(100.0);
+		cols.add(colRowName);
+		
+		// Create a column for every column here.
+		dataset.getColumns().forEach((DatasetColumn col) -> {
+			String colName = col.getName();
+			TableColumn<DatasetRow, String> colColumn = new TableColumn<>(colName);
+			colColumn.setCellValueFactory((TableColumn.CellDataFeatures<DatasetRow, String> features) -> {
+				DatasetRow row = features.getValue();
+				String val = row.get(colName);
+				
+				return new ReadOnlyStringWrapper(val == null ? "" : val);
+			});
+			colColumn.setPrefWidth(100.0);
+			cols.add(colColumn);
+		});
+		
+		// Set table items.
+		tableView.itemsProperty().set(rows);
+		
+		// What if it's empty?
+		tableView.setPlaceholder(new Label("No data contained in this dataset."));
+	}
+	
 	@FXML
 	private void addNewChange(ActionEvent evt) {
 		int selectedIndex = changesTableView.getSelectionModel().getSelectedIndex();
@@ -688,5 +374,158 @@ public class DatasetSceneController {
 	@FXML
 	private void updateNameParsing(ActionEvent evt) {
 		
+	}
+	
+	/*
+	 * The additional data system.
+	 * 
+	 * Here's how this works:
+	 * 	- Everything is wrapped up into an AdditionalData class.
+	 *  - There's a bunch of code that knows how to convert AdditionalData objects into
+	 *    list/table combinations.
+	 *  - There's a separate bunch of code that builds AdditionalData objects.
+	 */
+	
+	private class AdditionalData<ListOf, TableOf> {
+		private String name;
+		public String getName() { return name; }
+		@Override public String toString() { return name; }
+		
+		private ObservableList<ListOf> listOf;
+		private ObservableMap<ListOf, List<TableOf>> tableOf;
+		private List<TableColumn<TableOf, String>> columns;
+		
+		private AdditionalData(String name, List<ListOf> listOf, Map<ListOf, List<TableOf>> tableOfMap, List<TableColumn<TableOf, String>> columns) {
+			this.name = name;
+			this.listOf = FXCollections.observableList(listOf);
+			this.tableOf = FXCollections.observableMap(tableOfMap);
+			this.columns = FXCollections.observableList(columns);
+		}
+		
+		public List<ListOf> getList() {
+			return listOf;
+		}
+		
+		public List<TableOf> getTableRowsFor(ListOf listOfItem) {
+			return tableOf.get(listOfItem);
+		}
+		
+		public List<TableColumn<TableOf, String>> getColumns() {
+			return columns;
+		}
+	}
+	
+	@SuppressWarnings("rawtypes")
+	@FXML private TableView additionalDataTableView;
+	@SuppressWarnings("rawtypes")
+	@FXML private ListView additionalListView;
+	@SuppressWarnings("rawtypes")
+	@FXML private ComboBox<AdditionalData> additionalDataCombobox;
+	
+	@SuppressWarnings("rawtypes")
+	private ObservableList tableItems = FXCollections.observableList(new LinkedList());
+	
+	// The following methods switch between additional data views.
+	private void initAdditionalData() {
+		// Set up additional data objects.
+		additionalDataTableView.setItems(new SortedList<>(tableItems));
+		
+		// Set up events.
+		additionalDataCombobox.getSelectionModel().selectedItemProperty().addListener((Observable o) -> additionalDataUpdateList());
+		additionalListView.getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
+		additionalListView.getSelectionModel().selectedItemProperty().addListener((Observable o) -> additionalDataUpdateTable());
+		
+		additionalDataCombobox.getSelectionModel().select(0);
+		
+		// When the change is changed, select an item.
+		changesTableView.getSelectionModel().getSelectedItems().addListener(
+			(ListChangeListener<Change>) c -> additionalDataUpdateList()
+		);
+	}
+	
+	private void additionalDataUpdateList() {
+		// Which AdditionalData and ListOf are we in right now?
+		AdditionalData aData = additionalDataCombobox.getSelectionModel().getSelectedItem();
+				
+		// Object currentSelection = additionalListView.getSelectionModel().getSelectedItem();
+		
+		additionalListView.setItems(FXCollections.observableList(aData.getList()));
+		additionalListView.getSelectionModel().clearAndSelect(0);
+		
+		// This is also the right time to set up columns for the table.
+		additionalDataTableView.getColumns().clear();
+		additionalDataTableView.getColumns().addAll(aData.getColumns());
+		
+		// additionalListView.getSelectionModel().select(prevSelection);
+	}
+	
+	private void additionalDataUpdateTable() {
+		// Which AdditionalData and ListOf are we in right now?
+		AdditionalData aData = additionalDataCombobox.getSelectionModel().getSelectedItem();
+		
+		// Redraw the table.
+		tableItems.clear();
+		tableItems.addAll(aData.getTableRowsFor(additionalListView.getSelectionModel().getSelectedItem()));
+	}
+	
+	// The following AdditionalData objects provide all the additional data views we need.
+	@SuppressWarnings("rawtypes")
+	private void updateAdditionalData() {
+		ObservableList<AdditionalData> addDataItems = FXCollections.observableArrayList();
+
+		// 1. Properties
+		addDataItems.add(createPropertiesAdditionalData());		
+		
+		// 2. Data
+		addDataItems.add(createDataAdditionalData());
+				
+		// Done!
+		additionalDataCombobox.setItems(addDataItems);
+		additionalDataCombobox.getSelectionModel().clearAndSelect(0);
+	}
+	
+	private AdditionalData<String, DatasetRow> createDataAdditionalData() {
+		Map<String, List<DatasetRow>> map = new HashMap<>();
+		map.put("All data (" + dataset.getRowCount() + " rows)", new ArrayList<DatasetRow>(dataset.rowsProperty()));
+		
+		List<TableColumn<DatasetRow, String>> cols = new LinkedList<>(); 
+		for(DatasetColumn col: dataset.getColumns()) {
+			TableColumn<DatasetRow, String> column = new TableColumn<>(col.getName());
+			column.setCellValueFactory(cdf -> new ReadOnlyStringWrapper(cdf.getValue().get(col)));
+			cols.add(column);
+		}
+		
+		return new AdditionalData(
+			"Data",
+			Arrays.asList("All data (" + dataset.getRowCount() + " rows)"),
+			map,
+			cols
+		);
+	}
+	
+	private AdditionalData<String, String> createPropertiesAdditionalData() {
+		List<Map.Entry<String, String>> datasetProperties = new ArrayList<>(dataset.getProperties().entrySet());
+		
+		Map<String, List<Map.Entry<String, String>>> map = new HashMap<>();
+		map.put("Dataset (" + datasetProperties.size() + ")", datasetProperties);
+		
+		List<TableColumn<Map.Entry<String, String>, String>> cols = new ArrayList<>();
+		
+		TableColumn<Map.Entry<String, String>, String> colKey = new TableColumn<>("Key");
+		colKey.setCellValueFactory(cdf -> new ReadOnlyStringWrapper(cdf.getValue().getKey()));
+		cols.add(colKey);
+		
+		TableColumn<Map.Entry<String, String>, String> colValue = new TableColumn<>("Value");
+		colValue.setCellValueFactory(cdf -> new ReadOnlyStringWrapper(cdf.getValue().getValue()));
+		cols.add(colValue);
+		
+		return new AdditionalData(
+			"Properties",
+			Arrays.asList(
+				"Dataset (" + datasetProperties.size() + ")"
+			),
+			map,
+			cols
+		);
 	}
 }
