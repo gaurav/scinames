@@ -30,6 +30,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -63,6 +64,7 @@ import javafx.collections.transformation.SortedList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.Alert;
+import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
@@ -99,6 +101,10 @@ public class DatasetSceneController {
 		
 		// Reinitialize UI to the selected timepoint.
 		fillTableWithChanges(changesTableView, dataset);
+		dataset.lastModifiedProperty().addListener(cl -> {
+			fillTableWithChanges(changesTableView, dataset);
+		});
+		
 		updateAdditionalData();
 	}
 	
@@ -107,6 +113,7 @@ public class DatasetSceneController {
 	 */
 	public void initialize() {
 		initAdditionalData();
+		setupMagicButtons();
 	}
 	
 	/*
@@ -372,8 +379,114 @@ public class DatasetSceneController {
 	}
 	
 	@FXML
-	private void updateNameParsing(ActionEvent evt) {
+	private void combineChanges(ActionEvent evt) {
+		List<Change> changes = changesTableView.getSelectionModel().getSelectedItems();
 		
+		if(changes.size() < 2) {
+			// Need two or more changes!
+			return;
+		}
+		
+		// Combine them changes! This means:
+		//	1. 	Get the first change.
+		//	2. 	For every subsequent change, add *everything* about that change to the first change,
+		//		then delete it.
+		
+		Change firstChange = null;
+		Map<String, Set<String>> combinedProperties = new HashMap<>();
+		for(Change ch: changes) {
+			if(firstChange == null) {
+				firstChange = ch;
+				
+				// Set up the combined properties.
+				combinedProperties = firstChange.getProperties().entrySet().stream().collect(Collectors.toMap(
+					(Map.Entry<String, String> entry) -> entry.getKey(),
+					(Map.Entry<String, String> entry) -> { 
+						HashSet<String> hs = new HashSet<String>(); 
+						hs.add(entry.getValue()); 
+						return hs; 
+					}
+				));
+				
+				continue;
+			}
+			
+			// Add 'from's to firstChange.
+			firstChange.getFrom().addAll(ch.getFrom());
+			firstChange.getTo().addAll(ch.getTo());
+			firstChange.getCitations().addAll(ch.getCitations());
+			
+			// Combine properties.
+			for(Map.Entry<String, String> entry: ch.getProperties().entrySet()) {
+				if(!combinedProperties.containsKey(entry.getKey()))
+					combinedProperties.put(entry.getKey(), new HashSet<>());
+				
+				combinedProperties.get(entry.getKey()).add(entry.getValue());
+			}
+			
+			// Done!
+			dataset.deleteChange(ch);
+		}
+		
+		// First change might be implicit! Make it explicit!
+		dataset.makeChangeExplicit(firstChange);
+		
+		// Add all the combined properties back into firstChange.
+		for(String key: combinedProperties.keySet()) {
+			firstChange.getProperties().put(key, combinedProperties.get(key).stream().collect(Collectors.joining("; ")));
+		}
+		
+		// Guess the new type.
+		int fromCount = firstChange.getFrom().size();
+		int toCount = firstChange.getTo().size();
+		
+		if(fromCount > 0 && toCount > 0)
+			firstChange.typeProperty().setValue(ChangeType.RENAME);
+		else if(fromCount > 0 && toCount == 0)
+			firstChange.typeProperty().setValue(ChangeType.DELETION);
+		else if(fromCount == 0 && toCount > 0)
+			firstChange.typeProperty().setValue(ChangeType.ADDITION);
+		else
+			firstChange.typeProperty().setValue(ChangeType.ERROR);
+	}
+	
+	@FXML
+	private void refreshChanges(ActionEvent evt) {
+		fillTableWithChanges(changesTableView, dataset);
+	}
+	
+	@FXML
+	private void divideChange(ActionEvent evt) {
+		
+	}
+	
+	/* Some buttons are magic. */
+	@FXML private Button combineChangesButton;
+	@FXML private Button divideChangeButton;
+	
+	private void setupMagicButtons() {
+		// Disable everything to begin with.
+		combineChangesButton.disableProperty().set(true);
+		divideChangeButton.disableProperty().set(true);
+		
+		// Switch them on and off based on the selection.
+		changesTableView.getSelectionModel().getSelectedItems().addListener((ListChangeListener<Change>) ch -> {
+			int countSelectionItems = ch.getList().size();
+			
+			if(countSelectionItems == 0) {
+				// No selection? None of those buttons should be on.
+				combineChangesButton.disableProperty().set(true);
+				divideChangeButton.disableProperty().set(true);
+			} else if(countSelectionItems == 1) {
+				// Exactly one? We can split, but not combine.
+				combineChangesButton.disableProperty().set(true);
+				divideChangeButton.disableProperty().set(false);
+			} else {
+				// More than one? We can combine, but not split.
+				combineChangesButton.disableProperty().set(false);
+				divideChangeButton.disableProperty().set(true);
+			}
+		});
 	}
 	
 	/*
@@ -407,7 +520,7 @@ public class DatasetSceneController {
 		}
 		
 		public List<TableOf> getTableRowsFor(ListOf listOfItem) {
-			return tableOf.get(listOfItem);
+			return tableOf.getOrDefault(listOfItem, new ArrayList<>());
 		}
 		
 		public List<TableColumn<TableOf, String>> getColumns() {
@@ -476,8 +589,14 @@ public class DatasetSceneController {
 		// 1. Properties
 		addDataItems.add(createPropertiesAdditionalData());		
 		
-		// 2. Data
+		// 2. Data in this dataset
 		addDataItems.add(createDataAdditionalData());
+		
+		// 3. Data by name
+		addDataItems.add(createDataByNameAdditionalData());
+		
+		// 4. Changes by name
+		addDataItems.add(createChangesByNameAdditionalData());
 				
 		// Done!
 		additionalDataCombobox.setItems(addDataItems);
@@ -503,7 +622,7 @@ public class DatasetSceneController {
 		);
 	}
 	
-	private AdditionalData<String, String> createPropertiesAdditionalData() {
+	private AdditionalData<String, Map.Entry<String, String>> createPropertiesAdditionalData() {
 		List<Map.Entry<String, String>> datasetProperties = new ArrayList<>(dataset.getProperties().entrySet());
 		
 		Map<String, List<Map.Entry<String, String>>> map = new HashMap<>();
@@ -524,6 +643,107 @@ public class DatasetSceneController {
 			Arrays.asList(
 				"Dataset (" + datasetProperties.size() + ")"
 			),
+			map,
+			cols
+		);
+	}
+	
+	private AdditionalData<Name, Map.Entry<String, String>> createDataByNameAdditionalData() {
+		// Which names area we interested in?
+		List<Change> selectedChanges = changesTableView.getItems();
+		
+		List<Name> names = selectedChanges.stream()
+			.flatMap(ch -> {
+				Set<Name> allNames = ch.getAllNames();
+				List<Name> binomials = allNames.stream().flatMap(n -> n.asBinomial()).collect(Collectors.toList());
+				List<Name> genus = allNames.stream().flatMap(n -> n.asGenus()).collect(Collectors.toList());
+				
+				allNames.addAll(binomials);
+				allNames.addAll(genus);
+				
+				return allNames.stream();
+			})
+			.distinct()
+			.sorted()
+			.collect(Collectors.toList());
+		
+		Project proj = datasetView.getProjectView().getProject();
+		
+		Map<Name, List<Map.Entry<String, String>>> map = new HashMap<>();
+		for(Name n: names) {
+			Map<DatasetColumn, Set<String>> dataForName = proj.getDataForName(n);
+			Map<String, String> mapForName = dataForName.entrySet().stream().collect(Collectors.toMap(
+				(Map.Entry<DatasetColumn, Set<String>> entry) -> entry.getKey().toString(), 
+				(Map.Entry<DatasetColumn, Set<String>> entry) -> entry.getValue().toString()
+			));
+			map.put(n, new ArrayList<>(mapForName.entrySet()));
+		}
+		
+		List<TableColumn<Map.Entry<String, String>, String>> cols = new ArrayList<>();
+		
+		TableColumn<Map.Entry<String, String>, String> colKey = new TableColumn<>("Key");
+		colKey.setCellValueFactory(cdf -> new ReadOnlyStringWrapper(cdf.getValue().getKey()));
+		cols.add(colKey);
+		
+		TableColumn<Map.Entry<String, String>, String> colValue = new TableColumn<>("Value");
+		colValue.setCellValueFactory(cdf -> new ReadOnlyStringWrapper(cdf.getValue().getValue()));
+		cols.add(colValue);
+		
+		return new AdditionalData(
+			"Data by name",
+			names,
+			map,
+			cols
+		);
+	}
+	
+	private TableColumn<Change, String> getChangeTableColumn(String colName, Function<Change, String> func) {
+		TableColumn<Change, String> col = new TableColumn<>(colName);
+		col.setCellValueFactory(cdf -> new ReadOnlyStringWrapper(func.apply(cdf.getValue())));
+		return col;
+	}
+	
+	private AdditionalData<Name, Change> createChangesByNameAdditionalData() {
+		// Which names area we interested in?
+		List<Change> selectedChanges = changesTableView.getItems();
+		
+		List<Name> names = selectedChanges.stream()
+			.flatMap(ch -> {
+				Set<Name> allNames = ch.getAllNames();
+				List<Name> binomials = allNames.stream().flatMap(n -> n.asBinomial()).collect(Collectors.toList());
+				List<Name> genus = allNames.stream().flatMap(n -> n.asGenus()).collect(Collectors.toList());
+				
+				allNames.addAll(binomials);
+				allNames.addAll(genus);
+				
+				return allNames.stream();
+			})
+			.distinct()
+			.sorted()
+			.collect(Collectors.toList());
+		Set<Name> namesOfInterest = new HashSet<>(names);
+		
+		Project proj = datasetView.getProjectView().getProject();
+		
+		Map<Name, List<Change>> map = new HashMap<>();
+		for(Name n: names) {
+			map.put(n,  proj.getDatasets().stream()
+				.flatMap(ds -> ds.getAllChanges())
+				.filter(ch -> ch.getAllNames().contains(n))
+				.collect(Collectors.toList()));
+		}
+		
+		List<TableColumn<Change, String>> cols = new ArrayList<>();
+		
+		cols.add(getChangeTableColumn("Dataset", ch -> ch.getDataset().toString()));
+		cols.add(getChangeTableColumn("Type", ch -> ch.getType().toString()));
+		cols.add(getChangeTableColumn("From", ch -> ch.getFrom().toString()));
+		cols.add(getChangeTableColumn("To", ch -> ch.getTo().toString()));
+		cols.add(getChangeTableColumn("Note", ch -> ch.noteProperty().getValue()));
+		
+		return new AdditionalData(
+			"Changes by name",
+			names,
 			map,
 			cols
 		);

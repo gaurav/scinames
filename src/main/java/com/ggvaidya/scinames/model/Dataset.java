@@ -138,6 +138,23 @@ public class Dataset implements Citable, Comparable<Dataset> {
 		return implicitChanges.contains(ch);
 	}
 	
+	public void makeChangeExplicit(Change ch) {
+		// Only do this if the change is implicit!
+		if(isChangeImplicit(ch)) {
+			explicitChanges.add(ch);
+			implicitChanges.remove(ch);
+			
+			LOGGER.info("Before setPreviousDataset(" + project + ", " + prevDataset + ")\n - Explicit changes: " + explicitChanges + "\n - Implicit changes: " + implicitChanges);
+			
+			if(project != null)
+				setPreviousDataset(Optional.of(project), Optional.ofNullable(prevDataset));
+
+			LOGGER.info("After setPreviousDataset(" + project + ", " + prevDataset + ")\n - Explicit changes: " + explicitChanges + "\n - Implicit changes: " + implicitChanges);			
+			
+			lastModified.modified();
+		}
+	}
+	
 	@Override
 	public int compareTo(Dataset tp) {
 		int compare = getDate().compareTo(tp.getDate());
@@ -221,6 +238,7 @@ public class Dataset implements Citable, Comparable<Dataset> {
 	 * 		the first checklist.
 	 */
 	public void setPreviousDataset(Optional<Project> proj, Optional<Dataset> tp) {
+		project = proj.orElse(null);
 		prevDataset = tp.orElse(null);
 		
 		implicitChanges.clear();	
@@ -296,6 +314,24 @@ public class Dataset implements Citable, Comparable<Dataset> {
 		rows.addListener((ListChangeListener.Change<? extends DatasetRow> c) -> resetNamesCaches());
 		
 		lastModified.addListener((a, b, c) -> namesByRowLastModified.modified());
+	}
+	
+	public void deleteChange(Change ch) {
+		if(isChangeImplicit(ch)) {
+			// If ch is an implicit change, we need to update our change calculations. 
+			if(project != null)
+				setPreviousDataset(Optional.of(project), Optional.ofNullable(prevDataset));	
+			
+		} else {
+			// Explicit change. Delete!
+			explicitChanges.remove(ch);
+			
+			if(project != null)
+				setPreviousDataset(Optional.of(project), Optional.ofNullable(prevDataset));
+			
+			// We've been modified!
+			lastModified.modified();
+		}
 	}
 	
 	private void resetNamesCaches() {

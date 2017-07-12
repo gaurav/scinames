@@ -92,7 +92,7 @@ public class Change {
 	public UUID getId() { return id; }
 	public Dataset getDataset() { return dataset; }
 	public ChangeType getType() { return typeProperty.getValue(); }
-	public ObservableValue<ChangeType> typeProperty() { return typeProperty; }
+	public ObjectProperty<ChangeType> typeProperty() { return typeProperty; }
 	public Set<Name> getFrom() { return from.get(); }
 	public Set<Name> getTo() { return to.get(); }
 	public SetProperty<Name> fromProperty() { return from; }
