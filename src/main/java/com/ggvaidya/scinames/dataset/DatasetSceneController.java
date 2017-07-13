@@ -586,6 +586,12 @@ public class DatasetSceneController {
 	private void updateAdditionalData() {
 		ObservableList<AdditionalData> addDataItems = FXCollections.observableArrayList();
 
+		// 4. Changes by name
+		addDataItems.add(createChangesByNameAdditionalData());
+		
+		// 5. Changes by subname
+		addDataItems.add(createChangesBySubnamesAdditionalData());
+		
 		// 1. Properties
 		addDataItems.add(createPropertiesAdditionalData());		
 		
@@ -595,9 +601,8 @@ public class DatasetSceneController {
 		// 3. Data by name
 		addDataItems.add(createDataByNameAdditionalData());
 		
-		// 4. Changes by name
-		addDataItems.add(createChangesByNameAdditionalData());
-				
+		
+		
 		// Done!
 		additionalDataCombobox.setItems(addDataItems);
 		additionalDataCombobox.getSelectionModel().clearAndSelect(0);
@@ -721,7 +726,6 @@ public class DatasetSceneController {
 			.distinct()
 			.sorted()
 			.collect(Collectors.toList());
-		Set<Name> namesOfInterest = new HashSet<>(names);
 		
 		Project proj = datasetView.getProjectView().getProject();
 		
@@ -743,6 +747,57 @@ public class DatasetSceneController {
 		
 		return new AdditionalData(
 			"Changes by name",
+			names,
+			map,
+			cols
+		);
+	}
+	
+	private AdditionalData<Name, Change> createChangesBySubnamesAdditionalData() {
+		// Which names area we interested in?
+		List<Change> selectedChanges = changesTableView.getItems();
+		
+		List<Name> names = selectedChanges.stream()
+			.flatMap(ch -> {
+				Set<Name> allNames = ch.getAllNames();
+				List<Name> binomials = allNames.stream().flatMap(n -> n.asBinomial()).collect(Collectors.toList());
+				List<Name> genus = allNames.stream().flatMap(n -> n.asGenus()).collect(Collectors.toList());
+				
+				allNames.addAll(binomials);
+				allNames.addAll(genus);
+				
+				return allNames.stream();
+			})
+			.distinct()
+			.sorted()
+			.collect(Collectors.toList());
+		
+		Project proj = datasetView.getProjectView().getProject();
+		
+		Map<Name, List<Change>> map = new HashMap<>();
+		for(Name query: names) {
+			map.put(query,  
+				proj.getDatasets().stream()
+					.flatMap(ds -> ds.getAllChanges())
+					.filter(ch ->
+							ch.getAllNames().contains(query)
+							|| ch.getAllNames().stream().flatMap(n -> n.asBinomial()).anyMatch(binomial -> query.equals(binomial))
+							|| ch.getAllNames().stream().flatMap(n -> n.asGenus()).anyMatch(genus -> query.equals(genus))
+					)
+					.collect(Collectors.toList())
+			);
+		}
+		
+		List<TableColumn<Change, String>> cols = new ArrayList<>();
+		
+		cols.add(getChangeTableColumn("Dataset", ch -> ch.getDataset().toString()));
+		cols.add(getChangeTableColumn("Type", ch -> ch.getType().toString()));
+		cols.add(getChangeTableColumn("From", ch -> ch.getFrom().toString()));
+		cols.add(getChangeTableColumn("To", ch -> ch.getTo().toString()));
+		cols.add(getChangeTableColumn("Note", ch -> ch.noteProperty().getValue()));
+		
+		return new AdditionalData(
+			"Changes by subname",
 			names,
 			map,
 			cols
