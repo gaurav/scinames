@@ -100,7 +100,7 @@ public class DatasetSceneController {
 		dataset = tv.getDataset();
 		
 		// Reinitialize UI to the selected timepoint.
-		fillTableWithChanges(changesTableView, dataset);
+		setupTableWithChanges(changesTableView, dataset);
 		dataset.lastModifiedProperty().addListener(cl -> {
 			fillTableWithChanges(changesTableView, dataset);
 		});
@@ -121,7 +121,7 @@ public class DatasetSceneController {
 	 */
 	@FXML private TableView<Change> changesTableView;
 	
-	private void fillTableWithChanges(TableView<Change> tv, Dataset tp) {
+	private void setupTableWithChanges(TableView<Change> tv, Dataset tp) {
 		tv.setEditable(true);
 		tv.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
 		tv.getColumns().clear();
@@ -217,11 +217,11 @@ public class DatasetSceneController {
 		);
 		tv.getColumns().add(colSpecificEpithet);
 		
-		// TODO: if we can get an ObservableList over tp.getAllChanges(), then this table
-		// will update dynamically as changes are made. Won't that be something.
-		// Yes, we want to getAllChanges() so we can see which ones are filtered out.
+		fillTableWithChanges(tv, tp);
+	}
+	
+	private void fillTableWithChanges(TableView<Change> tv, Dataset tp) {
 		tv.setItems(FXCollections.observableList(tp.getAllChanges().collect(Collectors.toList())));
-		//tv.getSortOrder().add(colChangeType);
 	}
 
 	public void selectChange(Change ch) {
