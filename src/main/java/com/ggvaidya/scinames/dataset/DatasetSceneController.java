@@ -221,7 +221,7 @@ public class DatasetSceneController {
 		// will update dynamically as changes are made. Won't that be something.
 		// Yes, we want to getAllChanges() so we can see which ones are filtered out.
 		tv.setItems(FXCollections.observableList(tp.getAllChanges().collect(Collectors.toList())));
-		tv.getSortOrder().add(colChangeType);
+		//tv.getSortOrder().add(colChangeType);
 	}
 
 	public void selectChange(Change ch) {
