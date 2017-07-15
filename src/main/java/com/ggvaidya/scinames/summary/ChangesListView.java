@@ -29,6 +29,7 @@ import com.ggvaidya.scinames.model.ChangeType;
 import com.ggvaidya.scinames.tabulardata.TabularDataViewController;
 import com.ggvaidya.scinames.ui.ProjectView;
 
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import javafx.beans.property.ReadOnlyStringWrapper;
 import javafx.beans.property.StringProperty;
@@ -71,6 +72,12 @@ public final class ChangesListView {
 	
 	private StringProperty headerText;
 	
+	private TableColumn<Change, String> createTableColumnForChange(String colName, Function<Change, String> func) {
+		TableColumn<Change, String> col = new TableColumn<>(colName);
+		col.setCellValueFactory(cvf -> new ReadOnlyStringWrapper(func.apply(cvf.getValue())));
+		return col;
+	}
+	
 	public void init() {
 		// Setup stage.
 		stage.setTitle("Changes");
@@ -96,75 +103,14 @@ public final class ChangesListView {
 		cols.clear();
 		
 		// Set up columns.
-		TableColumn<Change, String> colChangeType = new TableColumn<>("Type");
-		colChangeType.setCellValueFactory(new PropertyValueFactory<>("type"));
-		//colChangeType.setSortType(TableColumn.SortType.ASCENDING);
-		colChangeType.setPrefWidth(40.0);
-		cols.add(colChangeType);
+		cols.add(createTableColumnForChange("Type", ch -> ch.getType().toString()));
+		cols.add(createTableColumnForChange("From", ch -> ch.getFromString()));
+		cols.add(createTableColumnForChange("To", ch -> ch.getToString()));
+		cols.add(createTableColumnForChange("Dataset", ch -> ch.getDataset().getName()));
+		cols.add(createTableColumnForChange("Date", ch -> ch.getDataset().getDate().asYYYYmmDD("-")));
+		cols.add(createTableColumnForChange("Year", ch -> ch.getDataset().getDate().getYearAsString()));
+		cols.add(createTableColumnForChange("Note", ch -> ch.noteProperty().get()));
 		
-		TableColumn<Change, String> colChangeFrom = new TableColumn<>("From");
-		colChangeFrom.setCellValueFactory(
-			(TableColumn.CellDataFeatures<Change, String> features) -> 
-				new ReadOnlyStringWrapper(
-					nameClusterManager.getClusters(
-						features.getValue().getFrom()
-					).toString()
-				)
-		);
-		colChangeFrom.setPrefWidth(200.0);
-		cols.add(colChangeFrom);
-		
-		TableColumn<Change, String> colChangeTo = new TableColumn<>("To");
-		colChangeTo.setCellValueFactory(
-			(TableColumn.CellDataFeatures<Change, String> features) -> 
-				new ReadOnlyStringWrapper(
-					nameClusterManager.getClusters(
-						features.getValue().getTo()
-					).toString()
-				)
-		);
-		colChangeTo.setPrefWidth(200.0);
-		cols.add(colChangeTo);
-		
-		TableColumn<Change, String> colDate = new TableColumn<>("Date");
-		colDate.setCellValueFactory(
-			(TableColumn.CellDataFeatures<Change, String> features) -> 
-				new ReadOnlyStringWrapper(
-					features.getValue().getDataset().getName() + " (" + 
-					features.getValue().getDataset().getDate().toString() + ")"
-				)
-		);
-		colDate.setPrefWidth(100.0);
-		cols.add(colDate);
-		
-		/*
-		for(Change.Type type: FXCollections.observableArrayList(projectView.getProject().changeTypesProperty()).sorted()) {
-			TableColumn<NameCluster, String> colChangesByType = new TableColumn(type.getType());
-			colChangesByType.setCellValueFactory((TableColumn.CellDataFeatures<NameCluster, String> features) -> {
-				NameCluster cluster = features.getValue();
-				long numberOfChanges = projectView.getProject().getDatasets().stream()
-					.flatMap(t -> t.getAllChanges(type))
-					.filter(c -> cluster.containsAny(c.getReferencedNames()))
-					.count();
-				return new ReadOnlyStringWrapper(String.valueOf(numberOfChanges));
-			});
-			colChangesByType.setPrefWidth(50.0);
-			cols.add(colChangesByType);
-		}
-		*/
-		
-		// Set table items.
-		SortedList<Change> sorted;
-		if(filterChangeType == null)
-			sorted = FXCollections.observableArrayList(
-				projectView.getProject().getChanges().collect(Collectors.toList())
-			).sorted();
-		else
-			sorted = FXCollections.observableArrayList(
-				projectView.getProject().getChanges().filter(ch -> ch.getType().equals(filterChangeType)).collect(Collectors.toList())
-			).sorted();
-		
-		controller.getTableItemsProperty().set(sorted);
-		sorted.comparatorProperty().bind(controller.getTableView().comparatorProperty());
+		controller.getTableItemsProperty().get().addAll(projectView.getProject().getChanges().collect(Collectors.toList()));
 	}
 }
