@@ -221,7 +221,17 @@ public class DatasetSceneController {
 	}
 	
 	private void fillTableWithChanges(TableView<Change> tv, Dataset tp) {
+		// Preserve search order and selected item.
+		List<TableColumn<Change, ?>> sortByCols = new LinkedList<>(tv.getSortOrder());
+		List<Change> selectedChanges = new LinkedList<>(tv.getSelectionModel().getSelectedItems());
+		
+		LOGGER.info("About to set changes table items: sortByCols = " + sortByCols + ", selectedChanges = " + selectedChanges);
 		tv.setItems(FXCollections.observableList(tp.getAllChanges().collect(Collectors.toList())));
+		
+		for(Change ch: selectedChanges) {
+			tv.getSelectionModel().select(ch);
+		}
+		tv.getSortOrder().addAll(sortByCols);
 	}
 
 	public void selectChange(Change ch) {
