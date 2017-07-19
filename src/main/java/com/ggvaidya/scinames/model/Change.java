@@ -42,6 +42,7 @@ import javafx.beans.property.StringPropertyBase;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
+import javafx.collections.MapChangeListener;
 import javafx.collections.ObservableMap;
 import javafx.collections.ObservableSet;
 
@@ -86,6 +87,7 @@ public class Change {
 		this.from.addListener((a, b, c) -> lastModified.modified());
 		this.to.addListener((a, b, c) -> lastModified.modified());
 		this.citations.addListener((a, b, c) -> lastModified.modified());
+		this.properties.addListener((MapChangeListener<String, String>) a -> lastModified.modified());
 	}
 	
 	/* Accessors */

@@ -77,4 +77,8 @@ public class DatasetChangesView {
 	public ProjectView getProjectView() {
 		return projectView;
 	}
+
+	public Scene getScene() {
+		return scene;
+	}
 }

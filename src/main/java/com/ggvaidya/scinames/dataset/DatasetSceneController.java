@@ -51,6 +51,8 @@ import com.ggvaidya.scinames.model.change.ChangeTypeStringConverter;
 import com.ggvaidya.scinames.model.change.NameSetStringConverter;
 import com.ggvaidya.scinames.model.filters.ChangeFilter;
 import com.ggvaidya.scinames.tabulardata.TabularDataViewController;
+import com.ggvaidya.scinames.ui.DatasetDiffView;
+import com.ggvaidya.scinames.ui.DatasetEditorView;
 
 import javafx.beans.Observable;
 import javafx.beans.property.ReadOnlyStringWrapper;
@@ -62,19 +64,29 @@ import javafx.collections.ObservableMap;
 import javafx.collections.ObservableSet;
 import javafx.collections.transformation.SortedList;
 import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
+import javafx.scene.control.ButtonType;
 import javafx.scene.control.ComboBox;
+import javafx.scene.control.ContextMenu;
+import javafx.scene.control.Dialog;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
+import javafx.scene.control.Menu;
+import javafx.scene.control.MenuItem;
 import javafx.scene.control.MultipleSelectionModel;
 import javafx.scene.control.SelectionMode;
 import javafx.scene.control.TableColumn;
+import javafx.scene.control.TableRow;
 import javafx.scene.control.TableView;
+import javafx.scene.control.TextField;
+import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.cell.ComboBoxTableCell;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.control.cell.TextFieldTableCell;
+import javafx.scene.input.MouseButton;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 
@@ -217,7 +229,93 @@ public class DatasetSceneController {
 		);
 		tv.getColumns().add(colSpecificEpithet);
 		
+		// The very last epithet of all
+		TableColumn<Change, String> colTerminalEpithet = new TableColumn<>("Terminal epithet");
+		colTerminalEpithet.setCellValueFactory(
+			(TableColumn.CellDataFeatures<Change, String> features) ->
+				new ReadOnlyStringWrapper(
+					String.join(", ", features.getValue().getAllNames().stream().map(n -> {
+						List<Name.InfraspecificEpithet> infraspecificEpithets = n.getInfraspecificEpithets();
+						if(!infraspecificEpithets.isEmpty()) {
+							return infraspecificEpithets.get(infraspecificEpithets.size() - 1).getValue();
+						} else {
+							return n.getSpecificEpithet();
+						}
+					}).filter(s -> s != null).distinct().sorted().collect(Collectors.toList()))
+				)
+		);
+		tv.getColumns().add(colTerminalEpithet);
+		
 		fillTableWithChanges(tv, tp);
+		
+		// When someone selects a cell in the Table, try to select the appropriate data in the
+		// additional data view.
+		tv.getSelectionModel().getSelectedItems().addListener((ListChangeListener<Change>) lcl -> {
+			AdditionalData aData = additionalDataCombobox.getSelectionModel().getSelectedItem();
+			
+			if(aData != null) {
+				aData.onSelectChange(tv.getSelectionModel().getSelectedItems());
+			}	
+		});
+		
+		// Create a right-click menu for table rows.
+		changesTableView.setRowFactory(table -> {
+			TableRow<Change> row = new TableRow<>();
+			
+			row.setOnMouseClicked(event -> {
+				if(row.isEmpty()) return;
+				
+				// We don't currently use the clicked change, since currently all options
+				// change *all* the selected changes, but this may change in the future.
+				Change change = row.getItem();
+				
+				if(event.getClickCount() == 1 && event.isPopupTrigger()) {
+					ContextMenu changeMenu = new ContextMenu();
+					changeMenu.getItems().add(createMenuItem("Prepend text to all notes", action -> {
+						List<Change> changes = changesTableView.getSelectionModel().getSelectedItems();
+						TextField tfTags = new TextField();
+						
+						Dialog<String> dialog = new Dialog<>();
+						dialog.getDialogPane().headerTextProperty().set("Enter tags to prepend to notes in " + changes.size() + " changes:");
+						dialog.getDialogPane().contentProperty().set(tfTags);
+						dialog.getDialogPane().getButtonTypes().addAll(ButtonType.OK, ButtonType.CANCEL);
+						Optional<String> result = dialog.showAndWait();
+						
+						if(result.isPresent()) {
+							String tags = tfTags.getText().trim();
+							String prevValue = change.noteProperty().getValue().trim();
+							changes.forEach(ch -> ch.noteProperty().set(tags + " " + prevValue));
+						}
+					}));
+					changeMenu.getItems().add(createMenuItem("Append text to all notes", action -> {
+						List<Change> changes = changesTableView.getSelectionModel().getSelectedItems();
+						TextField tfTags = new TextField();
+						
+						Dialog<String> dialog = new Dialog<>();
+						dialog.getDialogPane().headerTextProperty().set("Enter tags to append to notes in " + changes.size() + " changes:");
+						dialog.getDialogPane().contentProperty().set(tfTags);
+						dialog.getDialogPane().getButtonTypes().addAll(ButtonType.OK, ButtonType.CANCEL);
+						Optional<String> result = dialog.showAndWait();
+						
+						if(result.isPresent()) {
+							String tags = tfTags.getText().trim();
+							String prevValue = change.noteProperty().getValue().trim();
+							changes.forEach(ch -> ch.noteProperty().setValue(prevValue + " " + tags));
+						}
+					}));
+					
+					changeMenu.show(datasetView.getScene().getWindow(), event.getScreenX(), event.getScreenY());
+				}
+			});
+			
+			return row;
+		});
+	}
+	
+	private MenuItem createMenuItem(String name, EventHandler<ActionEvent> handler) {
+		MenuItem mi = new MenuItem(name);
+		mi.onActionProperty().set(handler);
+		return mi;
 	}
 	
 	private void fillTableWithChanges(TableView<Change> tv, Dataset tp) {
@@ -389,6 +487,25 @@ public class DatasetSceneController {
 	}
 	
 	@FXML
+	private void deleteExplicitChange(ActionEvent evt) {
+		List<Change> changesToDelete = changesTableView.getSelectionModel().getSelectedItems();
+		
+		for(Change ch: changesToDelete) {
+			if(ch.getDataset().isChangeImplicit(ch))
+				continue;
+			
+			// Explicit change! Verify before deleting.
+			Optional<ButtonType> opt = new Alert(AlertType.CONFIRMATION, "Are you sure you want to delete change '" + ch + "'? This cannot be undone!")
+				.showAndWait();
+			
+			if(opt.isPresent() && opt.get().equals(ButtonType.OK)) {
+				// DELETE IT WITH FIRE
+				ch.getDataset().deleteChange(ch);
+			}
+		}
+	}
+	
+	@FXML
 	private void combineChanges(ActionEvent evt) {
 		List<Change> changes = changesTableView.getSelectionModel().getSelectedItems();
 		
@@ -467,17 +584,29 @@ public class DatasetSceneController {
 	
 	@FXML
 	private void divideChange(ActionEvent evt) {
-		
+		List<Change> changes = changesTableView.getSelectionModel().getSelectedItems();
+				
+		for(Change ch: changes) {
+			// Divide them changes! For our purposes,
+			// this works like this:
+			//		- Remove all the 'froms' from the change.
+			//		- Create a new change identical to the first chnage, and
+			//		  remove all its 'tos'.
+			
+			// TODO
+		}
 	}
 	
 	/* Some buttons are magic. */
 	@FXML private Button combineChangesButton;
 	@FXML private Button divideChangeButton;
+	@FXML private Button deleteExplicitChangeButton;
 	
 	private void setupMagicButtons() {
 		// Disable everything to begin with.
 		combineChangesButton.disableProperty().set(true);
 		divideChangeButton.disableProperty().set(true);
+		deleteExplicitChangeButton.disableProperty().set(true);
 		
 		// Switch them on and off based on the selection.
 		changesTableView.getSelectionModel().getSelectedItems().addListener((ListChangeListener<Change>) ch -> {
@@ -487,14 +616,17 @@ public class DatasetSceneController {
 				// No selection? None of those buttons should be on.
 				combineChangesButton.disableProperty().set(true);
 				divideChangeButton.disableProperty().set(true);
+				deleteExplicitChangeButton.disableProperty().set(true);
 			} else if(countSelectionItems == 1) {
 				// Exactly one? We can split, but not combine.
 				combineChangesButton.disableProperty().set(true);
 				divideChangeButton.disableProperty().set(false);
+				deleteExplicitChangeButton.disableProperty().set(false);				
 			} else {
 				// More than one? We can combine, but not split.
 				combineChangesButton.disableProperty().set(false);
 				divideChangeButton.disableProperty().set(true);
+				deleteExplicitChangeButton.disableProperty().set(false);				
 			}
 		});
 	}
@@ -517,12 +649,18 @@ public class DatasetSceneController {
 		private ObservableList<ListOf> listOf;
 		private ObservableMap<ListOf, List<TableOf>> tableOf;
 		private List<TableColumn<TableOf, String>> columns;
+		private Function<List<Change>, List<ListOf>> onSelectChange;
 		
 		private AdditionalData(String name, List<ListOf> listOf, Map<ListOf, List<TableOf>> tableOfMap, List<TableColumn<TableOf, String>> columns) {
+			this(name, listOf, tableOfMap, columns, null);
+		}
+		
+		private AdditionalData(String name, List<ListOf> listOf, Map<ListOf, List<TableOf>> tableOfMap, List<TableColumn<TableOf, String>> columns, Function<List<Change>, List<ListOf>> onSelectChange) {
 			this.name = name;
 			this.listOf = FXCollections.observableList(listOf);
 			this.tableOf = FXCollections.observableMap(tableOfMap);
 			this.columns = FXCollections.observableList(columns);
+			this.onSelectChange = onSelectChange;
 		}
 		
 		public List<ListOf> getList() {
@@ -535,6 +673,21 @@ public class DatasetSceneController {
 		
 		public List<TableColumn<TableOf, String>> getColumns() {
 			return columns;
+		}
+		
+		public void onSelectChange(List<Change> selectedChanges) {
+			if(onSelectChange == null) return;
+			
+			additionalListView.getSelectionModel().clearSelection();
+			List<ListOf> listOfs = onSelectChange.apply(selectedChanges);
+			if(listOfs.isEmpty()) return;
+			
+			for(ListOf lo: listOfs) {
+				additionalListView.getSelectionModel().select(lo);
+			}
+			
+			// Scroll to the first name.
+			additionalListView.scrollTo(listOfs.get(0));
 		}
 	}
 	
@@ -549,8 +702,25 @@ public class DatasetSceneController {
 	private ObservableList tableItems = FXCollections.observableList(new LinkedList());
 	
 	// The following methods switch between additional data views.
+	@SuppressWarnings("unchecked")
 	private void initAdditionalData() {
 		// Set up additional data objects.
+		additionalDataTableView.setRowFactory(table -> {
+			@SuppressWarnings("rawtypes")
+			TableRow row = new TableRow<>();
+			
+			row.setOnMouseClicked(event -> {
+				if(row.isEmpty()) return;
+				Object item = row.getItem();
+				
+				if(event.getClickCount() == 2) {
+					// Try opening the detailed view on this item -- if we can.
+					datasetView.getProjectView().openDetailedView(item);
+				}
+			});
+			
+			return row;
+		});
 		additionalDataTableView.setItems(new SortedList<>(tableItems));
 		
 		// Set up events.
@@ -704,11 +874,12 @@ public class DatasetSceneController {
 		colValue.setCellValueFactory(cdf -> new ReadOnlyStringWrapper(cdf.getValue().getValue()));
 		cols.add(colValue);
 		
-		return new AdditionalData(
+		return new AdditionalData<Name, Map.Entry<String, String>>(
 			"Data by name",
 			names,
 			map,
-			cols
+			cols,
+			changes -> changes.stream().flatMap(ch -> ch.getAllNames().stream()).collect(Collectors.toList())
 		);
 	}
 	
@@ -755,11 +926,12 @@ public class DatasetSceneController {
 		cols.add(getChangeTableColumn("To", ch -> ch.getTo().toString()));
 		cols.add(getChangeTableColumn("Note", ch -> ch.noteProperty().getValue()));
 		
-		return new AdditionalData(
+		return new AdditionalData<Name, Change>(
 			"Changes by name",
 			names,
 			map,
-			cols
+			cols,
+			changes -> changes.stream().flatMap(ch -> ch.getAllNames().stream()).collect(Collectors.toList())
 		);
 	}
 	
@@ -806,11 +978,12 @@ public class DatasetSceneController {
 		cols.add(getChangeTableColumn("To", ch -> ch.getTo().toString()));
 		cols.add(getChangeTableColumn("Note", ch -> ch.noteProperty().getValue()));
 		
-		return new AdditionalData(
+		return new AdditionalData<Name, Change>(
 			"Changes by subname",
 			names,
 			map,
-			cols
+			cols,
+			changes -> changes.stream().flatMap(ch -> ch.getAllNames().stream()).collect(Collectors.toList())
 		);
 	}
 }
