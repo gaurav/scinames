@@ -16,10 +16,13 @@
  */
 package com.ggvaidya.scinames.dataset;
 
+import java.awt.Desktop;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.lang.reflect.Array;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -32,8 +35,12 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.logging.Logger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import javax.swing.plaf.metal.MetalPopupMenuSeparatorUI;
 
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVPrinter;
@@ -78,9 +85,11 @@ import javafx.scene.control.Menu;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.MultipleSelectionModel;
 import javafx.scene.control.SelectionMode;
+import javafx.scene.control.SeparatorMenuItem;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableRow;
 import javafx.scene.control.TableView;
+import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.cell.ComboBoxTableCell;
@@ -89,6 +98,7 @@ import javafx.scene.control.cell.TextFieldTableCell;
 import javafx.scene.input.MouseButton;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
+import javafx.util.Callback;
 
 /**
  * FXML Controller class for a view of a Dataset in a project. This does a bunch of cool
@@ -193,15 +203,6 @@ public class DatasetSceneController {
 		colNote.setEditable(true);
 		tv.getColumns().add(colNote);
 		
-		TableColumn<Change, String> colProperties = new TableColumn<>("Properties");
-		colProperties.setCellValueFactory(
-			(TableColumn.CellDataFeatures<Change, String> features) -> 
-				new ReadOnlyStringWrapper(
-					features.getValue().getProperties().entrySet().stream().map(entry -> entry.getKey() + ": " + entry.getValue()).sorted().collect(Collectors.joining("; "))
-				)
-		);
-		tv.getColumns().add(colProperties);
-
 		TableColumn<Change, String> colCitations = new TableColumn<>("Citations");
 		colCitations.setCellValueFactory(
 			(TableColumn.CellDataFeatures<Change, String> features) -> 
@@ -246,6 +247,16 @@ public class DatasetSceneController {
 		);
 		tv.getColumns().add(colTerminalEpithet);
 		
+		// Properties
+		TableColumn<Change, String> colProperties = new TableColumn<>("Properties");
+		colProperties.setCellValueFactory(
+			(TableColumn.CellDataFeatures<Change, String> features) -> 
+				new ReadOnlyStringWrapper(
+					features.getValue().getProperties().entrySet().stream().map(entry -> entry.getKey() + ": " + entry.getValue()).sorted().collect(Collectors.joining("; "))
+				)
+		);
+		tv.getColumns().add(colProperties);
+		
 		fillTableWithChanges(tv, tp);
 		
 		// When someone selects a cell in the Table, try to select the appropriate data in the
@@ -271,34 +282,69 @@ public class DatasetSceneController {
 				
 				if(event.getClickCount() == 1 && event.isPopupTrigger()) {
 					ContextMenu changeMenu = new ContextMenu();
-					changeMenu.getItems().add(createMenuItem("Prepend text to all notes", action -> {
+					
+					changeMenu.getItems().add(createMenuItem("Edit note", action -> {
 						List<Change> changes = changesTableView.getSelectionModel().getSelectedItems();
-						TextField tfTags = new TextField();
 						
-						Dialog<String> dialog = new Dialog<>();
-						dialog.getDialogPane().headerTextProperty().set("Enter tags to prepend to notes in " + changes.size() + " changes:");
-						dialog.getDialogPane().contentProperty().set(tfTags);
-						dialog.getDialogPane().getButtonTypes().addAll(ButtonType.OK, ButtonType.CANCEL);
-						Optional<String> result = dialog.showAndWait();
+						String combinedNotes = changes.stream()
+								.map(ch -> ch.noteProperty().get().trim())
+								.collect(Collectors.joining("\n"));
+						
+						Optional<String> result = askUserForTextArea("Modify the note for these changes:", combinedNotes);
 						
 						if(result.isPresent()) {
-							String tags = tfTags.getText().trim();
+							String note = result.get().trim();
+							changes.forEach(ch -> ch.noteProperty().set(note));
+						}
+					}));
+					changeMenu.getItems().add(new SeparatorMenuItem());
+					
+					// Create a submenu for tags and urls.
+					String note = change.noteProperty().get();
+					
+					Menu removeTags = new Menu("Tags");
+					Matcher tagMatcher = Pattern.compile("(?<!\\S)(#\\w+)\\b").matcher(note);
+					while(tagMatcher.find()) {
+						removeTags.getItems().add(new MenuItem(tagMatcher.group(1)));
+						// TODO: allow this menu item to remove a particular tag
+					}
+					changeMenu.getItems().add(removeTags);
+					
+					Menu lookupURLs = new Menu("Lookup URL");
+					Matcher urlMatcher = Pattern.compile("\\b(https?://.*?|doi:.*?)(?<!\\S)").matcher(note);
+					while(urlMatcher.find()) {
+						String url = urlMatcher.group(1);
+						
+						lookupURLs.getItems().add(createMenuItem(url, evt -> {
+							try {
+								Desktop.getDesktop().browse(new URI(url));
+							} catch(IOException ex) {
+								LOGGER.warning("Could not open URL '" + url + "': " + ex);
+							} catch(URISyntaxException ex) {
+								LOGGER.warning("Identified URL '" + url + "' is not syntatically correct: " + ex);
+							}
+						}));
+					}
+					changeMenu.getItems().add(lookupURLs);
+					
+					changeMenu.getItems().add(new SeparatorMenuItem());
+					changeMenu.getItems().add(createMenuItem("Prepend text to all notes", action -> {
+						List<Change> changes = changesTableView.getSelectionModel().getSelectedItems();
+						
+						Optional<String> result = askUserForTextField("Enter tags to prepend to notes in " + changes.size() + " changes:");
+						
+						if(result.isPresent()) {
+							String tags = result.get().trim();
 							String prevValue = change.noteProperty().getValue().trim();
 							changes.forEach(ch -> ch.noteProperty().set(tags + " " + prevValue));
 						}
 					}));
 					changeMenu.getItems().add(createMenuItem("Append text to all notes", action -> {
 						List<Change> changes = changesTableView.getSelectionModel().getSelectedItems();
-						TextField tfTags = new TextField();
-						
-						Dialog<String> dialog = new Dialog<>();
-						dialog.getDialogPane().headerTextProperty().set("Enter tags to append to notes in " + changes.size() + " changes:");
-						dialog.getDialogPane().contentProperty().set(tfTags);
-						dialog.getDialogPane().getButtonTypes().addAll(ButtonType.OK, ButtonType.CANCEL);
-						Optional<String> result = dialog.showAndWait();
+						Optional<String> result = askUserForTextField("Enter tags to append to notes in " + changes.size() + " changes:");
 						
 						if(result.isPresent()) {
-							String tags = tfTags.getText().trim();
+							String tags = result.get().trim();
 							String prevValue = change.noteProperty().getValue().trim();
 							changes.forEach(ch -> ch.noteProperty().setValue(prevValue + " " + tags));
 						}
@@ -316,6 +362,42 @@ public class DatasetSceneController {
 		MenuItem mi = new MenuItem(name);
 		mi.onActionProperty().set(handler);
 		return mi;
+	}
+	
+	private Optional<String> askUserForTextField(String text) {
+		TextField textfield = new TextField();
+		
+		Dialog<ButtonType> dialog = new Dialog<>();
+		dialog.getDialogPane().headerTextProperty().set(text);
+		dialog.getDialogPane().contentProperty().set(textfield);
+		dialog.getDialogPane().getButtonTypes().addAll(ButtonType.OK, ButtonType.CANCEL);
+		Optional<ButtonType> result = dialog.showAndWait();
+		
+		if(result.isPresent() && result.get().equals(ButtonType.OK))
+			return Optional.of(textfield.getText());
+		else
+			return Optional.empty();
+	}
+	
+	private Optional<String> askUserForTextArea(String label) {
+		return askUserForTextArea(label, null);
+	}
+	
+	private Optional<String> askUserForTextArea(String label, String initialText) {
+		TextArea textarea = new TextArea();
+		if(initialText != null)
+			textarea.setText(initialText);
+		
+		Dialog<ButtonType> dialog = new Dialog<>();
+		dialog.getDialogPane().headerTextProperty().set(label);
+		dialog.getDialogPane().contentProperty().set(textarea);
+		dialog.getDialogPane().getButtonTypes().addAll(ButtonType.OK, ButtonType.CANCEL);
+		Optional<ButtonType> result = dialog.showAndWait();
+		
+		if(result.isPresent() && result.get().equals(ButtonType.OK))
+			return Optional.of(textarea.getText());
+		else
+			return Optional.empty();
 	}
 	
 	private void fillTableWithChanges(TableView<Change> tv, Dataset tp) {
@@ -507,7 +589,7 @@ public class DatasetSceneController {
 	
 	@FXML
 	private void combineChanges(ActionEvent evt) {
-		List<Change> changes = changesTableView.getSelectionModel().getSelectedItems();
+		List<Change> changes = new ArrayList<>(changesTableView.getSelectionModel().getSelectedItems());
 		
 		if(changes.size() < 2) {
 			// Need two or more changes!
