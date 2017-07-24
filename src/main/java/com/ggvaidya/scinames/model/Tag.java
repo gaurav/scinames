@@ -30,22 +30,45 @@ import java.util.Map;
  * 
  * @author Gaurav Vaidya <gaurav@ggvaidya.com>
  */
-public class Tag {
+public class Tag implements Comparable<Tag> {
 	private static final Map<String, Tag> tags = new HashMap<>();
 	private final String name;
 	
+	public static final Tag NONE = Tag.fromName("(none)");
+		
 	/* Accessors */
 	public String getName() { return name; }
 	
 	/* Constructors */
 	private Tag(String name) {
-		this.name = name;
+		this.name = name.toLowerCase();
 	}
 	
 	public static Tag fromName(String name) {
-		if(!tags.containsKey(name))
-			tags.put(name, new Tag(name));
+		if(name == null) return NONE;
+		String name_lc = name.toLowerCase();
 		
-		return tags.get(name);
+		if(!tags.containsKey(name_lc))
+			tags.put(name, new Tag(name_lc));
+		
+		return tags.get(name_lc);
+	}
+	
+	public int hashCode() {
+		return name.hashCode();
+	}
+	
+	public boolean equals(Object o) {
+		if(o instanceof Tag) {
+			Tag other = (Tag) o;
+			return name.equals(other.getName());
+		} else
+			return false;
+	}
+
+	@Override
+	public int compareTo(Tag other) {
+		return name.compareTo(other.getName());
 	}
 }
+

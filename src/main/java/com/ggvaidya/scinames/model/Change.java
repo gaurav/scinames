@@ -16,10 +16,18 @@
  */
 package com.ggvaidya.scinames.model;
 
+import java.net.URL;
+import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
+import java.util.logging.Logger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -56,6 +64,7 @@ import javafx.collections.ObservableSet;
 public class Change {
 	/* Private variables and properties */
 	private UUID id = UUID.randomUUID();
+	private Logger LOGGER = Logger.getLogger(Change.class.getSimpleName());
 	
 	/** The dataset this change is located in. */
 	private Dataset dataset;
@@ -147,6 +156,69 @@ public class Change {
 				change.lastModified.modified();
 			}
 		};
+	}
+	
+	/**
+	 * Return the note as an optional string.
+	 */
+	public Optional<String> getNote() {
+		// We don't need to invoke noteProperty unless ...
+		if(!properties.containsKey("note")) return Optional.empty(); 
+		
+		return Optional.ofNullable(noteProperty().getValue());
+	}
+	
+	/**
+	 * Return a list of all tags associated with this change. This includes:
+	 *  - Tags in the 'note' (as '#tag' strings)
+	 *  - Tags in citations   
+	 */
+	public Set<Tag> getTags() {
+		// Do we even have a note?
+		Optional<String> optNote = getNote();
+		if(!optNote.isPresent()) return new HashSet<>();
+		
+		String note = optNote.get();
+		
+		// Add tags in note.
+		Matcher tagMatcher = Pattern.compile("(?<!\\S)(#\\w+)\\b").matcher(note);
+		
+		Set<Tag> tags = new HashSet<>();
+		while(tagMatcher.find()) {
+			tags.add(Tag.fromName(tagMatcher.group(1)));
+		}
+		
+		// Add tags in citations.
+		citations.stream().flatMap(cit -> cit.getTags().stream()).forEach(tag -> {
+			tags.add(tag);
+		});
+		
+		// Return as set.
+		return tags;
+	}
+	
+	public Set<URI> getURIs() {
+		// Do we even have a note?
+		Optional<String> optNote = getNote();
+		
+		if(!optNote.isPresent()) return new HashSet<>();
+		String note = optNote.get();
+		
+		// Find URIs in notes.
+		Set<URI> uris = new HashSet<>();
+		
+		Matcher urlMatcher = Pattern.compile("\\b(https?://.*?|doi:.*?)(?<!\\S)").matcher(noteProperty().get());
+		while(urlMatcher.find()) {
+			String uri = urlMatcher.group(1);
+			
+			try {
+				uris.add(new URI(uri));
+			} catch(URISyntaxException ex) {
+				LOGGER.warning("Possible URI '" + uri + "' could not be parsed, ignoring: " + ex);
+			}
+		}
+		
+		return uris;
 	}
 	
 	/** @return 'from' names as a set of names separated by ' and '. */

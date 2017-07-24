@@ -41,8 +41,8 @@ import javafx.stage.Stage;
  * 
  * @author Gaurav Vaidya <gaurav@ggvaidya.com>
  */
-public final class SearchView {
-	private static final Logger LOGGER = Logger.getLogger(SearchView.class.getSimpleName());
+public final class ComplexSearchView {
+	private static final Logger LOGGER = Logger.getLogger(ComplexSearchView.class.getSimpleName());
 	
 	private Stage stage;
 	private Scene scene;
@@ -51,7 +51,7 @@ public final class SearchView {
 	
 	public Stage getStage() { return stage; }
 
-	public SearchView(ProjectView pv) {
+	public ComplexSearchView(ProjectView pv) {
 		projectView = pv;
 		stage = new Stage();
 		

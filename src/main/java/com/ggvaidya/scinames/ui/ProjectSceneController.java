@@ -29,7 +29,7 @@ import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
 
 import com.ggvaidya.scinames.SciNames;
-import com.ggvaidya.scinames.complexquery.SearchView;
+import com.ggvaidya.scinames.complexquery.ComplexSearchView;
 import com.ggvaidya.scinames.dataset.DatasetSceneController;
 import com.ggvaidya.scinames.dataset.DatasetChangesView;
 import com.ggvaidya.scinames.model.Change;

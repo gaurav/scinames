@@ -215,6 +215,10 @@ public class Project {
 		return datasets.stream().flatMap(t -> t.getChanges(this));
 	}
 	
+	public Stream<Change> getAllChanges() {
+		return datasets.stream().flatMap(t -> t.getAllChanges());
+	}
+	
 	/**
 	 * Add a ChangeFilter. These are stored as a linked list, so we tell the
 	 * current ChangeFilter to add it, which will pass it on to the next and

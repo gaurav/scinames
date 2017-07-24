@@ -303,28 +303,24 @@ public class DatasetSceneController {
 					String note = change.noteProperty().get();
 					
 					Menu removeTags = new Menu("Tags");
-					Matcher tagMatcher = Pattern.compile("(?<!\\S)(#\\w+)\\b").matcher(note);
-					while(tagMatcher.find()) {
-						removeTags.getItems().add(new MenuItem(tagMatcher.group(1)));
-						// TODO: allow this menu item to remove a particular tag
-					}
-					changeMenu.getItems().add(removeTags);
+					removeTags.getItems().addAll(
+						change.getTags().stream().sorted()
+							.map(tag -> new MenuItem(tag.getName()))
+							.collect(Collectors.toList())
+					);
 					
 					Menu lookupURLs = new Menu("Lookup URL");
-					Matcher urlMatcher = Pattern.compile("\\b(https?://.*?|doi:.*?)(?<!\\S)").matcher(note);
-					while(urlMatcher.find()) {
-						String url = urlMatcher.group(1);
-						
-						lookupURLs.getItems().add(createMenuItem(url, evt -> {
-							try {
-								Desktop.getDesktop().browse(new URI(url));
-							} catch(IOException ex) {
-								LOGGER.warning("Could not open URL '" + url + "': " + ex);
-							} catch(URISyntaxException ex) {
-								LOGGER.warning("Identified URL '" + url + "' is not syntatically correct: " + ex);
-							}
-						}));
-					}
+					change.getURIs().stream().sorted().map(
+						uri -> {
+							return createMenuItem(uri.toString(), evt -> {
+								try {
+									Desktop.getDesktop().browse(uri);
+								} catch(IOException ex) {
+									LOGGER.warning("Could not open URL '" + uri + "': " + ex);
+								}
+							});
+						}
+					).forEach(mi -> lookupURLs.getItems().add(mi));
 					changeMenu.getItems().add(lookupURLs);
 					
 					changeMenu.getItems().add(new SeparatorMenuItem());
