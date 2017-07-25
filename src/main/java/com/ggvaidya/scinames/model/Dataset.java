@@ -533,6 +533,8 @@ public class Dataset implements Citable, Comparable<Dataset> {
 			// 	- We do that because AmphibiaWeb *says* they are duplicates.
 			//	- However, this dataset has rows for *both* vilmae and buckleyi.
 			//	- So how?
+			//		- We fix the discrepancy by recognizing all the names in the rows -- whether
+			//		  or not they're reflected in the changes.
 			
 			Set<Name> finalListButNotInRows = new HashSet<>(finalList);
 			finalListButNotInRows.removeAll(getNamesInAllRows());
@@ -540,13 +542,16 @@ public class Dataset implements Citable, Comparable<Dataset> {
 			Set<Name> rowNamesButNotFinalList = new HashSet<>(getNamesInAllRows());
 			rowNamesButNotFinalList.removeAll(finalList);
 			
-			LOGGER.severe("Discrepency in calculating recognized names for " + this + ":\n"
+			LOGGER.warning("Discrepency in calculating recognized names for " + this + ":\n"
 				+ "\t - Final list but not in rows: " + finalListButNotInRows + "\n"
 				+ "\t - Rows but not in final list: " + rowNamesButNotFinalList + "\n"
 				+ "\t - Name count: " + initialNames.size() + " + " + addedNames.size() + " - " + deletedNames.size() + " = " + 
 					(initialNames.size() + addedNames.size() - deletedNames.size())
 				+ " (but should be " + finalList.size() + ")\n"
+				+ "Species in the rows but not in final count will be added to the list of recognized names."
 			);
+			
+			finalList.addAll(rowNamesButNotFinalList);
 		}
 		
 		return finalList.stream();

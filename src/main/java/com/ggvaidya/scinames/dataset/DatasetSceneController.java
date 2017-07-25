@@ -221,7 +221,7 @@ public class DatasetSceneController {
 		);
 		tv.getColumns().add(colGenera);
 		
-		TableColumn<Change, String> colSpecificEpithet = new TableColumn<>("Specific epithet");
+		TableColumn<Change, String> colSpecificEpithet = new TableColumn<>("Specific epithets");
 		colSpecificEpithet.setCellValueFactory(
 			(TableColumn.CellDataFeatures<Change, String> features) ->
 				new ReadOnlyStringWrapper(
@@ -229,6 +229,16 @@ public class DatasetSceneController {
 				)
 		);
 		tv.getColumns().add(colSpecificEpithet);
+		
+		// The infraspecific string.
+		TableColumn<Change, String> colInfraspecificEpithet = new TableColumn<>("Infraspecific epithets");
+		colInfraspecificEpithet.setCellValueFactory(
+			(TableColumn.CellDataFeatures<Change, String> features) ->
+				new ReadOnlyStringWrapper(
+					String.join(", ", features.getValue().getAllNames().stream().map(n -> n.getInfraspecificEpithetsAsString()).filter(s -> s != null).distinct().sorted().collect(Collectors.toList()))
+				)
+		);
+		tv.getColumns().add(colInfraspecificEpithet);
 		
 		// The very last epithet of all
 		TableColumn<Change, String> colTerminalEpithet = new TableColumn<>("Terminal epithet");
