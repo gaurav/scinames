@@ -294,16 +294,19 @@ public class DatasetSceneController {
 					ContextMenu changeMenu = new ContextMenu();
 					
 					changeMenu.getItems().add(createMenuItem("Edit note", action -> {
-						List<Change> changes = changesTableView.getSelectionModel().getSelectedItems();
+						List<Change> changes = new ArrayList<>(changesTableView.getSelectionModel().getSelectedItems());
 						
 						String combinedNotes = changes.stream()
-								.map(ch -> ch.noteProperty().get().trim())
-								.collect(Collectors.joining("\n"));
+								.map(ch -> ch.getNote().orElse("").trim())
+								.distinct()
+								.collect(Collectors.joining("\n"))
+								.trim();
 						
-						Optional<String> result = askUserForTextArea("Modify the note for these changes:", combinedNotes);
+						Optional<String> result = askUserForTextArea("Modify the note for these " + changes.size() + " changes:", combinedNotes);
 						
 						if(result.isPresent()) {
 							String note = result.get().trim();
+							LOGGER.info("Using 'Edit note' to set note to '" + note + "' on changes " + changes);
 							changes.forEach(ch -> ch.noteProperty().set(note));
 						}
 					}));
@@ -335,24 +338,34 @@ public class DatasetSceneController {
 					
 					changeMenu.getItems().add(new SeparatorMenuItem());
 					changeMenu.getItems().add(createMenuItem("Prepend text to all notes", action -> {
-						List<Change> changes = changesTableView.getSelectionModel().getSelectedItems();
+						List<Change> changes = new ArrayList<>(changesTableView.getSelectionModel().getSelectedItems());
 						
 						Optional<String> result = askUserForTextField("Enter tags to prepend to notes in " + changes.size() + " changes:");
 						
 						if(result.isPresent()) {
 							String tags = result.get().trim();
-							String prevValue = change.noteProperty().getValue().trim();
-							changes.forEach(ch -> ch.noteProperty().set(tags + " " + prevValue));
+							changes.forEach(ch -> {
+								String prevValue = change.getNote().orElse("").trim();
+								
+								LOGGER.info("Prepending tags '" + tags + "' to previous value '" + prevValue + "' for change " + ch);
+								
+								ch.noteProperty().set((tags + " " + prevValue).trim());
+							});
 						}
 					}));
 					changeMenu.getItems().add(createMenuItem("Append text to all notes", action -> {
-						List<Change> changes = changesTableView.getSelectionModel().getSelectedItems();
+						List<Change> changes = new ArrayList<>(changesTableView.getSelectionModel().getSelectedItems());
 						Optional<String> result = askUserForTextField("Enter tags to append to notes in " + changes.size() + " changes:");
 						
 						if(result.isPresent()) {
 							String tags = result.get().trim();
-							String prevValue = change.noteProperty().getValue().trim();
-							changes.forEach(ch -> ch.noteProperty().setValue(prevValue + " " + tags));
+							changes.forEach(ch -> {
+								String prevValue = ch.getNote().orElse("").trim();
+								
+								LOGGER.info("Appending tags '" + tags + "' to previous value '" + prevValue + "' for change " + ch);
+								
+								ch.noteProperty().setValue((prevValue + " " + tags).trim());
+							});
 						}
 					}));
 					
@@ -576,7 +589,7 @@ public class DatasetSceneController {
 	
 	@FXML
 	private void deleteExplicitChange(ActionEvent evt) {
-		List<Change> changesToDelete = changesTableView.getSelectionModel().getSelectedItems();
+		List<Change> changesToDelete = new ArrayList<>(changesTableView.getSelectionModel().getSelectedItems());
 		
 		for(Change ch: changesToDelete) {
 			if(ch.getDataset().isChangeImplicit(ch))
@@ -792,6 +805,9 @@ public class DatasetSceneController {
 	// The following methods switch between additional data views.
 	@SuppressWarnings("unchecked")
 	private void initAdditionalData() {
+		// Resize to fit columns, as per https://stackoverflow.com/a/22488513/27310
+		additionalDataTableView.setColumnResizePolicy((param) -> true);
+		
 		// Set up additional data objects.
 		additionalDataTableView.setRowFactory(table -> {
 			@SuppressWarnings("rawtypes")
@@ -854,22 +870,20 @@ public class DatasetSceneController {
 	private void updateAdditionalData() {
 		ObservableList<AdditionalData> addDataItems = FXCollections.observableArrayList();
 
-		// 4. Changes by name
+		// 1. Changes by name
 		addDataItems.add(createChangesByNameAdditionalData());
-		
-		// 5. Changes by subname
-		addDataItems.add(createChangesBySubnamesAdditionalData());
-		
-		// 1. Properties
-		addDataItems.add(createPropertiesAdditionalData());		
-		
-		// 2. Data in this dataset
-		addDataItems.add(createDataAdditionalData());
-		
-		// 3. Data by name
+
+		// 2. Data by name
 		addDataItems.add(createDataByNameAdditionalData());
 		
-		
+		// 3. Changes by subname
+		addDataItems.add(createChangesBySubnamesAdditionalData());
+
+		// 4. Data in this dataset
+		addDataItems.add(createDataAdditionalData());
+				
+		// 5. Properties
+		addDataItems.add(createPropertiesAdditionalData());		
 		
 		// Done!
 		additionalDataCombobox.setItems(addDataItems);
@@ -1012,7 +1026,7 @@ public class DatasetSceneController {
 		cols.add(getChangeTableColumn("Type", ch -> ch.getType().toString()));
 		cols.add(getChangeTableColumn("From", ch -> ch.getFrom().toString()));
 		cols.add(getChangeTableColumn("To", ch -> ch.getTo().toString()));
-		cols.add(getChangeTableColumn("Note", ch -> ch.noteProperty().getValue()));
+		cols.add(getChangeTableColumn("Note", ch -> ch.getNote().orElse("")));
 		
 		return new AdditionalData<Name, Change>(
 			"Changes by name",
@@ -1064,7 +1078,7 @@ public class DatasetSceneController {
 		cols.add(getChangeTableColumn("Type", ch -> ch.getType().toString()));
 		cols.add(getChangeTableColumn("From", ch -> ch.getFrom().toString()));
 		cols.add(getChangeTableColumn("To", ch -> ch.getTo().toString()));
-		cols.add(getChangeTableColumn("Note", ch -> ch.noteProperty().getValue()));
+		cols.add(getChangeTableColumn("Note", ch -> ch.getNote().orElse("")));
 		
 		return new AdditionalData<Name, Change>(
 			"Changes by subname",

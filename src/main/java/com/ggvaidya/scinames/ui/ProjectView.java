@@ -244,14 +244,12 @@ public class ProjectView {
 	 * @param o
 	 */
 	public void openDetailedView(Object obj) {
-		@SuppressWarnings("rawtypes")
-		Class objClass = obj.getClass();
-		if(Dataset.class.isAssignableFrom(objClass))
+		if(obj instanceof Dataset)
 			openDetailedView((Dataset)obj);
-		else if(Change.class.isAssignableFrom(objClass))
+		else if(obj instanceof Change)
 			openDetailedView((Change)obj);
 		else
-			new Alert(AlertType.ERROR, "No detailed view available for " + obj + " (class " + objClass + ")");
+			LOGGER.severe("No detailed view available for " + obj + " (class " + obj.getClass() + ")");
 	}
 	
 	public void openDetailedView(Dataset ds) {

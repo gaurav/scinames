@@ -222,8 +222,11 @@ public final class SearchViewController implements Initializable {
 				// Right now, the only options are Changes. Sorry, friends.
 				resultsTableView.getColumns().clear();
 				if(resultClass.isAssignableFrom(Change.class)) {
+					resultsTableView.getColumns().add(createChangeColumn("Type", ch -> ch.getType().getType()));
 					resultsTableView.getColumns().add(createChangeColumn("From", ch -> ch.getFromString()));
 					resultsTableView.getColumns().add(createChangeColumn("To", ch -> ch.getToString()));
+					resultsTableView.getColumns().add(createChangeColumn("Dataset", ch -> ch.getDataset().getName()));
+					resultsTableView.getColumns().add(createChangeColumn("Note", ch -> ch.getNote().orElse("")));
 				} else
 					LOGGER.severe("Unable to display results of class '" + resultClass + "'");
 			}
@@ -321,7 +324,7 @@ public final class SearchViewController implements Initializable {
 	}
 	
 	private void filterSearchResults() {
-		String filter = filterTextField.getText();
+		String filter = filterTextField.getText().trim();
 		
 		filteredItems.setAll(
 			searchResults.stream().filter(sr -> sr.matchesString(filter)).collect(Collectors.toList())
