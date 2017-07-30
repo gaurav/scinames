@@ -45,8 +45,22 @@ public class SynonymsFromColumnChangeGenerator implements ChangeGenerator {
 	
 	private DatasetColumn synonymColumn;
 	
-	public SynonymsFromColumnChangeGenerator(DatasetColumn col) {
-		synonymColumn = col;
+	public SynonymsFromColumnChangeGenerator() {
+	}
+	
+	@Override
+	public String getName() {
+		return "Find renames using a synonym column";
+	}
+
+	@Override
+	public boolean needsDatasetColumn() {
+		return true;
+	}
+
+	@Override
+	public void setDatasetColumn(DatasetColumn ds) {
+		synonymColumn = ds;
 	}
 	
 	public Stream<PotentialChange> generate(Project project) {

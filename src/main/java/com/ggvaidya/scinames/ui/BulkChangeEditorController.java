@@ -35,7 +35,9 @@ import com.ggvaidya.scinames.model.Dataset;
 import com.ggvaidya.scinames.model.DatasetColumn;
 import com.ggvaidya.scinames.model.Name;
 import com.ggvaidya.scinames.model.Project;
+import com.ggvaidya.scinames.model.change.ChangeGenerator;
 import com.ggvaidya.scinames.model.change.ChangeTypeStringConverter;
+import com.ggvaidya.scinames.model.change.GenusChangesFromComposition;
 import com.ggvaidya.scinames.model.change.NameSetStringConverter;
 import com.ggvaidya.scinames.model.change.PotentialChange;
 import com.ggvaidya.scinames.model.change.RenamesFromIdsInChanges;
@@ -63,6 +65,7 @@ import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.control.cell.TextFieldTableCell;
 import javafx.scene.input.MouseButton;
 import javafx.stage.FileChooser;
+import javafx.util.StringConverter;
 
 /**
  * FXML Controller class for bulk-creating changes using different methods.
@@ -86,7 +89,9 @@ public class BulkChangeEditorController {
 		comboBoxNameIdentifiers.setItems(FXCollections.observableArrayList(columns));
 		
 		comboBoxMethods.getSelectionModel().selectedItemProperty().addListener((a, b, c) -> {
-			if(methodsThatNeedAColumn.contains(c)) {
+			ChangeGenerator generator = comboBoxMethods.getSelectionModel().getSelectedItem();
+			
+			if(generator.needsDatasetColumn()) {
 				// Activate it if this method needs a column
 				comboBoxNameIdentifiers.setDisable(false);
 			} else {
@@ -109,6 +114,20 @@ public class BulkChangeEditorController {
 	 * Initializes the controller class.
 	 */
 	public void initialize() {
+		comboBoxMethods.setEditable(false);
+		comboBoxMethods.setConverter(new StringConverter<ChangeGenerator>() {
+
+			@Override
+			public String toString(ChangeGenerator generator) {
+				return generator.getName();
+			}
+
+			@Override
+			public ChangeGenerator fromString(String string) {
+				return null;
+			}
+			
+		});
 		comboBoxMethods.setItems(availableMethods);
 		comboBoxMethods.getSelectionModel().clearAndSelect(0);
 		changesTableView.setOnMouseClicked(ms -> {
@@ -129,7 +148,7 @@ public class BulkChangeEditorController {
 	/*
 	 * User interface.
 	 */
-	@FXML private ComboBox<String> comboBoxMethods;
+	@FXML private ComboBox<ChangeGenerator> comboBoxMethods;
 	@FXML private ComboBox<DatasetColumn> comboBoxNameIdentifiers;
 	@FXML private ComboBox<Dataset> datasetsComboBox;
 	@FXML private TableView<PotentialChange> changesTableView;
@@ -139,15 +158,11 @@ public class BulkChangeEditorController {
 	 * Methods for finding changes
 	 */
 	
-	private final ObservableList<String> availableMethods = FXCollections.observableArrayList(Arrays.asList(
-		"Find renames using identifiers in additions and deletions",
-		"Find renames using identifiers in data",
-		"Find renames using a synonym column"
-	));
-	private final HashSet<String> methodsThatNeedAColumn = new HashSet<>(Arrays.asList(
-		"Find renames using identifiers in additions and deletions",
-		"Find renames using identifiers in data",
-		"Find renames using a synonym column"
+	private final ObservableList<ChangeGenerator> availableMethods = FXCollections.observableArrayList(Arrays.asList(
+		new RenamesFromIdsInChanges(),
+		new RenamesFromIdsInData(),
+		new SynonymsFromColumnChangeGenerator(),
+		new GenusChangesFromComposition()
 	));
 	
 	private ObservableList<PotentialChange> foundChanges = FXCollections.observableList(new LinkedList<>());
@@ -161,66 +176,17 @@ public class BulkChangeEditorController {
 		Dataset dataset = datasetsComboBox.getValue();
 		
 		// Which method should we use?
-		String method = comboBoxMethods.getSelectionModel().getSelectedItem();
-		if(method == null)
+		ChangeGenerator generator = comboBoxMethods.getSelectionModel().getSelectedItem();
+		if(generator == null)
 			return;
 		
-		switch(method) {
-			case "Find renames using identifiers in additions and deletions":
-				if(dataset == ALL) {
-					foundChanges.setAll(
-						new RenamesFromIdsInChanges(comboBoxNameIdentifiers.getSelectionModel().getSelectedItem())
-							.generate(project)
-							.collect(Collectors.toList())
-					);
-				} else {
-					foundChanges.setAll(
-						new RenamesFromIdsInChanges(comboBoxNameIdentifiers.getSelectionModel().getSelectedItem())
-							.generate(project, dataset)
-							.collect(Collectors.toList())
-					);	
-				}
-				
-				break;
-				
-			case "Find renames using identifiers in data":
-				if(dataset == ALL) {
-					foundChanges.setAll(
-						new RenamesFromIdsInData(comboBoxNameIdentifiers.getSelectionModel().getSelectedItem())
-							.generate(project)
-							.collect(Collectors.toList())
-					);
-				} else {
-					foundChanges.setAll(
-						new RenamesFromIdsInData(comboBoxNameIdentifiers.getSelectionModel().getSelectedItem())
-							.generate(project, dataset)
-							.collect(Collectors.toList())
-					);	
-				}
-				
-				break;
-								
-			case "Find renames using a synonym column":
-				if(dataset == ALL) {
-					foundChanges.setAll(
-						new SynonymsFromColumnChangeGenerator(comboBoxNameIdentifiers.getSelectionModel().getSelectedItem())
-							.generate(project)
-							.collect(Collectors.toList())
-					);
-				} else {
-					foundChanges.setAll(
-						new SynonymsFromColumnChangeGenerator(comboBoxNameIdentifiers.getSelectionModel().getSelectedItem())
-							.generate(project, dataset)
-							.collect(Collectors.toList())
-					);
-				}
-				break;
-				
-			case "Find lumps/splits using renames":
-				break;
-				
-			default:
-				throw new RuntimeException("No such method known: '" + method + "'");
+		if(generator.needsDatasetColumn())
+			generator.setDatasetColumn(comboBoxNameIdentifiers.getSelectionModel().getSelectedItem());
+		
+		if(dataset == ALL) {
+			foundChanges.setAll(generator.generate(project).collect(Collectors.toList()));
+		} else {
+			foundChanges.setAll(generator.generate(project, dataset).collect(Collectors.toList()));
 		}
 	}
 	

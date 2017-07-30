@@ -41,8 +41,22 @@ public class RenamesFromIdsInData implements ChangeGenerator {
 	
 	private DatasetColumn idColumn;
 	
-	public RenamesFromIdsInData(DatasetColumn col) {
-		idColumn = col;
+	public RenamesFromIdsInData() {
+	}
+	
+	@Override
+	public String getName() {
+		return "Find renames using identifiers in data";
+	}
+
+	@Override
+	public boolean needsDatasetColumn() {
+		return true;
+	}
+
+	@Override
+	public void setDatasetColumn(DatasetColumn ds) {
+		idColumn = ds;
 	}
 	
 	public Stream<PotentialChange> generate(Project project) {
