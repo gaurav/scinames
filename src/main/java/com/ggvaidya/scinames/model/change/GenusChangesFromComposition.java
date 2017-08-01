@@ -17,6 +17,7 @@
 package com.ggvaidya.scinames.model.change;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -94,35 +95,182 @@ public class GenusChangesFromComposition implements ChangeGenerator {
 
 		// For every genus previously defined, we need to figure out where names ended up.
 		// To do that correctly, we need to put the newly added genera in.
-		Set<Name> newlyAddedGenera = namesByGenus.keySet();
-		newlyAddedGenera.removeAll(prevNamesByGenus.keySet());
-		newlyAddedGenera.stream().forEach(n -> prevNamesByGenus.put(n, new ArrayList<>()));
+		//Set<Name> newlyAddedGenera = namesByGenus.keySet();
+		//newlyAddedGenera.removeAll(prevNamesByGenus.keySet());
+		//newlyAddedGenera.stream().forEach(n -> prevNamesByGenus.put(n, new ArrayList<>()));
+		
+		// Group changes by genera
+		Map<Name, Set<Change>> changesByGenus = new HashMap<>();
+		List<Change> datasetChanges = ds.getChanges(p).collect(Collectors.toList());
+		for(Change ch: datasetChanges) {
+			for(Name genus: ch.getAllNames().stream().flatMap(n -> n.asGenus()).collect(Collectors.toList())) {
+				if(!changesByGenus.containsKey(genus))
+					changesByGenus.put(genus, new HashSet<>());
+				
+				changesByGenus.get(genus).add(ch);
+			}
+		}
+		
+		// Go through every genus that's changed and figure out what happened.
+		return changesByGenus.keySet().stream().flatMap(genus -> {
+			Set<Change> changes = changesByGenus.get(genus);
+			
+			Set<Name> genusExpanded = new HashSet<>();
+			Set<Name> genusShrank = new HashSet<>();
+			Set<Name> genusSplitInto = new HashSet<>();
+			Set<Name> genusLumpedFrom = new HashSet<>();
+			Set<Name> genusUnclear = new HashSet<>();
+			
+			for(Change ch: changes) {
+				if(ch.getFrom().isEmpty() && ch.getTo().isEmpty()) {
+					// Ignore empty changes
+				} else if(ch.getFrom().isEmpty() && !ch.getTo().isEmpty()) {
+					genusExpanded.addAll(ch.getTo());
+					
+				} else if(!ch.getFrom().isEmpty() && ch.getTo().isEmpty()) {
+					genusShrank.addAll(ch.getFrom());
+					
+				} else if(!ch.getFrom().isEmpty() && !ch.getTo().isEmpty()) {
+					Set<Name> from = ch.getFrom();
+					Set<Name> to = ch.getTo();
+
+					// TODO: continue here!
+					
+					/*
+					Set<Name> namesInFromNotInThisGenus = from.stream().filter(n -> !n.asGenus().findFirst().get().equals(genus)).collect(Collectors.toSet());
+					Set<Name> namesInToNotInThisGenus = to.stream().filter(n -> !n.asGenus().findFirst().get().equals(genus)).collect(Collectors.toSet());
+					
+					Set<Name> generaInFrom = from.stream().filter(n -> n.asGenus().findFirst().get().equals(genus));
+					Set<Name> generaInTo = to.stream().filter(n -> n.asGenus().findFirst().get().equals(genus));
+					
+					if(genusInFrom && genusInTo) {
+						// e.g. A + B + C -> A + D + E (where genus = A)
+						// 	So: we really don't know what B, C, D, E mean
+						genusUnclear.addAll(namesInFromNotInThisGenus);
+						genusUnclear.addAll(namesInToNotInThisGenus);
+						
+						// But names in A are just moving within this genus. Ignore!
+					} else if(genusInFrom) {
+						// e.g. A + B + C -> B + D + E
+						// 	So: B, C are unclear
+						genusUnclear.addAll(namesInFromNotInThisGenus);
+						
+						// But we are clearly lumping into 	
+					}
+					
+					for(Name from: new ArrayList<>(ch.getFrom())) {
+						for(Name to: new ArrayList<>(ch.getTo())) {
+							Name genusFrom = from.asGenus().findFirst().get();
+							Name genusTo = to.asGenus().findFirst().get();
+							
+							if(genusFrom.equals(genus) && genusTo.equals(genus)) {
+								// Species renamed within genus, ignore.
+							} else if(genusFrom.equals(genus)) {
+								// Species split from this genus into another genus.
+								genusSplitInto.add(to); 
+							} else if(genusTo.equals(genus)) {
+								// Species lumped into this genus from another genus.
+								genusLumpedFrom.add(to);
+							} else {
+								// So, we get here if there's a lump or split that involves other genera
+								// 	e.g. A + B -> B (where genus = A)
+								// Or even worse:
+								//	e.g. A + B -> C (where genus = A)
+								// Either way, we basically just get expanded by
+								// the opposite side and shrunk by our side, so let's
+								// just do that.
+								if()
+							}
+						}
+					}*/
+					
+				} else {
+					throw new RuntimeException("Impossible code branch");
+				}
+			}
+			
+			return Stream.empty();
+		});
+		
+		/*
+				
+		// Every change affects a genus!
+		Map<Name, Set<String>> genusResults = new HashMap<>();
+
+		for(Change ch: changes) {
+			// All deleted genera have shrunk, possibly lumped, possibly deleted.
+			for(Name nameDeleted: ch.getFromStream().collect(Collectors.toList())) {
+				// Possibility 1. This genus has been deleted altogether.
+			}
+			
+			// All added genera have expanded, possibly split, possibly added.
+			for(Name nameAdded: ch.getToStream().collect(Collectors.toList())) {
+				
+			}
+		}
+		
+		LOGGER.info("Comparing dataset " + ds + " with " + prevDataset + ".");
+		LOGGER.info("Genus results: " + genusResults);
+
+		return Stream.empty();
 		
 		// Go through every previously existing genus (as well as newly added genera).
 		return prevNamesByGenus.keySet().stream()
-			.flatMap(genus -> {
+			.flatMap(prevGenus -> {
 				// Figure out previous and current composition of this genus.
-				Set<Name> prevNames = prevNamesByGenus.get(genus).stream().flatMap(n -> n.asBinomial()).collect(Collectors.toSet());
+				Set<Name> prevNames = prevNamesByGenus.get(prevGenus).stream().flatMap(n -> n.asBinomial()).collect(Collectors.toSet());
 				Set<Name> currentNames = new HashSet<>();
-				if(namesByGenus.containsKey(genus))
-					currentNames = namesByGenus.get(genus).stream().flatMap(n -> n.asBinomial()).collect(Collectors.toSet());
+				Map<Name, Name> genusPerName = new HashMap<>();
+				if(namesByGenus.containsKey(prevGenus)) {
+					currentNames = namesByGenus.get(prevGenus).stream().flatMap(n -> n.asBinomial()).collect(Collectors.toSet());
+					currentNames.forEach(n -> {
+						genusPerName.put(n, n.asGenus().findFirst().get());
+					});
+				}
 				
 				// Maybe it's identical
 				if(prevNames.equals(currentNames)) {
 					return Stream.empty();
 				// Maybe it ain't.
 				} else {
+					// Okay, so: where did the prevNames *go*?
+					List<PotentialChange> generaChanges = new LinkedList<>();
+					Set<Name> prevNamesUnexplained = new HashSet<>(prevNames);
+					
+					for(Name n: prevNamesUnexplained) {
+						Name currentGenus = genusPerName.get(n);
+						
+						// There are three options:
+						//		- expansion/contraction: names being added or deleted altogether
+						if(prevGenus.equals(obj))
+						
+						if(currentGenus.equals(Name.EMPTY)) {
+							// Name 'n' has been deleted altogether!
+							// Which means prevGenus has contracted!
+						}
+						
+						//		- We now have new names from (another genus) or 
+						//		- We've lost some of our names to another genus or 
+						
+						// Maybe some stayed in the same genus.
+					}
+						
+					
+					
+					
+					
+					
 					return Stream.of(new PotentialChange(
 						ds, 
 						ChangeType.of("changed"), 
-						Stream.of(genus), // old name 
-						Stream.of(genus), // new name
+						Stream.of(prevGenus), // old name 
+						Stream.of(prevGenus), // new name
 						GenusChangesFromComposition.class, 
 						"Genus changed from " + prevNames + " to " + currentNames
 					));
 				}
 			});
-		
+		*/
 	}
 
 }

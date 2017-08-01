@@ -195,7 +195,9 @@ public final class SearchViewController implements Initializable {
 					contextMenu.show(searchView.getScene().getWindow(), event.getScreenX(), event.getScreenY());
 				} else if(event.getClickCount() == 2) {
 					// So much easier.
-					searchView.getProjectView().openDetailedView(item);
+					// But causes the entire application to crash, so I'm commenting out for now.
+					// TODO
+					// searchView.getProjectView().openDetailedView(item);
 				}
 			});
 			
