@@ -724,17 +724,19 @@ public class Project {
 	 * @return Stream of changes that are reversions or repeats of previous lumps and splits.
 	 */
 	public Stream<Change> getChangesReversing(Change changeReversed) {
-		List<NameCluster> changeReversedTo = nameClusterManager.getClusters(changeReversed.getTo());
-		List<NameCluster> changeReversedFrom = nameClusterManager.getClusters(changeReversed.getFrom());
+		NameClusterManager ncm = getNameClusterManager();
+		
+		List<NameCluster> changeReversedTo = ncm.getClusters(changeReversed.getTo());
+		List<NameCluster> changeReversedFrom = ncm.getClusters(changeReversed.getFrom());
 		
 		return getLumpsAndSplits().filter(
 			// When change is inverted (LUMP -> SPLIT, SPLIT -> LUMP):
 			ch -> (ch.getType().equals(changeReversed.getType().invert()) && (
 				// AND either contains TWO of the 'from' clusters in the 'to' slot.
-				nameClusterManager.getClusters(ch.getFrom()).stream().filter(nc -> changeReversedTo.contains(nc)).count() >= 2
+				ncm.getClusters(ch.getFrom()).stream().filter(nc -> changeReversedTo.contains(nc)).count() >= 2
 
 				// OR contains TWO of the 'to' clusters in the 'from' slot.
-				|| nameClusterManager.getClusters(ch.getTo()).stream().filter(nc -> changeReversedFrom.contains(nc)).count() >= 2
+				|| ncm.getClusters(ch.getTo()).stream().filter(nc -> changeReversedFrom.contains(nc)).count() >= 2
 			))
 		);
 	} 
@@ -747,12 +749,14 @@ public class Project {
 	 * @return A Stream of all changes that perfectly reverse the source change.
 	 */
 	public Stream<Change> getChangesPerfectlyReversing(Change changeReversed) {
+		NameClusterManager ncm = getNameClusterManager();
+		
 		return getChangesReversing(changeReversed).filter(
 			ch -> (
 				// How to be a perfect reversal: be the same but opposite
 				changeReversed.getType().equals(ch.getType().invert())
-				&& nameClusterManager.getClusters(ch.getFrom()).equals(nameClusterManager.getClusters(changeReversed.getTo()))
-				&& nameClusterManager.getClusters(ch.getTo()).equals(nameClusterManager.getClusters(changeReversed.getFrom()))
+				&& ncm.getClusters(ch.getFrom()).equals(ncm.getClusters(changeReversed.getTo()))
+				&& ncm.getClusters(ch.getTo()).equals(ncm.getClusters(changeReversed.getFrom()))
 			)
 		);
 	}

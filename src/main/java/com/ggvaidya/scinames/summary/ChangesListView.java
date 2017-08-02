@@ -110,6 +110,21 @@ public final class ChangesListView {
 		cols.add(createTableColumnForChange("Date", ch -> ch.getDataset().getDate().asYYYYmmDD("-")));
 		cols.add(createTableColumnForChange("Year", ch -> ch.getDataset().getDate().getYearAsString()));
 		cols.add(createTableColumnForChange("Note", ch -> ch.noteProperty().get()));
+		cols.add(createTableColumnForChange("Names", 
+			ch -> {
+				return ch.getAllNames().stream().map(n -> n.getFullName()).sorted().collect(Collectors.joining("; "));
+			}
+		));
+		cols.add(createTableColumnForChange("BinomialNames", 
+			ch -> {
+				return ch.getAllNames().stream().flatMap(n -> n.asBinomial()).map(n -> n.getFullName()).sorted().collect(Collectors.joining("; "));
+			}
+		));
+		cols.add(createTableColumnForChange("OnlyInvolvesSpeciesOrLower", 
+			ch -> {
+				return ch.getAllNames().stream().allMatch(n -> (n.getBinomialName() != null)) ? "yes" : "no";
+			}
+		));
 		
 		controller.getTableItemsProperty().get().addAll(projectView.getProject().getChanges().collect(Collectors.toList()));
 	}
