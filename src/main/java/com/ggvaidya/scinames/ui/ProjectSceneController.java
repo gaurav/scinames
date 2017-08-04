@@ -39,6 +39,7 @@ import com.ggvaidya.scinames.summary.ChangeFiltersView;
 import com.ggvaidya.scinames.summary.ChangesListView;
 import com.ggvaidya.scinames.summary.DatasetSimilarityView;
 import com.ggvaidya.scinames.summary.DatasetTabularView;
+import com.ggvaidya.scinames.summary.HigherStabilityView;
 import com.ggvaidya.scinames.summary.LumpsAndSplitsView;
 import com.ggvaidya.scinames.summary.NameClustersView;
 import com.ggvaidya.scinames.summary.NameStabilityView;
@@ -139,6 +140,11 @@ public class ProjectSceneController {
 		MenuItem namesNameClusters = new MenuItem("Name clusters");
 		namesNameClusters.onActionProperty().set(e -> displayNameClusters(e));
 		namesMenu.getItems().add(namesNameClusters);
+		
+		// Names -> By higher taxa
+		MenuItem namesHigherStability = new MenuItem("Higher taxon name stability over time");
+		namesHigherStability.onActionProperty().set(e -> displayHigherStability(e));
+		namesMenu.getItems().add(namesHigherStability);
 		
 		// Changes
 		Menu changesMenu = new Menu("Changes");
@@ -606,6 +612,12 @@ public class ProjectSceneController {
 	@FXML
 	private void diffDatasets(ActionEvent evt) {
 		DatasetDiffView view = new DatasetDiffView(projectView);
+		view.getStage().show();
+	}
+	
+	@FXML
+	private void displayHigherStability(ActionEvent evt) {
+		HigherStabilityView view = new HigherStabilityView(projectView);
 		view.getStage().show();
 	}
 }
