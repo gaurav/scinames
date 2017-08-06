@@ -197,7 +197,10 @@ public final class HigherStabilityView {
 					String colValue = row.get(column);
 					if(colValue == null) colValue = "(null)";
 					
-					namesByDataset.put(colValue, ds, namesByRow.getOrDefault(colValue, new HashSet<>()));
+					if(!namesByDataset.contains(colValue, ds))
+						namesByDataset.put(colValue, ds, new HashSet<>());
+					
+					namesByDataset.get(colValue, ds).addAll(namesByRow.getOrDefault(row, new HashSet<>()));
 				}
 			}
 		}
@@ -210,6 +213,8 @@ public final class HigherStabilityView {
 		
 		for(String rowName: namesByDataset.rowKeySet()) {
 			precalc.put(rowName, "HigherTaxon", rowName);
+
+			Set<Name> prevNames = new HashSet<>();
 			
 			for(String dsName: datasetNamesInOrder) {
 				Dataset ds = datasetNames.get(dsName);
@@ -217,10 +222,13 @@ public final class HigherStabilityView {
 				
 				// Missing?! Oh noes.
 				if(names == null) names = new HashSet<>();
-
+				
 				// For now, let's just note down how many names we have.
-				precalc.put(rowName, dsName + "_with_synonymy", String.valueOf(names.size()));
-				precalc.put(rowName, dsName + "_without_synonymy", String.valueOf(names.size()));
+				precalc.put(rowName, dsName + "_with_synonymy", calculateDifferenceWithSynonymy(prevNames, names));
+				precalc.put(rowName, dsName + "_without_synonymy", calculateDifferenceWithoutSynonymy(prevNames, names));
+				
+				// Set up prevNames for next time 'round
+				prevNames = names;
 			}
 		}
 		
@@ -232,5 +240,33 @@ public final class HigherStabilityView {
 		LOGGER.info("higherTaxaList = " + higherTaxaList);
 		
 		controller.getTableView().refresh();
+	}
+	
+	private String calculateDifferenceWithSynonymy(Set<Name> prevNames, Set<Name> names) {
+		return "NA";
+	}
+	
+	private String calculateDifferenceWithoutSynonymy(Set<Name> prevNames, Set<Name> names) {
+		// There are three possibilities:
+		//		1. IDENTICAL: no difference between these two sets.
+		//		2. CONTRACTED: names contains every but not all names in prevNames
+		//		3. EXPANDED: prevNames contains every but not all names in names
+		//		4. COMPLEX: names have both EXPANDED and CONTRACTED
+		Set<Name> prevButNotCurrent = new HashSet<>(prevNames);
+		prevButNotCurrent.removeAll(names);
+		
+		Set<Name> currentButNotPrev = new HashSet<>(names);
+		currentButNotPrev.removeAll(prevNames);
+		
+		if(prevButNotCurrent.isEmpty() && currentButNotPrev.isEmpty()) {
+			return "IDENTICAL";
+		} else if(!prevButNotCurrent.isEmpty() && currentButNotPrev.isEmpty()) {
+			return "CONTRACTED: " + prevButNotCurrent.size();
+		} else if(prevButNotCurrent.isEmpty() && !currentButNotPrev.isEmpty()) {
+			return "EXPANDED: " + currentButNotPrev.size();
+		} else {
+			return "COMPLEX: " + prevButNotCurrent.size() + " deleted, " + currentButNotPrev.size() + " added";
+		}
+		
 	}
 }
