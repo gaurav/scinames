@@ -29,11 +29,13 @@ import com.ggvaidya.scinames.model.Name;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * The NameExtractorFactory provides a set of NameExtractors that can be used
@@ -47,6 +49,9 @@ import java.util.stream.Collectors;
  */
 public class NameExtractorFactory {
 	public static final Logger LOGGER = Logger.getLogger(NameExtractorFactory.class.getSimpleName());
+	
+	// How many arguments do we support?
+	public static final int MAX_ARGS = 1000;
 	
 	public static Set<Name> extractNamesUsingExtractors(List<NameExtractor> extractors, DatasetRow row) {
 		return extractNamesUsingExtractors(extractors, row, false);
@@ -104,6 +109,25 @@ public class NameExtractorFactory {
 		String arguments = matcher.group(2);
 		
 		switch(name) {
+			case "concatenate": return new NameExtractor("concatenate", 1, MAX_ARGS, arguments,
+				(extractor, row) -> extractor.applyFunction(
+						row,
+						(List<Optional<String>> vals) -> {
+							// We concatenate with blanks and produce one Name.
+							String fullName = vals.stream()
+								.flatMap(opt -> (opt.isPresent() ? Stream.of(opt.get()) : Stream.empty()))
+								.collect(Collectors.joining(" "));
+							
+							Optional<Name> optName = Name.getFromFullName(fullName.trim());
+							HashSet<Name> hsName = new HashSet<>();
+							if(optName.isPresent())
+								hsName.add(optName.get());
+				
+							return hsName;
+						}
+					)
+			);
+		
 			case "scientificName": return new NameExtractor("scientificName", 1, 1, arguments, 
 				(extractor, row) -> {
 					try {

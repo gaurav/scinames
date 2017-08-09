@@ -23,6 +23,7 @@
 
 package com.ggvaidya.scinames.model.rowextractors;
 
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
@@ -30,6 +31,7 @@ import java.util.Set;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import com.ggvaidya.scinames.model.Dataset;
 import com.ggvaidya.scinames.model.DatasetColumn;
@@ -80,6 +82,22 @@ public class NameExtractor {
 			// throw new NameExtractorParseException("Column '" + arg + "' missing in row " + row);
 		
 		return results;
+	}
+	
+	public Set<Name> applyFunction(DatasetRow row, Function<List<Optional<String>>, Set<Name>> func) {
+		Set<Name> results = new HashSet<>();
+		
+		// Get all arguments.
+		List<String> colNames = Arrays.asList(arguments);
+		
+		// Convert all colNames into DatasetColumns.
+		Stream<DatasetColumn> cols = colNames.stream().map(colName -> DatasetColumn.of(colName));
+
+		// Convert all dataset columns into their values for this row. 
+		List<Optional<String>> vals = cols.map(col -> Optional.ofNullable(row.get(col))).collect(Collectors.toList());
+
+		// Done! Get the result!
+		return func.apply(vals);
 	}
 	
 	public Set<Name> applyFunction(BiFunction<String, String, Name> func, int argIndex1, int argIndex2, DatasetRow row) {
