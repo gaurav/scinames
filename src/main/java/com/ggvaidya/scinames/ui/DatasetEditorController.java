@@ -32,6 +32,7 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.ResourceBundle;
 import java.util.Set;
 import java.util.logging.Logger;
@@ -70,6 +71,7 @@ import javafx.fxml.Initializable;
 import javafx.geometry.Insets;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
+import javafx.scene.control.ButtonType;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
@@ -78,6 +80,7 @@ import javafx.scene.control.TableColumn.CellDataFeatures;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
+import javafx.scene.control.TextInputDialog;
 import javafx.scene.control.cell.CheckBoxTableCell;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.control.cell.TextFieldTableCell;
@@ -208,7 +211,64 @@ public class DatasetEditorController implements Initializable {
 	
 	/* FXML events */
 	@FXML private void renameColumn(ActionEvent e) {
+		DatasetColumn colToRename = columnComboBox.getValue();
 		
+		// This may be null. If so, ignore!
+		if(colToRename == null) return;
+		
+		TextInputDialog textInputDialog = new TextInputDialog(colToRename.getName());
+		textInputDialog.setTitle("Rename column '" + colToRename.getName() + "'");
+		textInputDialog.setHeaderText("Please enter the new name you'd like to give column '" + colToRename.getName() + "'");
+		textInputDialog.setContentText("Rename column to:");
+		
+		Optional<String> optNewName = textInputDialog.showAndWait();
+		if(optNewName.isPresent()) {
+			String newName = optNewName.get();
+			DatasetColumn newColumn = DatasetColumn.of(newName);
+			
+			// Find out if this rename will require merging.
+			if(!dataset.getColumns().contains(newColumn)) {
+				// No merging required!
+				dataset.rowsProperty().forEach(row -> {
+					row.put(newColumn, row.get(colToRename));
+					row.remove(colToRename);
+				});
+				
+				// Update columns.
+				dataset.getColumns().add(dataset.getColumns().indexOf(colToRename), newColumn);
+				dataset.getColumns().remove(colToRename);
+				
+			} else {
+				// Merging required!
+				ButtonType result = new Alert(AlertType.CONFIRMATION,
+					"Warning: this dataset already contains a column named '" + newColumn.getName() + "'. Would you like to merge these two columns together?",
+					ButtonType.YES, ButtonType.NO
+				).showAndWait().orElse(ButtonType.NO);
+				
+				if(result.equals(ButtonType.NO)) return;
+				
+				// Do the merge!
+				dataset.rowsProperty().forEach(row -> {
+					String val1 = row.get(colToRename);
+					String val2 = row.get(newColumn);
+					
+					String finalVal = null;
+					if(val1 == null || val1.equals("")) finalVal = val2;
+					else if(val2 == null || val2.equals("")) finalVal = val1;
+					else {
+						// Both have values! Concatenate as '"1" and "2"'
+						finalVal = '"' + val1 + "\" and \"" + val2 + '"'; 
+					}
+					
+					// This will *replace* newColumn, not add it.
+					row.put(newColumn, finalVal);
+					row.remove(colToRename);
+				});
+				
+				// Update columns. Since we already have newColumn, we don't need to add it!
+				dataset.getColumns().remove(colToRename);
+			}
+		}
 	}
 	
 	@FXML private void deleteColumn(ActionEvent e) {

@@ -258,6 +258,11 @@ public class Name implements Comparable<Name> {
 		if(name == null || name.equals("")) return Optional.empty();
 		String[] components = name.split("\\s+");
 		
+		// The first name should be alphabetic, otherwise we fail right away.
+		if(components.length > 0 && !components[0].matches("^[A-Za-z_\\.]+$")) {
+			return Optional.empty();
+		}
+		
 		if(components.length > 3) {
 			String infraspecificEpithets = Arrays.asList(components)
 				.subList(2, components.length)						// Ignore the first two components, which are

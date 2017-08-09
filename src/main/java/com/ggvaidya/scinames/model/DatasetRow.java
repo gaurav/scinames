@@ -59,7 +59,9 @@ public class DatasetRow {
 	public String get(DatasetColumn col)			{ return data.get(col); }
 	public String get(String colName)				{ return data.get(DatasetColumn.of(colName)); }	
 	public void put(DatasetColumn col, String val)	{ data.put(col, val); }	
-	public void put(String colName, String val)		{ data.put(DatasetColumn.of(colName), val); }		
+	public void put(String colName, String val)		{ data.put(DatasetColumn.of(colName), val); }	
+	public void remove(DatasetColumn col)			{ data.remove(col); }
+	public void remove(String colName)				{ data.remove(DatasetColumn.of(colName)); }
 	public Set<DatasetColumn> getColumns()			{ return data.keySet(); }
 	public boolean hasColumn(DatasetColumn col)		{ return data.containsKey(col); }
 	public boolean hasColumn(String colName)		{ return data.containsKey(DatasetColumn.of(colName)); }	
