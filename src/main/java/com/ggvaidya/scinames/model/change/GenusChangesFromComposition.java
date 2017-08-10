@@ -134,7 +134,8 @@ public class GenusChangesFromComposition implements ChangeGenerator {
 					Set<Name> from = ch.getFrom();
 					Set<Name> to = ch.getTo();
 
-					// TODO: continue here!
+					// Which names were added and which were deleted.
+					
 					
 					/*
 					Set<Name> namesInFromNotInThisGenus = from.stream().filter(n -> !n.asGenus().findFirst().get().equals(genus)).collect(Collectors.toSet());

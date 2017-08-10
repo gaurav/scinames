@@ -259,14 +259,24 @@ public final class HigherStabilityView {
 		currentButNotPrev.removeAll(prevNames);
 		
 		if(prevButNotCurrent.isEmpty() && currentButNotPrev.isEmpty()) {
-			return "IDENTICAL";
+			return String.format("%.2g%% (IDENTICAL)", 100 * calculateSimilarity(prevNames, names));
 		} else if(!prevButNotCurrent.isEmpty() && currentButNotPrev.isEmpty()) {
-			return "CONTRACTED: " + prevButNotCurrent.size();
+			return String.format("%.2g%% (CONTRACTED BY " + prevButNotCurrent.size() + ")", 100 * calculateSimilarity(prevNames, names));
 		} else if(prevButNotCurrent.isEmpty() && !currentButNotPrev.isEmpty()) {
-			return "EXPANDED: " + currentButNotPrev.size();
+			return String.format("%.2g%% (EXPANDED BY " + currentButNotPrev.size() + ")", 100 * calculateSimilarity(prevNames, names));
 		} else {
-			return "COMPLEX: " + prevButNotCurrent.size() + " deleted, " + currentButNotPrev.size() + " added";
-		}
+			return String.format("%.2g%% (COMPLEX: " + prevButNotCurrent.size() + " deleted, " + currentButNotPrev.size() + " added)", 100 * calculateSimilarity(prevNames, names));
+		}	
+	}
+	
+	private double calculateSimilarity(Set<Name> from, Set<Name> to) {
+		// Similarity = intersection(from, to)/union(from, to)
+		Set<Name> union = new HashSet<>(from);
+		union.addAll(to);
 		
+		Set<Name> intersection = new HashSet<>(from);
+		intersection.retainAll(to);
+		
+		return ((double)intersection.size() / union.size());
 	}
 }

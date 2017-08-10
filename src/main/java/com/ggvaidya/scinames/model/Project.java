@@ -397,17 +397,21 @@ public class Project {
 				nameClusterManager = new NameClusterManager();
 				
 				for(Dataset ds: getDatasets()) {
+					
 					// Add all referenced names so they'll show up at least once.
-					ds.getReferencedNames().forEach(n -> nameClusterManager.addCluster(new NameCluster(ds, n)));
+					for(Name n: ds.getReferencedNames().collect(Collectors.toList())) {
+						nameClusterManager.addCluster(new NameCluster(ds, n));
+					}
 				
 					// Add all renames as synonymies, building up clusters as we go.
-					ds.getChanges(this).filter(ch -> ch.getType().equals(ChangeType.RENAME)).forEach(c ->
-						c.getFrom().forEach(from ->
-							c.getTo().forEach(
-								to -> nameClusterManager.addCluster(new Synonymy(from, to, c.getDataset()))
-							)
-						)
-					);
+					List<Change> renames = ds.getChanges(this).filter(ch -> ch.getType().equals(ChangeType.RENAME)).collect(Collectors.toList());
+					for(Change ch: renames) {
+						for(Name from: ch.getFrom()) {
+							for(Name to: ch.getTo()) {
+								nameClusterManager.addCluster(new Synonymy(from, to, ch.getDataset()));
+							}
+						}
+					}
 				}
 				
 				LOGGER.info("New name cluster manager calculation completed.");
