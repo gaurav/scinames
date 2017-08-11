@@ -16,8 +16,8 @@
          <center>
             <AnchorPane minHeight="-Infinity" minWidth="-Infinity" prefHeight="200.0" prefWidth="200.0" BorderPane.alignment="CENTER">
                <children>
-                  <Button layoutX="806.0" layoutY="573.0" mnemonicParsing="false" onAction="#displayNameClusters" prefHeight="27.0" prefWidth="61.0" text="Names" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="806.0" />
-                  <Button layoutX="306.0" layoutY="573.0" mnemonicParsing="false" onAction="#diffDatasets" prefHeight="27.0" prefWidth="163.0" text="Compare checklists" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="306.0" />
+                  <Button layoutX="792.0" layoutY="573.0" mnemonicParsing="false" onAction="#displayNameClusters" prefHeight="27.0" prefWidth="61.0" text="Names" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="792.0" />
+                  <Button layoutX="295.0" layoutY="573.0" mnemonicParsing="false" onAction="#diffDatasets" prefHeight="27.0" prefWidth="149.0" text="Compare checklists" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="295.0" />
                   <Button layoutX="952.0" mnemonicParsing="false" onAction="#refreshProject" prefHeight="27.0" prefWidth="80.0" text="Refresh" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
                   <TableView fx:id="timepointTable" layoutY="27.0" prefHeight="546.0" prefWidth="1072.0" AnchorPane.bottomAnchor="27.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="27.0">
                     <columns>
@@ -31,14 +31,14 @@
                   <Label layoutX="2.0" layoutY="5.0" prefHeight="17.0" prefWidth="105.0" text="Current Project:" AnchorPane.leftAnchor="2.0" AnchorPane.topAnchor="5.0" />
                   <TextField fx:id="projectName" layoutX="105.0" onAction="#projectNameChanged" prefHeight="27.0" prefWidth="837.0" AnchorPane.leftAnchor="105.0" AnchorPane.rightAnchor="80.0" AnchorPane.topAnchor="0.0" />
                   <Button mnemonicParsing="false" onAction="#addDataset" prefHeight="27.0" prefWidth="95.0" text="Add dataset" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" />
-                  <Button layoutX="95.0" layoutY="573.0" mnemonicParsing="false" onAction="#removeDataset" prefHeight="27.0" prefWidth="128.0" text="Remove dataset" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="95.0" />
-                  <Button layoutX="867.0" layoutY="573.0" mnemonicParsing="false" onAction="#displayLumpsAndSplits" prefHeight="27.0" prefWidth="103.0" text="Lumps/Splits" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="867.0" />
-                  <Button layoutX="970.0" layoutY="573.0" mnemonicParsing="false" onAction="#displayNameStability" prefHeight="27.0" prefWidth="113.0" text="Name stability" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="970.0" />
-                  <Button layoutX="708.0" layoutY="573.0" mnemonicParsing="false" onAction="#displayProjectTabularView" prefHeight="27.0" prefWidth="98.0" text="Project stats" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="708.0" />
-                  <Button layoutX="233.0" layoutY="573.0" mnemonicParsing="false" onAction="#displaySearch" prefHeight="27.0" prefWidth="73.0" text="Search" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="233.0" />
-                  <Button layoutX="578.0" layoutY="573.0" mnemonicParsing="false" onAction="#displayValidationSuite" prefHeight="27.0" prefWidth="122.0" text="Validate project" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="578.0" />
-                  <Button layoutX="1083.0" layoutY="573.0" mnemonicParsing="false" onAction="#reconcileData" prefHeight="27.0" prefWidth="117.0" text="Reconcile data" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="1083.0" />
-                  <Button layoutX="478.0" layoutY="573.0" mnemonicParsing="false" onAction="#displayBulkChangeEditor" prefHeight="27.0" prefWidth="100.0" text="Infer changes" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="478.0" />
+                  <Button layoutX="95.0" layoutY="573.0" mnemonicParsing="false" onAction="#removeDataset" prefHeight="27.0" prefWidth="123.0" text="Remove dataset" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="95.0" />
+                  <Button layoutX="853.0" layoutY="573.0" mnemonicParsing="false" onAction="#displayLumpsAndSplits" prefHeight="27.0" prefWidth="103.0" text="Lumps/Splits" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="853.0" />
+                  <Button layoutX="956.0" layoutY="573.0" mnemonicParsing="false" onAction="#displayNameStability" prefHeight="27.0" prefWidth="113.0" text="Name stability" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="956.0" />
+                  <Button layoutX="694.0" layoutY="573.0" mnemonicParsing="false" onAction="#displayProjectTabularView" prefHeight="27.0" prefWidth="98.0" text="Project stats" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="694.0" />
+                  <Button layoutX="227.0" layoutY="573.0" mnemonicParsing="false" onAction="#displaySearch" prefHeight="27.0" prefWidth="68.0" text="Search" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="227.0" />
+                  <Button layoutX="562.0" layoutY="573.0" mnemonicParsing="false" onAction="#displayValidationSuite" prefHeight="27.0" prefWidth="122.0" text="Validate project" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="562.0" />
+                  <Button layoutX="1069.0" layoutY="573.0" mnemonicParsing="false" onAction="#reconcileData" prefHeight="27.0" prefWidth="117.0" text="Reconcile data" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="1069.0" />
+                  <Button layoutX="456.0" layoutY="573.0" mnemonicParsing="false" onAction="#displayBulkChangeEditor" prefHeight="27.0" prefWidth="106.0" text="Infer changes" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="456.0" />
                </children>
             </AnchorPane>
          </center>
