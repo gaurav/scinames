@@ -27,6 +27,7 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.List;
 import java.util.Set;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 import com.ggvaidya.scinames.model.Dataset;
@@ -53,6 +54,8 @@ import javafx.stage.Stage;
  * @author Gaurav Vaidya <gaurav@ggvaidya.com>
  */
 public final class DatasetSimilarityView {
+	private Logger LOGGER = Logger.getLogger(DatasetSimilarityView.class.getSimpleName());
+	
 	private Stage stage;
 	private Scene scene;
 	private ProjectView projectView;
@@ -92,8 +95,10 @@ public final class DatasetSimilarityView {
 		double lowest = 100.0;
 		Dataset tpLowest1 = null;
 		Dataset tpLowest2 = null;		
-		projectView.startProgressBar();
-		System.err.println("Starting precalculating.");
+
+
+		LOGGER.info("Starting precalculating.");
+		
 		Table<Dataset, Dataset, String> data = HashBasedTable.create();
 		for(Dataset tp: projectView.getProject().getDatasets()) {
 			for(Dataset colTP: projectView.getProject().getDatasets()) {
@@ -122,8 +127,8 @@ public final class DatasetSimilarityView {
 				data.put(colTP, tp, result);
 			}
 		}
-		System.err.println("Precalculating done.");
-		projectView.stopProgressBar();
+		
+		LOGGER.info("Precalculating done.");
 		
 		// Setup headertext.
 		String str_lowest = "";
