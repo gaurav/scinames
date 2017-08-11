@@ -113,31 +113,72 @@ public class GenusChangesFromComposition implements ChangeGenerator {
 		
 		// Go through every genus that's changed and figure out what happened.
 		return changesByGenus.keySet().stream().flatMap(genus -> {
+			// We need to generate a set of genus-level PotentialChanges.
+			List<PotentialChange> potentialChanges = new LinkedList<>();
+			
 			Set<Change> changes = changesByGenus.get(genus);
 			
-			Set<Name> genusExpanded = new HashSet<>();
-			Set<Name> genusShrank = new HashSet<>();
 			Set<Name> genusSplitInto = new HashSet<>();
 			Set<Name> genusLumpedFrom = new HashSet<>();
-			Set<Name> genusUnclear = new HashSet<>();
 			
 			for(Change ch: changes) {
-				if(ch.getFrom().isEmpty() && ch.getTo().isEmpty()) {
-					// Ignore empty changes
-				} else if(ch.getFrom().isEmpty() && !ch.getTo().isEmpty()) {
-					genusExpanded.addAll(ch.getTo());
+				Set<Name> fromGenera = ch.getFrom().stream().flatMap(n -> n.asGenus()).collect(Collectors.toSet());
+				Set<Name> toGenera = ch.getTo().stream().flatMap(n -> n.asGenus()).collect(Collectors.toSet());
+				
+				boolean genusInFrom = fromGenera.contains(genus);
+				fromGenera.remove(genus);
+				
+				boolean genusInTo = toGenera.contains(genus);
+				toGenera.remove(genus);
+				
+				if(genusInFrom && genusInTo) {
+					genusLumpedFrom.addAll(fromGenera);
+					genusSplitInto.addAll(toGenera);
 					
-				} else if(!ch.getFrom().isEmpty() && ch.getTo().isEmpty()) {
-					genusShrank.addAll(ch.getFrom());
+				} else if(genusInFrom) {
+					// (Partial?) Split-into
+					genusSplitInto.addAll(toGenera);
 					
-				} else if(!ch.getFrom().isEmpty() && !ch.getTo().isEmpty()) {
-					Set<Name> from = ch.getFrom();
-					Set<Name> to = ch.getTo();
-
-					// Which names were added and which were deleted.
+				} else if(genusInTo) {
+					// (Partial?) Lump-from
+					genusLumpedFrom.addAll(fromGenera);
 					
+				} else {
+					throw new RuntimeException("Impossible branch executed");
+				}
+			}
+			
+			// All the changes are done, it's time to PRONOUNCE JUDGEMENT.
+			if(genusSplitInto.isEmpty() && genusLumpedFrom.isEmpty()) {
+				// No change! All good.
+				
+			} else if(!genusSplitInto.isEmpty() && genusLumpedFrom.isEmpty()) {
+				potentialChanges.add(
+					new PotentialChange(ds, ChangeType.LUMP, genusLumpedFrom.stream(), Stream.of(genus), this.getClass(), "genusLumpedFrom")
+				);
+				
+			} else if(genusSplitInto.isEmpty() && !genusLumpedFrom.isEmpty()) {
+				potentialChanges.add(
+					new PotentialChange(ds, ChangeType.SPLIT, Stream.of(genus), genusSplitInto.stream(), this.getClass(), "genusSplitInto")
+				);
+				
+			} else if(!genusSplitInto.isEmpty() && !genusLumpedFrom.isEmpty()) {
+				potentialChanges.add(
+					new PotentialChange(ds, ChangeType.LUMP, genusLumpedFrom.stream(), Stream.of(genus), this.getClass(), "genusLumpedFrom and genusSplitInto")
+				);
+				potentialChanges.add(
+					new PotentialChange(ds, ChangeType.SPLIT, Stream.of(genus), genusSplitInto.stream(), this.getClass(), "genusLumpedFrom and genusSplitInto")
+				);
+				
+			} else {
+				throw new RuntimeException("Unexpected branch");
+			}
+			
+			return potentialChanges.stream();
+			
+		});
 					
-					/*
+		/*
 					Set<Name> namesInFromNotInThisGenus = from.stream().filter(n -> !n.asGenus().findFirst().get().equals(genus)).collect(Collectors.toSet());
 					Set<Name> namesInToNotInThisGenus = to.stream().filter(n -> !n.asGenus().findFirst().get().equals(genus)).collect(Collectors.toSet());
 					
@@ -183,7 +224,7 @@ public class GenusChangesFromComposition implements ChangeGenerator {
 								if()
 							}
 						}
-					}*/
+					}
 					
 				} else {
 					throw new RuntimeException("Impossible code branch");
