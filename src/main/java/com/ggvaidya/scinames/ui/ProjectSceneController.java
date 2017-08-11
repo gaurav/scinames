@@ -62,6 +62,7 @@ import javafx.scene.control.Menu;
 import javafx.scene.control.MenuBar;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.ProgressBar;
+import javafx.scene.control.SeparatorMenuItem;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableColumn.CellDataFeatures;
 import javafx.scene.control.TableRow;
@@ -70,6 +71,7 @@ import javafx.scene.control.TextField;
 import javafx.scene.control.cell.ComboBoxTableCell;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.control.cell.TextFieldTableCell;
+import javafx.scene.layout.BorderPane;
 import javafx.stage.FileChooser;
 import javafx.stage.Modality;
 import javafx.util.StringConverter;
@@ -90,8 +92,8 @@ public class ProjectSceneController {
 	 * 
 	 * @return 
 	 */
-	public MenuBar setupMenuBar() {
-		MenuBar mb = menuBar;	
+	public void setupMenuBar() {
+		MenuBar mb = new MenuBar();
 		mb.getMenus().clear();
 		
 		// File
@@ -99,36 +101,70 @@ public class ProjectSceneController {
 		mb.getMenus().add(fileMenu);
 		
 		// File -> New
-		MenuItem fileNew = new MenuItem("New");
+		MenuItem fileNew = new MenuItem("Close current project");
 		fileNew.onActionProperty().set((ActionEvent e) -> clearExistingProject(e));
 		fileMenu.getItems().add(fileNew);
 		
 		// File -> Load
-		MenuItem fileLoad = new MenuItem("Load");
+		MenuItem fileLoad = new MenuItem("Load project from file ...");
 		fileLoad.onActionProperty().set((ActionEvent e) -> loadProject(e));
 		fileMenu.getItems().add(fileLoad);
 		
 		// File -> Save
-		MenuItem fileSave = new MenuItem("Save");
+		MenuItem fileSave = new MenuItem("Save current project");
 		fileSave.onActionProperty().set((ActionEvent e) -> saveProject(e));
 		fileMenu.getItems().add(fileSave);
 		
-		// Datasets
-		Menu datasetsMenu = new Menu("Datasets");
-		mb.getMenus().add(datasetsMenu);
+		// File -> SaveAs
+		MenuItem fileSaveAs = new MenuItem("Save project to file ...");
+		fileSaveAs.onActionProperty().set((ActionEvent e) -> saveAsProject(e));
+		fileMenu.getItems().add(fileSaveAs);
 		
-		// Datasets -> Import dataset directly
+		// Project
+		Menu projectMenu = new Menu("Project");
+		mb.getMenus().add(projectMenu);
+		
+		// Project -> Display project stats
+		MenuItem projectStats = new MenuItem("Display project stats");
+		projectStats.onActionProperty().set((ActionEvent e) -> displayProjectTabularView(e));
+		projectMenu.getItems().add(projectStats);
+		
+		projectMenu.getItems().add(new SeparatorMenuItem());
+		
+		// Data -> Import dataset directly
 		MenuItem datasetsImport = new MenuItem("Import dataset directly");
 		datasetsImport.onActionProperty().set((ActionEvent e) -> addDataset(e));
-		datasetsMenu.getItems().add(datasetsImport);
+		projectMenu.getItems().add(datasetsImport);
 		
-		// Datasets -> Import dataset via importer
+		// Data -> Import dataset via importer
 		MenuItem datasetsImporter = new MenuItem("Import dataset via importer");
 		datasetsImporter.onActionProperty().set((ActionEvent e) -> addDatasetViaImporter(e));
-		datasetsMenu.getItems().add(datasetsImporter);
+		projectMenu.getItems().add(datasetsImporter);
+		
+		projectMenu.getItems().add(new SeparatorMenuItem());
+		
+		// Data -> Search by data
+		MenuItem dataSearch = new MenuItem("Search");
+		dataSearch.onActionProperty().set((ActionEvent e) -> displaySearch(e));
+		projectMenu.getItems().add(dataSearch);
+		
+		// Data -> Compare checklists
+		MenuItem dataCompareChecklists = new MenuItem("Compare checklists");
+		dataCompareChecklists.onActionProperty().set((ActionEvent e) -> diffDatasets(e));
+		projectMenu.getItems().add(dataCompareChecklists);
+		
+		// Data -> Validate project
+		MenuItem validateProject = new MenuItem("Validate project");
+		validateProject.onActionProperty().set(e -> displayValidationSuite(e));
+		projectMenu.getItems().add(validateProject);
+
+		// Project -> Reconcile data
+		MenuItem reconcileData = new MenuItem("Reconcile data");
+		reconcileData.onActionProperty().set(e -> reconcileData(e));
+		projectMenu.getItems().add(reconcileData);		
 		
 		// Names
-		Menu namesMenu = new Menu("Names");
+		Menu namesMenu = new Menu("Names and concepts");
 		mb.getMenus().add(namesMenu);
 		
 		// Names -> All names
@@ -141,10 +177,22 @@ public class ProjectSceneController {
 		namesNameClusters.onActionProperty().set(e -> displayNameClusters(e));
 		namesMenu.getItems().add(namesNameClusters);
 		
+		// Names -> Name stability
+		MenuItem namesStability = new MenuItem("Name stability over time");
+		namesStability.onActionProperty().set(e -> displayNameStability(e));
+		namesMenu.getItems().add(namesStability);
+		
 		// Names -> By higher taxa
 		MenuItem namesHigherStability = new MenuItem("Higher taxon name stability over time");
 		namesHigherStability.onActionProperty().set(e -> displayHigherStability(e));
 		namesMenu.getItems().add(namesHigherStability);
+		
+		namesMenu.getItems().add(new SeparatorMenuItem());
+		
+		// Names -> Taxon concepts
+		MenuItem namesTaxonConcepts = new MenuItem("Taxon concepts");
+		namesTaxonConcepts.onActionProperty().set(e -> displayTaxonConcepts(e));
+		namesMenu.getItems().add(namesTaxonConcepts);
 		
 		// Changes
 		Menu changesMenu = new Menu("Changes");
@@ -155,14 +203,28 @@ public class ProjectSceneController {
 		changesAllChanges.onActionProperty().set(e -> displayChanges(e));
 		changesMenu.getItems().add(changesAllChanges);
 
+		// Changes -> All changes
+		MenuItem changesLumpsAndSplits = new MenuItem("Lumps and splits");
+		changesLumpsAndSplits.onActionProperty().set(e -> displayLumpsAndSplits(e));
+		changesMenu.getItems().add(changesLumpsAndSplits);
+				
+		// Changes -> Infer changes
+		MenuItem changesInferChanges = new MenuItem("Infer changes");
+		changesInferChanges.onActionProperty().set(e -> displayBulkChangeEditor(e));
+		changesMenu.getItems().add(changesInferChanges);		
+
 		// Configuration
 		Menu configMenu = new Menu("Configuration");
 		mb.getMenus().add(configMenu);
 		
 		// Configuration -> View and edit
-		MenuItem configViewAndEdit = new MenuItem("View and edit");
+		MenuItem configViewAndEdit = new MenuItem("Edit configuration");
 		configViewAndEdit.onActionProperty().set((ActionEvent e) -> editConfiguration(e));
 		configMenu.getItems().add(configViewAndEdit);
+		
+		MenuItem configFilters = new MenuItem("View and edit filters");
+		configFilters.onActionProperty().set((ActionEvent e) -> displayFilters(e));
+		configMenu.getItems().add(configFilters);
 
 		Menu helpMenu = new Menu("Help");
 		helpMenu.getItems().addAll(
@@ -171,7 +233,7 @@ public class ProjectSceneController {
 		
 		// Final setups
 		mb.setUseSystemMenuBar(true);
-		return mb;
+		mainBorderPane.setTop(mb);
 	}
 	
 	/**
@@ -343,21 +405,10 @@ public class ProjectSceneController {
 	private TextField projectName;
 	
 	@FXML
+	private BorderPane mainBorderPane;
+	
+	@FXML
 	private TableView<Dataset> timepointTable;
-	
-	@FXML
-	private MenuBar menuBar;
-	
-	@FXML
-	private ProgressBar progressBar;
-	
-	public void startProgressBar() {
-		progressBar.setVisible(true);
-	}
-	
-	public void stopProgressBar() {
-		progressBar.setVisible(false);
-	}
 	
 	/**
 	 * Called when the project name field changes.
@@ -475,6 +526,37 @@ public class ProjectSceneController {
 		}
 		
 		updateProject(projectView.getProject());
+	}
+
+	@FXML
+	private void saveAsProject(ActionEvent evt) {
+		Project project = projectView.getProject();
+		
+		// Does this project already have a filename?
+		File f = project.getFile();
+		if(f == null) {
+			FileChooser chooser = new FileChooser();
+			chooser.setTitle("Save project to ...");
+			chooser.getExtensionFilters().setAll(
+				new FileChooser.ExtensionFilter("Project XML.gz file", "*.xml.gz")
+			);
+			chooser.setSelectedExtensionFilter(
+				new FileChooser.ExtensionFilter("Project XML.gz file", "*.xml.gz")
+			);
+			f = chooser.showSaveDialog(projectView.getStage());
+			if(f == null)
+				return;
+			project.setFile(f);
+		}
+		
+		try {
+			SciNames.reportMemoryStatus("Saving project " + project + " to disk");
+			project.saveToFile();
+			SciNames.reportMemoryStatus("Project saved to disk");
+		} catch (IOException ex) {
+			new Alert(Alert.AlertType.ERROR, "Could not save project to file '" + f + "': " + ex)
+				.showAndWait();
+		}
 	}
 	
 	/**

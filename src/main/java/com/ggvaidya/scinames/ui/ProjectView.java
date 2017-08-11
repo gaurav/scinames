@@ -190,8 +190,7 @@ public class ProjectView {
 
 				if(f.canRead()) {
 					Project p = null;
-
-					startProgressBar();
+					
 					try {
 						SciNames.reportMemoryStatus("Loading file " + f + " as last-open project");
 						p = Project.loadFromFile(f);
@@ -202,19 +201,9 @@ public class ProjectView {
 
 					if(p != null)
 						setProject(p);
-					
-					stopProgressBar();
 				}
 			}
 		});
-	}
-	
-	public void startProgressBar() {
-		controller.startProgressBar();
-	}
-	
-	public void stopProgressBar() {
-		controller.stopProgressBar();
 	}
 
 	public void closeCurrentProject() throws IOException {
