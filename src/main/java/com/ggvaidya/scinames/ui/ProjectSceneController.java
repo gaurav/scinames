@@ -693,7 +693,17 @@ public class ProjectSceneController {
 	
 	@FXML
 	private void diffDatasets(ActionEvent evt) {
-		DatasetDiffView view = new DatasetDiffView(projectView);
+		DatasetDiffView view;
+		
+		List<Dataset> selectedDatasets = timepointTable.getSelectionModel().getSelectedItems();
+		if(selectedDatasets.size() > 1) {
+			view = new DatasetDiffView(projectView, selectedDatasets.get(0), selectedDatasets.get(1));
+		} else if(selectedDatasets.size() > 0) {
+			view = new DatasetDiffView(projectView, selectedDatasets.get(0), selectedDatasets.get(0));
+		} else {
+			view = new DatasetDiffView(projectView);
+		}
+		
 		view.getStage().show();
 	}
 	

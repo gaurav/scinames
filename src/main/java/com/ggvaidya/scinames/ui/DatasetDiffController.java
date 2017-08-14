@@ -24,6 +24,7 @@ import java.math.BigDecimal;
 import java.math.MathContext;
 import java.net.URL;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -77,27 +78,37 @@ public class DatasetDiffController implements Initializable {
 	private static final DatasetColumn DATASET_COLUMN_BINOMIAL_NAME_CLUSTER = DatasetColumn.fakeColumnFor("Binomial name cluster for extracted scientific name");
 	private static final DatasetColumn DATASET_COLUMN_NAME_SPECIFIC_EPITHET = DatasetColumn.fakeColumnFor("Subspecific epithet only");
 	
+	private ObservableList<DatasetColumn> byUniques = FXCollections.observableArrayList();
+	
 	private DatasetDiffView datasetDiffView;
 	public void setDatasetDiffView(DatasetDiffView ddv) {
 		datasetDiffView = ddv;
 		
 		// Set up the available datasets.
 		Project project = ddv.getProjectView().getProject();
+		
 		dataset1ComboBox.setItems(project.getDatasets());
+		dataset1ComboBox.getSelectionModel().selectedItemProperty().addListener(a -> regenerateByUniques());
 		dataset1ComboBox.getSelectionModel().clearAndSelect(0);
+		
 		dataset2ComboBox.setItems(project.getDatasets());
+		dataset1ComboBox.getSelectionModel().selectedItemProperty().addListener(a -> regenerateByUniques());
 		dataset2ComboBox.getSelectionModel().clearAndSelect(0);
 		
-		ObservableList<DatasetColumn> byUniques = FXCollections.observableArrayList();
-		addUniqueMaps(byUniques);
-		byUniques.addAll(project.getDatasets().stream()
-			.flatMap(ds -> ds.getColumns().stream())
-			.distinct()
-			.sorted()
-			.collect(Collectors.toList())
-		);
+		regenerateByUniques();
 		byUniqueComboBox.setItems(byUniques);
 		byUniqueComboBox.getSelectionModel().clearAndSelect(0);
+	}
+	
+	private void regenerateByUniques() {
+		byUniques.clear();
+		addUniqueMaps(byUniques);
+		
+		// Get columns from both datasets
+		Set<DatasetColumn> cols = new HashSet<>(dataset1ComboBox.getSelectionModel().getSelectedItem().getColumns());
+		cols.retainAll(dataset2ComboBox.getSelectionModel().getSelectedItem().getColumns());
+		
+		byUniques.addAll(cols.stream().sorted().collect(Collectors.toList()));
 	}
 	
 	public void setFirst(Dataset ds) {

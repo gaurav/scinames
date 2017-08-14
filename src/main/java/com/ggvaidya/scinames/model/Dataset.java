@@ -571,8 +571,10 @@ public class Dataset implements Citable, Comparable<Dataset> {
 			String pcNamed;
 			if(rowsWithNames == rowCount)
 				pcNamed = "Completely (100%)";
+			else if(rowCount - rowsWithNames < 50)
+				pcNamed = String.format("%.2g%%", ((double)rowsWithNames/rowCount * 100)) + " (all but " + (rowCount - rowsWithNames) + " rows)";
 			else
-				pcNamed = ((double)rowsWithNames/rowCount * 100) + "%";
+				pcNamed = String.format("%.2g%%", ((double)rowsWithNames/rowCount * 100));
 			
 			return rowCount + " rows (" + pcNamed + " named with " + getNamesInAllRows().size() + " distinct names)";
 		}
@@ -730,7 +732,13 @@ public class Dataset implements Citable, Comparable<Dataset> {
 	 * @return Stream of all changes associated with this dataset.
 	 */
 	public Stream<Change> getAllChanges() {
-		return Stream.concat(explicitChanges.stream(), implicitChanges.stream());
+		return getAllChangesAsList().stream();
+	}
+	
+	public List<Change> getAllChangesAsList() {
+		List<Change> allChanges = new LinkedList<>(explicitChanges);
+		allChanges.addAll(implicitChanges);	
+		return allChanges;
 	}
 	
 	public Stream<Change> getChanges(Project project) {

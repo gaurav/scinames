@@ -128,6 +128,8 @@ public class DatasetSceneController {
 		});
 		
 		updateAdditionalData();
+		
+		LOGGER.info("Finished setTimepointView()");
 	}
 	
 	/**
@@ -375,6 +377,8 @@ public class DatasetSceneController {
 			
 			return row;
 		});
+		
+		LOGGER.info("setupTableWithChanges() completed");
 	}
 	
 	private MenuItem createMenuItem(String name, EventHandler<ActionEvent> handler) {
@@ -425,12 +429,14 @@ public class DatasetSceneController {
 		List<Change> selectedChanges = new LinkedList<>(tv.getSelectionModel().getSelectedItems());
 		
 		LOGGER.info("About to set changes table items: sortByCols = " + sortByCols + ", selectedChanges = " + selectedChanges);
-		tv.setItems(FXCollections.observableList(tp.getAllChanges().collect(Collectors.toList())));
+		tv.setItems(FXCollections.observableList(tp.getAllChangesAsList()));
+		LOGGER.info("tv.setItems() completed");
 		
 		for(Change ch: selectedChanges) {
 			tv.getSelectionModel().select(ch);
 		}
 		tv.getSortOrder().addAll(sortByCols);
+		LOGGER.info("fillTableWithChanges() completed");
 	}
 
 	public void selectChange(Change ch) {
@@ -871,23 +877,35 @@ public class DatasetSceneController {
 		ObservableList<AdditionalData> addDataItems = FXCollections.observableArrayList();
 
 		// 1. Changes by name
+		LOGGER.info("Creating changes by name additional data");
 		addDataItems.add(createChangesByNameAdditionalData());
-
+		LOGGER.info("Finished changes by name additional data");
+		
 		// 2. Data by name
+		LOGGER.info("Creating data by name additional data");
 		addDataItems.add(createDataByNameAdditionalData());
+		LOGGER.info("Finished changes by name additional data");
 		
 		// 3. Changes by subname
+		LOGGER.info("Creating changes by subnames additional data");
 		addDataItems.add(createChangesBySubnamesAdditionalData());
+		LOGGER.info("Finished changes by name additional data");
 
 		// 4. Data in this dataset
+		LOGGER.info("Creating data by name additional data");
 		addDataItems.add(createDataAdditionalData());
+		LOGGER.info("Finished changes by name additional data");
 				
 		// 5. Properties
-		addDataItems.add(createPropertiesAdditionalData());		
+		LOGGER.info("Creating properties additional data");
+		addDataItems.add(createPropertiesAdditionalData());
+		LOGGER.info("Finished properties additional data");
 		
 		// Done!
 		additionalDataCombobox.setItems(addDataItems);
 		additionalDataCombobox.getSelectionModel().clearAndSelect(0);
+		
+		LOGGER.info("Finished updateAdditionalData()");
 	}
 	
 	private AdditionalData<String, DatasetRow> createDataAdditionalData() {
