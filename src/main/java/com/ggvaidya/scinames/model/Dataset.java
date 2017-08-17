@@ -572,9 +572,9 @@ public class Dataset implements Citable, Comparable<Dataset> {
 			if(rowsWithNames == rowCount)
 				pcNamed = "Completely (100%)";
 			else if(rowCount - rowsWithNames < 50)
-				pcNamed = String.format("%.2g%%", ((double)rowsWithNames/rowCount * 100)) + " (all but " + (rowCount - rowsWithNames) + " rows)";
+				pcNamed = String.format("%.2f%%", ((double)rowsWithNames/rowCount * 100)) + " (all but " + (rowCount - rowsWithNames) + " rows)";
 			else
-				pcNamed = String.format("%.2g%%", ((double)rowsWithNames/rowCount * 100));
+				pcNamed = String.format("%.2f%%", ((double)rowsWithNames/rowCount * 100));
 			
 			return rowCount + " rows (" + pcNamed + " named with " + getNamesInAllRows().size() + " distinct names)";
 		}

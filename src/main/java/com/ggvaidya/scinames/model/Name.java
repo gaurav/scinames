@@ -60,7 +60,7 @@ public class Name implements Comparable<Name> {
     public static final String GENUS_SP = "sp";
     
     /* Regular expressions */
-    public static final Pattern PATTERN_SPECIFICEPITHET = Pattern.compile("^[a-z\\-]+$");
+    public static final Pattern PATTERN_SPECIFICEPITHET = Pattern.compile("^[\\p{IsLowercase}\\-]+$");
 	
     /* 
      * Internal variables 
@@ -259,7 +259,7 @@ public class Name implements Comparable<Name> {
 		String[] components = name.split("\\s+");
 		
 		// The first name should be alphabetic, otherwise we fail right away.
-		if(components.length > 0 && !components[0].matches("^[A-Za-z_\\.]+$")) {
+		if(components.length > 0 && !components[0].matches("^[\\p{IsAlphabetic}_\\.]+$")) {
 			return Optional.empty();
 		}
 		

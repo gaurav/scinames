@@ -133,6 +133,14 @@ public class NameTest {
 		);
 	}
 
+	@Test
+	public void testOddNames() {
+		Name n1 = Name.getFromFullName("Anabaena füllebornii").get();
+		assertTrue(n1.hasSpecificEpithet());
+		assertEquals(n1.getGenus(), "Anabaena");
+		assertEquals(n1.getSpecificEpithet(), "füllebornii");
+		
+	}
 	
 	@Test
 	public void testInfraspecificEpithets() {

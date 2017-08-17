@@ -849,6 +849,9 @@ public class DatasetSceneController {
 	private void additionalDataUpdateList() {
 		// Which AdditionalData and ListOf are we in right now?
 		AdditionalData aData = additionalDataCombobox.getSelectionModel().getSelectedItem();
+		
+		// No aData? Do nothing!
+		if(aData == null) return;
 				
 		// Object currentSelection = additionalListView.getSelectionModel().getSelectedItem();
 		
@@ -876,6 +879,13 @@ public class DatasetSceneController {
 	private void updateAdditionalData() {
 		ObservableList<AdditionalData> addDataItems = FXCollections.observableArrayList();
 
+		// Done!
+		additionalDataCombobox.setItems(addDataItems);
+		
+		// We can just about get away with doing this for around 300 changes.
+		if(dataset.getAllChanges().count() > 300) return;
+		// TODO: fix this by lazy-evaluating these durned lists.
+		
 		// 1. Changes by name
 		LOGGER.info("Creating changes by name additional data");
 		addDataItems.add(createChangesByNameAdditionalData());
@@ -889,20 +899,20 @@ public class DatasetSceneController {
 		// 3. Changes by subname
 		LOGGER.info("Creating changes by subnames additional data");
 		addDataItems.add(createChangesBySubnamesAdditionalData());
-		LOGGER.info("Finished changes by name additional data");
+		LOGGER.info("Finished changes by subname additional data");
 
 		// 4. Data in this dataset
+		/*
 		LOGGER.info("Creating data by name additional data");
 		addDataItems.add(createDataAdditionalData());
 		LOGGER.info("Finished changes by name additional data");
-				
+		*/
+			
 		// 5. Properties
 		LOGGER.info("Creating properties additional data");
 		addDataItems.add(createPropertiesAdditionalData());
-		LOGGER.info("Finished properties additional data");
-		
-		// Done!
-		additionalDataCombobox.setItems(addDataItems);
+		LOGGER.info("Finished properties additional data");			
+
 		additionalDataCombobox.getSelectionModel().clearAndSelect(0);
 		
 		LOGGER.info("Finished updateAdditionalData()");
