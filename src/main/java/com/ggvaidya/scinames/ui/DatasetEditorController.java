@@ -50,6 +50,7 @@ import com.ggvaidya.scinames.model.DatasetRow;
 import com.ggvaidya.scinames.model.Project;
 import com.ggvaidya.scinames.model.rowextractors.NameExtractorFactory;
 import com.ggvaidya.scinames.model.rowextractors.NameExtractorParseException;
+import com.ggvaidya.scinames.summary.DataByBinomialNamesTabularView;
 import com.ggvaidya.scinames.util.SimplifiedDate;
 
 import javafx.beans.InvalidationListener;
@@ -276,6 +277,11 @@ public class DatasetEditorController implements Initializable {
 	
 	@FXML private void editChanges(ActionEvent e) {
 		DatasetChangesView view = new DatasetChangesView(datasetEditorView.getProjectView(), dataset);
+		view.getStage().show();
+	}
+	
+	@FXML private void displayDataByBinomialName(ActionEvent e) {
+		DataByBinomialNamesTabularView view = new DataByBinomialNamesTabularView(datasetEditorView.getProjectView(), dataset);
 		view.getStage().show();
 	}
 }
