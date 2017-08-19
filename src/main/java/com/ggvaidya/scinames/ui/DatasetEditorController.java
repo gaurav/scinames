@@ -16,56 +16,24 @@
  */
 package com.ggvaidya.scinames.ui;
 
-import java.awt.image.BufferedImageFilter;
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
-import java.io.LineNumberReader;
 import java.net.URL;
-import java.text.FieldPosition;
-import java.text.Format;
-import java.text.ParsePosition;
-import java.util.Arrays;
-import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.ResourceBundle;
 import java.util.Set;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
-import org.apache.commons.csv.CSVFormat;
 
 import com.ggvaidya.scinames.dataset.DatasetChangesView;
-import com.ggvaidya.scinames.model.Checklist;
-import com.ggvaidya.scinames.model.ChecklistDiff;
 import com.ggvaidya.scinames.model.Dataset;
 import com.ggvaidya.scinames.model.DatasetColumn;
 import com.ggvaidya.scinames.model.DatasetRow;
-import com.ggvaidya.scinames.model.Project;
 import com.ggvaidya.scinames.model.rowextractors.NameExtractorFactory;
 import com.ggvaidya.scinames.model.rowextractors.NameExtractorParseException;
 import com.ggvaidya.scinames.summary.DataByBinomialNamesTabularView;
 import com.ggvaidya.scinames.util.SimplifiedDate;
 
-import javafx.beans.InvalidationListener;
-import javafx.beans.property.BooleanProperty;
-import javafx.beans.property.BooleanPropertyBase;
-import javafx.beans.property.ObjectProperty;
-import javafx.beans.property.ReadOnlyBooleanPropertyBase;
-import javafx.beans.property.ReadOnlyStringWrapper;
-import javafx.beans.property.SimpleObjectProperty;
-import javafx.beans.property.SimpleStringProperty;
-import javafx.beans.property.StringProperty;
-import javafx.beans.value.ChangeListener;
-import javafx.beans.value.ObservableValue;
-import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
@@ -74,26 +42,13 @@ import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.ComboBox;
-import javafx.scene.control.Tab;
-import javafx.scene.control.TabPane;
-import javafx.scene.control.TableColumn;
-import javafx.scene.control.TableColumn.CellDataFeatures;
 import javafx.scene.control.TableView;
-import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.scene.control.TextInputDialog;
-import javafx.scene.control.cell.CheckBoxTableCell;
-import javafx.scene.control.cell.PropertyValueFactory;
-import javafx.scene.control.cell.TextFieldTableCell;
 import javafx.scene.layout.Background;
 import javafx.scene.layout.BackgroundFill;
 import javafx.scene.layout.CornerRadii;
 import javafx.scene.paint.Paint;
-import javafx.stage.FileChooser;
-import javafx.stage.Stage;
-import javafx.stage.WindowEvent;
-import javafx.util.Callback;
-import javafx.util.StringConverter;
 
 /**
  * FXML Controller class
