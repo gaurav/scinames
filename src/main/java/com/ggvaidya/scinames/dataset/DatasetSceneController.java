@@ -20,12 +20,8 @@ import java.awt.Desktop;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.lang.reflect.Array;
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -35,12 +31,8 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.logging.Logger;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-
-import javax.swing.plaf.metal.MetalPopupMenuSeparatorUI;
 
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVPrinter;
@@ -51,15 +43,11 @@ import com.ggvaidya.scinames.model.Dataset;
 import com.ggvaidya.scinames.model.DatasetColumn;
 import com.ggvaidya.scinames.model.DatasetRow;
 import com.ggvaidya.scinames.model.Name;
-import com.ggvaidya.scinames.model.NameCluster;
-import com.ggvaidya.scinames.model.NameClusterManager;
 import com.ggvaidya.scinames.model.Project;
 import com.ggvaidya.scinames.model.change.ChangeTypeStringConverter;
 import com.ggvaidya.scinames.model.change.NameSetStringConverter;
 import com.ggvaidya.scinames.model.filters.ChangeFilter;
 import com.ggvaidya.scinames.tabulardata.TabularDataViewController;
-import com.ggvaidya.scinames.ui.DatasetDiffView;
-import com.ggvaidya.scinames.ui.DatasetEditorView;
 
 import javafx.beans.Observable;
 import javafx.beans.property.ReadOnlyStringWrapper;
@@ -74,6 +62,7 @@ import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.scene.control.Alert;
+import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.Button;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.ComboBox;
@@ -83,7 +72,6 @@ import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
 import javafx.scene.control.Menu;
 import javafx.scene.control.MenuItem;
-import javafx.scene.control.MultipleSelectionModel;
 import javafx.scene.control.SelectionMode;
 import javafx.scene.control.SeparatorMenuItem;
 import javafx.scene.control.TableColumn;
@@ -91,14 +79,11 @@ import javafx.scene.control.TableRow;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
-import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.cell.ComboBoxTableCell;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.control.cell.TextFieldTableCell;
-import javafx.scene.input.MouseButton;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
-import javafx.util.Callback;
 
 /**
  * FXML Controller class for a view of a Dataset in a project. This does a bunch of cool
@@ -596,19 +581,24 @@ public class DatasetSceneController {
 	@FXML
 	private void deleteExplicitChange(ActionEvent evt) {
 		List<Change> changesToDelete = new ArrayList<>(changesTableView.getSelectionModel().getSelectedItems());
+		List<Change> explicitChangesToDelete = changesToDelete.stream()
+			.filter(ch -> !ch.getDataset().isChangeImplicit(ch))
+			.collect(Collectors.toList());
 		
-		for(Change ch: changesToDelete) {
-			if(ch.getDataset().isChangeImplicit(ch))
-				continue;
-			
-			// Explicit change! Verify before deleting.
-			Optional<ButtonType> opt = new Alert(AlertType.CONFIRMATION, "Are you sure you want to delete change '" + ch + "'? This cannot be undone!")
-				.showAndWait();
-			
-			if(opt.isPresent() && opt.get().equals(ButtonType.OK)) {
-				// DELETE IT WITH FIRE
-				ch.getDataset().deleteChange(ch);
-			}
+		if(explicitChangesToDelete.isEmpty())
+			return;
+		
+		// Explicit changes! Verify before deleting.
+		Optional<ButtonType> opt = new Alert(AlertType.CONFIRMATION, 
+			"Are you sure you want to delete " + explicitChangesToDelete.size() + " explicit changes starting with " +
+			explicitChangesToDelete.get(0).toString() + "? This cannot be undone!"
+		).showAndWait();
+		if(!opt.isPresent() || !opt.get().equals(ButtonType.OK))
+			return;
+		
+		// Okay, we're verified! Time to die.
+		for(Change ch: explicitChangesToDelete) {
+			ch.getDataset().deleteChange(ch);
 		}
 	}
 	

@@ -30,6 +30,6 @@
       <Label layoutX="2.0" layoutY="111.0" text="Name extractor:" />
       <ComboBox fx:id="nameExtractorComboBox" editable="true" layoutX="92.0" layoutY="108.0" prefHeight="25.0" prefWidth="408.0" AnchorPane.leftAnchor="92.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="108.0" />
       <Button layoutX="449.0" layoutY="424.0" mnemonicParsing="false" onAction="#editChanges" prefHeight="25.0" prefWidth="84.0" text="Edit changes" AnchorPane.bottomAnchor="0.0" AnchorPane.rightAnchor="0.0" />
-      <Button layoutY="425.0" mnemonicParsing="false" onAction="#displayDataByBinomialName" text="Display by binomial" />
+      <Button layoutY="425.0" mnemonicParsing="false" onAction="#displayDataByBinomialName" text="Display by binomial" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" />
    </children>
 </AnchorPane>
