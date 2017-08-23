@@ -32,6 +32,7 @@ import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import com.ggvaidya.scinames.model.Change;
 import com.ggvaidya.scinames.model.Dataset;
 import com.ggvaidya.scinames.model.DatasetRow;
 import com.ggvaidya.scinames.model.Name;
@@ -52,11 +53,69 @@ public class DatasetValidator implements Validator {
 		List<ValidationError> errors = new LinkedList<>();
 		
 		errors.addAll(reportUnmappedRows(p).collect(Collectors.toList()));
+		errors.addAll(reportContradictoryChangesInTheSameDataset(p).collect(Collectors.toList()));
 		
 		// - This results in lots of spurious errors, so we're ignoring this for now.
 		// errors.addAll(identifyNameClustersWithMultipleBinomials(p).collect(Collectors.toList()));
 		
 		return errors.stream();
+	}
+	
+	private Stream<ValidationError<Change>> reportContradictoryChangesInTheSameDataset(Project p) {
+		return p.getDatasets().stream().flatMap(ds -> reportContradictoryChangesInDataset(p, ds));
+	}
+	
+	private Stream<ValidationError<Change>> reportContradictoryChangesInDataset(Project p, Dataset ds) {
+		Set<Name> namesAdded = new HashSet<>();
+		Set<Name> namesDeleted = new HashSet<>();
+		
+		return ds.getChanges(p).flatMap(ch -> {
+			// Validation errors we've found.
+			List<ValidationError<Change>> validationErrors = new LinkedList<>();
+			
+			// Tracking names being added and deleted.
+			Set<Name> changeDeletesNames = ch.getFrom();
+			Set<Name> changeAddsNames = ch.getTo();
+			
+			// 1. No change should add a name that a previous change has already added.
+			validationErrors.addAll(
+				changeAddsNames.stream()
+					.filter(namesAdded::contains)
+					.map(n -> new ValidationError<Change>(Level.SEVERE, this, p, "Name '" + n + "' added multiple times in dataset " + ds + ", including in change " + ch, ch))
+					.collect(Collectors.toList())
+			);
+			
+			// 2. No change should delete a name that a previous change has already deleted.
+			validationErrors.addAll(
+				changeDeletesNames.stream()
+					.filter(namesDeleted::contains)
+					.map(n -> new ValidationError<Change>(Level.SEVERE, this, p, "Name '" + n + "' deleted multiple times in dataset " + ds + ", including in change " + ch, ch))
+					.collect(Collectors.toList())
+			);
+			
+			// 3. No change should add a name that a previous change has deleted.
+			validationErrors.addAll(
+				changeAddsNames.stream()
+					.filter(namesDeleted::contains)
+					.map(n -> new ValidationError<Change>(Level.SEVERE, this, p, "Name '" + n + "' deleted and added in dataset " + ds + ", added in change " + ch, ch))
+					.collect(Collectors.toList())
+			);
+			
+			// 4. No change should delete a name that a previous change has added.
+			validationErrors.addAll(
+				changeDeletesNames.stream()
+					.filter(namesAdded::contains)
+					.map(n -> new ValidationError<Change>(Level.SEVERE, this, p, "Name '" + n + "' added and deleted in dataset " + ds + ", deleted in change " + ch, ch))
+					.collect(Collectors.toList())
+			);
+				
+			// Add added and deleted names for future checks.
+			namesAdded.addAll(changeAddsNames);
+			namesDeleted.addAll(changeDeletesNames);
+			
+			// Ready to go!
+			return validationErrors.stream();
+		});
 	}
 	
 	private Stream<ValidationError<Dataset>> reportUnmappedRows(Project p) {

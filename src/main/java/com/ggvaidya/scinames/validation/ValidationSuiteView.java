@@ -115,6 +115,7 @@ public final class ValidationSuiteView {
 		colSeverity.setSortType(SortType.DESCENDING);
 		colSeverity.setEditable(false);
 		colSeverity.setPrefWidth(100.0);
+		colSeverity.setComparator((Level l1, Level l2) -> l1.intValue() - l2.intValue()); // What the actual fuck
 		colSeverity.setCellValueFactory(new PropertyValueFactory<>("Severity"));
 		cols.add(colSeverity);
 		

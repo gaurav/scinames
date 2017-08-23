@@ -115,7 +115,7 @@ public class Project {
 					lastModified.modified();
 					
 					// 2. Blow away the NameClusterManager.
-					nameClusterManager = null;
+					resetNameClusterManager();
 				});
 			}
 			
@@ -337,7 +337,7 @@ public class Project {
 		Dataset prev = null;
 		
 		// Blow away the name cluster manager.
-		nameClusterManager = null;
+		resetNameClusterManager();
 		
 		if(!datasets.isEmpty())
 			prev = datasets.get(datasets.size() - 1);
@@ -388,6 +388,12 @@ public class Project {
 	}	
 	
 	/* Name cluster manager! */
+	public void resetNameClusterManager() {
+		synchronized(this) {
+			nameClusterManager = null;
+		}
+	}
+	
 	public NameClusterManager getNameClusterManager() {
 		synchronized(this) {
 			if(nameClusterManager == null) {
@@ -416,9 +422,9 @@ public class Project {
 				
 				LOGGER.info("New name cluster manager calculation completed.");
 			}
-		}
-		
-		return nameClusterManager; 
+			
+			return nameClusterManager;
+		} 
 	}
 	
 	/* Constructors */
