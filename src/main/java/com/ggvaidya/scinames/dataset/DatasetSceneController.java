@@ -280,6 +280,17 @@ public class DatasetSceneController {
 				if(event.getClickCount() == 1 && event.isPopupTrigger()) {
 					ContextMenu changeMenu = new ContextMenu();
 					
+					Menu searchForName = new Menu("Search for name");
+					searchForName.getItems().addAll(
+						change.getAllNames().stream().sorted()
+							.map(n -> createMenuItem(n.getFullName(), action -> {
+								datasetView.getProjectView().openDetailedView(n);
+							}))
+							.collect(Collectors.toList())
+					);
+					changeMenu.getItems().add(searchForName);
+					changeMenu.getItems().add(new SeparatorMenuItem());
+					
 					changeMenu.getItems().add(createMenuItem("Edit note", action -> {
 						List<Change> changes = new ArrayList<>(changesTableView.getSelectionModel().getSelectedItems());
 						
@@ -522,7 +533,6 @@ public class DatasetSceneController {
 		stage.show();
 	}
 	
-	// TODO: figure out if we still need this, and delete if necessary.
 	private void fillTableViewWithDatasetRows(TableView<DatasetRow> tableView) {
 		// We need to precalculate.
 		ObservableList<DatasetRow> rows = dataset.rowsProperty();

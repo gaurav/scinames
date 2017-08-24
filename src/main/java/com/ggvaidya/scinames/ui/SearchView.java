@@ -76,4 +76,9 @@ public final class SearchView {
 		stage.setTitle("Search");
 		stage.setScene(scene);
 	}
+	
+	// Wanna search for a thing?
+	public void searchFor(String search) {
+		controller.searchFor(search);
+	}
 }

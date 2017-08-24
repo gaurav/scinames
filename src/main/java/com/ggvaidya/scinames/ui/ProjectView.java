@@ -25,6 +25,7 @@ import com.ggvaidya.scinames.SciNames;
 import com.ggvaidya.scinames.dataset.DatasetChangesView;
 import com.ggvaidya.scinames.model.Change;
 import com.ggvaidya.scinames.model.Dataset;
+import com.ggvaidya.scinames.model.Name;
 import com.ggvaidya.scinames.model.Project;
 
 import javafx.application.Platform;
@@ -233,12 +234,22 @@ public class ProjectView {
 	 * @param o
 	 */
 	public void openDetailedView(Object obj) {
+		if(obj instanceof Name)
+			openDetailedView((Name)obj);
 		if(obj instanceof Dataset)
 			openDetailedView((Dataset)obj);
 		else if(obj instanceof Change)
 			openDetailedView((Change)obj);
 		else
 			LOGGER.severe("No detailed view available for " + obj + " (class " + obj.getClass() + ")");
+	}
+	
+	public void openDetailedView(Name n) {
+		// some day we will have a proper name view
+		// but for now
+		SearchView view = new SearchView(this);
+		view.searchFor(n.getFullName());
+		view.getStage().show();
 	}
 	
 	public void openDetailedView(Dataset ds) {

@@ -744,7 +744,7 @@ public class Dataset implements Citable, Comparable<Dataset> {
 	public Stream<Change> getChanges(Project project) {
 		return getAllChanges().filter(project.getChangeFilter());
 	}
-
+	
 	@Override
 	public String getCitation() {
 		return getName() + " (" + getDate() + ")";

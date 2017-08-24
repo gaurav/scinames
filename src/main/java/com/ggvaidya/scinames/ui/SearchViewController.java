@@ -255,6 +255,18 @@ public final class SearchViewController implements Initializable {
 		});
 	}
 	
+	public void searchFor(String search) {
+		// Don't do anything until we're all initialized and whatnot.
+		if(searchView == null) return;
+		
+		// Trigger the search.
+		searchByCurrentSearchBy();
+		
+		// Filter using the search string.
+		filterTextField.setText(search);
+		filterSearchResults();
+	}
+	
 	private void searchByCurrentSearchBy() {
 		String searchBy = searchByChoiceBox.getSelectionModel().getSelectedItem();
 		Project project = searchView.getProjectView().getProject();
