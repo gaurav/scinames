@@ -67,7 +67,9 @@ public class DatasetSceneWithNameListsController {
 		
 		// Reinitialize UI to the selected timepoint.
 		updateMainTextArea();
-		fillTableWithNamesFrom(prevTimepointTableView, timepoint.getPreviousDataset());
+		Optional<Dataset> prevDataset = timepoint.getPreviousDataset();
+		if(prevDataset.isPresent())
+			fillTableWithNamesFrom(prevTimepointTableView, prevDataset.get());
 		fillTableWithNamesFrom(currTimepointTableView, timepoint);
 		fillTableWithChanges(changesTableView, timepoint);
 		

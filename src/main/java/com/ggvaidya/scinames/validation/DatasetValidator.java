@@ -26,6 +26,7 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -52,13 +53,63 @@ public class DatasetValidator implements Validator {
 	public Stream<ValidationError> validate(Project p) {
 		List<ValidationError> errors = new LinkedList<>();
 		
-		errors.addAll(reportUnmappedRows(p).collect(Collectors.toList()));
 		errors.addAll(reportContradictoryChangesInTheSameDataset(p).collect(Collectors.toList()));
+		errors.addAll(reportUnnecessaryChanges(p).collect(Collectors.toList()));
+		errors.addAll(reportUnmappedRows(p).collect(Collectors.toList()));
 		
 		// - This results in lots of spurious errors, so we're ignoring this for now.
 		// errors.addAll(identifyNameClustersWithMultipleBinomials(p).collect(Collectors.toList()));
 		
 		return errors.stream();
+	}
+	
+	private Stream<ValidationError<Change>> reportUnnecessaryChanges(Project p) {
+		return p.getDatasets().stream().flatMap(ds -> reportUnnecessaryChangesInDataset(p, ds));
+	}
+	
+	private Stream<ValidationError<Change>> reportUnnecessaryChangesInDataset(Project p, Dataset ds) {
+		Optional<Dataset> optPrevDataset = ds.getPreviousDataset();
+		if(!optPrevDataset.isPresent()) {
+			LOGGER.info("Skipping dataset '" + ds + "' as it has no previous dataset.");
+			return Stream.empty();
+		}
+		
+		Dataset prevDataset = optPrevDataset.get();
+		
+		// What are all the binomial changes that took place between these two datasets?
+		Set<Name> namesInPrev = prevDataset.getRecognizedNames(p).collect(Collectors.toSet());
+		Set<Name> namesInCurrent = ds.getRecognizedNames(p).collect(Collectors.toSet());
+		
+		// Added and deleted binomial names.
+		Set<Name> addedNames = new HashSet<>(namesInCurrent);
+		namesInCurrent.removeAll(namesInPrev);
+		
+		Set<Name> deletedNames = new HashSet<>(namesInPrev);
+		namesInPrev.removeAll(namesInCurrent);
+		
+		return ds.getChanges(p).flatMap(ch -> {
+			List<ValidationError<Change>> errors = new LinkedList<>();
+			
+			Set<Name> from = ch.getFrom();
+			Set<Name> to = ch.getTo();
+			
+			// Now, make sure that we don't have any:
+			//	- 	Changes adding names that don't need to be added.
+			//		Note that it's fine if the same name is added and deleted, as in a split.
+			for(Name n: to) {
+				if(!addedNames.contains(n) && !from.contains(n))
+					errors.add(new ValidationError<Change>(Level.SEVERE, this, p, "Name '" + n + "' added unnecessarily in dataset " + ds + " in change " + ch, ch));
+			}
+			
+			//	- 	Changes deleting names that don't need to be deleted.
+			// 		Note that it's fine if the same name is added and deleted, as in a lump.
+			for(Name n: from) {
+				if(!deletedNames.contains(n) && !to.contains(n))
+					errors.add(new ValidationError<Change>(Level.SEVERE, this, p, "Name '" + n + "' deleted unnecessarily in dataset " + ds + " in change " + ch, ch));
+			}
+			
+			return errors.stream();
+		});
 	}
 	
 	private Stream<ValidationError<Change>> reportContradictoryChangesInTheSameDataset(Project p) {

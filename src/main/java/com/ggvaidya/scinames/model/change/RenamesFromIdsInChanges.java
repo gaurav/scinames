@@ -73,7 +73,7 @@ public class RenamesFromIdsInChanges implements ChangeGenerator {
 		
 		LOGGER.info("getRenamesById(" + p + ", " + ds + ")");
 		
-		Dataset prevDataset = ds.getPreviousDataset();
+		Dataset prevDataset = ds.getPreviousDataset().orElse(null);
 		
 		// Index the values in the DatasetColumn for both this dataset and previous dataset.
 		LOGGER.info("Indexing " + ds + " by column " + idColumn);

@@ -157,7 +157,7 @@ public class ChangeValidator implements Validator {
 	private Stream<ValidationError<Change>> checkFromWasPreviouslyRecognized(Project p) {
 		return p.getChanges()
 			.flatMap(ch -> {
-				Dataset prev = ch.getDataset().getPreviousDataset();
+				Dataset prev = ch.getDataset().getPreviousDataset().orElse(null);
 				
 				if(prev == null) return Stream.empty();
 				

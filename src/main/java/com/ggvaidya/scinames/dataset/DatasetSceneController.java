@@ -97,6 +97,12 @@ import javafx.stage.Stage;
 public class DatasetSceneController {
 	private static final Logger LOGGER = Logger.getLogger(DatasetSceneController.class.getSimpleName());
 	
+	/**
+	 * If a dataset contains more than this number of changes, then we won't calculate additional
+	 * data on them at all. (Eventually, we should just calculate additional data 
+	 */
+	public static final int ADDITIONAL_DATA_CHANGE_COUNT_LIMIT = 200;
+	
 	private DatasetChangesView datasetView;
 	private Dataset dataset;
 	
@@ -882,8 +888,8 @@ public class DatasetSceneController {
 		// Done!
 		additionalDataCombobox.setItems(addDataItems);
 		
-		// We can just about get away with doing this for around 300 changes.
-		if(dataset.getAllChanges().count() > 300) return;
+		// We can just about get away with doing this for around ADDITIONAL_DATA_CHANGE_COUNT_LIMIT changes.
+		if(dataset.getAllChanges().count() > ADDITIONAL_DATA_CHANGE_COUNT_LIMIT) return;
 		// TODO: fix this by lazy-evaluating these durned lists.
 		
 		// 1. Changes by name

@@ -30,6 +30,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.logging.Logger;
@@ -167,7 +168,7 @@ public final class NameStabilityView {
 		for(Dataset ds: project.getChecklists()) {
 			index++;
 			
-			Dataset prevDataset = ds.getPreviousDataset();
+			Dataset prevDataset = ds.getPreviousDataset().orElse(null);
 			Dataset nextDataset = (index < (project.getDatasets().size() - 1) ? project.getDatasets().get(index + 1) : null);
 			
 			precalc.put(ds, "dataset", ds.getName());

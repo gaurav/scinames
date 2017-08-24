@@ -227,7 +227,7 @@ public class Dataset implements Citable, Comparable<Dataset> {
 	}
 	
 	/* Managing previous timepoint */
-	public Dataset getPreviousDataset() { return prevDataset; }
+	public Optional<Dataset> getPreviousDataset() { return Optional.ofNullable(prevDataset); }
 	
 	/**
 	 * Set the previous dataset. This is where we calculate implicit changes from the previous

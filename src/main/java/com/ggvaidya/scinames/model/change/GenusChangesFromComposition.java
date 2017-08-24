@@ -78,7 +78,7 @@ public class GenusChangesFromComposition implements ChangeGenerator {
 		
 		LOGGER.info("getChanges(" + p + ", " + ds + ")");
 		
-		Dataset prevDataset = ds.getPreviousDataset();
+		Dataset prevDataset = ds.getPreviousDataset().orElse(null);
 		
 		// Index genus compositions in this dataset and in the previous dataset.
 		LOGGER.info("Indexing " + ds + " by genus");
