@@ -101,7 +101,7 @@ public class DatasetSceneController {
 	 * If a dataset contains more than this number of changes, then we won't calculate additional
 	 * data on them at all. (Eventually, we should just calculate additional data 
 	 */
-	public static final int ADDITIONAL_DATA_CHANGE_COUNT_LIMIT = 200;
+	public static final int ADDITIONAL_DATA_CHANGE_COUNT_LIMIT = 150;
 	
 	private DatasetChangesView datasetView;
 	private Dataset dataset;

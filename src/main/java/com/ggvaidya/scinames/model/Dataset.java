@@ -641,7 +641,7 @@ public class Dataset implements Citable, Comparable<Dataset> {
 	
 	/* Change management */
 	
-	public void onChangeChanged(Optional<Project> project, Change change) {
+	public synchronized void onChangeChanged(Optional<Project> project, Change change) {
 		LOGGER.entering(Dataset.class.getSimpleName(), "project = " + project + ", change = " + change);
 		
 		if(explicitChanges.contains(change)) {
