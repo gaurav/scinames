@@ -76,6 +76,11 @@ public class NameTest {
         testAssertion(Name.getFromFullName("Alpha sp"), n -> assertFalse(n.hasSpecificEpithet()));
         testAssertion(Name.getFromFullName("Alpha sp"), n -> assertEquals(null, n.getBinomialName()));
         testAssertion(Name.getFromFullName("Alpha sp"), n -> assertEquals(n.asBinomial().count(), 0));
+        
+        // With quotes
+        testFullName(Name.getFromFullName("'Alpha'"), "Alpha");
+        assertEquals(Name.getFromFullName("'Alpha' beta"), Optional.empty());
+        testFullName(Name.getFromFullName("'Alpha beta'"), "Alpha beta");
     
         // Subspecies
         testProperty(Name.getFromFullName("Alpha beta    subsp gamma   "), "getInfraspecificEpithetsAsString() should be 'subsp gamma'", n -> n.getInfraspecificEpithetsAsString().equals("subsp gamma"));

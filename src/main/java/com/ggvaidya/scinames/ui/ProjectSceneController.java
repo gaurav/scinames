@@ -31,6 +31,7 @@ import javax.swing.JPopupMenu;
 import com.ggvaidya.scinames.SciNames;
 import com.ggvaidya.scinames.complexquery.ComplexSearchView;
 import com.ggvaidya.scinames.dataset.DatasetSceneController;
+import com.ggvaidya.scinames.dataset.BinomialChangesView;
 import com.ggvaidya.scinames.dataset.DatasetChangesView;
 import com.ggvaidya.scinames.model.Change;
 import com.ggvaidya.scinames.model.Dataset;
@@ -202,14 +203,18 @@ public class ProjectSceneController {
 		MenuItem changesAllChanges = new MenuItem("All changes");
 		changesAllChanges.onActionProperty().set(e -> displayChanges(e));
 		changesMenu.getItems().add(changesAllChanges);
+		
+		MenuItem changesBinomialChanges = new MenuItem("Binomial changes");
+		changesBinomialChanges.onActionProperty().set(e -> displayBinomialChangesView(e));
+		changesMenu.getItems().add(changesBinomialChanges);
 
 		// Changes -> All changes
 		MenuItem changesLumpsAndSplits = new MenuItem("Lumps and splits");
 		changesLumpsAndSplits.onActionProperty().set(e -> displayLumpsAndSplits(e));
 		changesMenu.getItems().add(changesLumpsAndSplits);
-				
+		
 		// Changes -> Infer changes
-		MenuItem changesInferChanges = new MenuItem("Infer changes");
+		MenuItem changesInferChanges = new MenuItem("Infer novel changes");
 		changesInferChanges.onActionProperty().set(e -> displayBulkChangeEditor(e));
 		changesMenu.getItems().add(changesInferChanges);		
 
@@ -372,6 +377,7 @@ public class ProjectSceneController {
 					Project project = projectView.getProject();
 					contextMenu.getItems().add(menuItemThat("Display dataset", evt -> new DatasetEditorView(projectView, dataset).getStage().show()));
 					contextMenu.getItems().add(menuItemThat("Display changes", evt -> new DatasetChangesView(projectView, dataset).getStage().show()));
+					// contextMenu.getItems().add(menuItemThat("Display binomial changes", evt -> new BinomialChangesView(projectView, dataset).getStage().show()));
 					
 					Optional<Dataset> datasetFirst = project.getFirstDataset();
 					if(datasetFirst.isPresent())
@@ -710,6 +716,12 @@ public class ProjectSceneController {
 	@FXML
 	private void displayHigherStability(ActionEvent evt) {
 		HigherStabilityView view = new HigherStabilityView(projectView);
+		view.getStage().show();
+	}
+	
+	@FXML
+	private void displayBinomialChangesView(ActionEvent evt) {
+		BinomialChangesView view = new BinomialChangesView(projectView);
 		view.getStage().show();
 	}
 }

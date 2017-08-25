@@ -42,8 +42,9 @@ public class ChangeTypeTest {
 		assertEquals(ChangeType.LUMP.invert(), ChangeType.SPLIT);		
 		assertEquals(ChangeType.SPLIT.invert(), ChangeType.LUMP);		
 		assertEquals(ChangeType.ERROR.invert(), ChangeType.ERROR);
+		assertEquals(ChangeType.COMPLEX.invert(), ChangeType.COMPLEX);
 		
-		// We should exactly five recognized change types.
-		assertEquals(ChangeType.RECOGNIZED_TYPES.size(), 6);
+		// We should exactly seven recognized change types.
+		assertEquals(ChangeType.RECOGNIZED_TYPES.size(), 7);
 	}
 }

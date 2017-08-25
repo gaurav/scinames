@@ -3,6 +3,7 @@ package com.ggvaidya.scinames.model;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -21,15 +22,17 @@ public final class ChangeType implements Comparable<ChangeType> {
 	public static final ChangeType RENAME = of("rename");
 	public static final ChangeType LUMP = of("lump");
 	public static final ChangeType SPLIT = of("split");
+	public static final ChangeType COMPLEX = of("complex");
 	public static final ChangeType ERROR = of("error");
-	public static final Set<ChangeType> RECOGNIZED_TYPES = new HashSet<>(Arrays.asList(
+	public static final List<ChangeType> RECOGNIZED_TYPES = Arrays.asList(
 		ADDITION,
 		DELETION,
 		RENAME,
 		LUMP,
 		SPLIT,
+		COMPLEX,
 		ERROR
-	));
+	);
 	
 	/**
 	 * Return the singleton corresponding to a particular name of a change type.
@@ -60,6 +63,7 @@ public final class ChangeType implements Comparable<ChangeType> {
 		else if(equals(RENAME))		return RENAME;
 		else if(equals(LUMP))		return SPLIT;
 		else if(equals(SPLIT))		return LUMP;
+		else if(equals(COMPLEX))	return COMPLEX;
 		else if(equals(ERROR))		return ERROR;
 		else throw new RuntimeException("Unable to invert Change.Type: " + this);
 	}

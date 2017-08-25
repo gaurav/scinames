@@ -26,6 +26,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.logging.Logger;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -94,7 +95,7 @@ public class Name implements Comparable<Name> {
 		}
 	}
 	
-	private static Set<String> specificEpithetsThatArentLowercase = new HashSet<>(Arrays.asList(
+	private static final Set<String> specificEpithetsThatArentLowercase = new HashSet<>(Arrays.asList(
 		"sp",
 		"spp",
 		"sp.",
@@ -105,6 +106,13 @@ public class Name implements Comparable<Name> {
 		"aff.",
 		"cf",
 		"cf."
+	));
+	
+	private static final Set<String> generaThatArentRealLowercase = new HashSet<>(Arrays.asList(
+		"null",
+		"na",
+		"unknown",
+		"undetermined"
 	));
 	
 	/* 
@@ -187,6 +195,15 @@ public class Name implements Comparable<Name> {
 			// throw new IllegalArgumentException("Cannot create Name without genus name: Name.get(" + genus + ", " + specificEpithet + ", " + subspecificEpithets + ")");
 		}
 		
+		// What if the genus is a fake genus (like "null"?)
+		if(generaThatArentRealLowercase.contains(genus.toLowerCase())) {
+			if(specificEpithet != null) {
+				// Demote specific epithet to a subspecific epithet.
+				subspecificEpithets = specificEpithet + SEPARATOR + subspecificEpithets;
+				specificEpithet = null;
+			}
+		}
+		
 		if(specificEpithet != null) {
 			if(specificEpithet.trim().equals("")) specificEpithet = null;
 			else specificEpithet = specificEpithet.trim();
@@ -253,9 +270,18 @@ public class Name implements Comparable<Name> {
 	 * @return Name object resulting from the parse.
 	 */
 	public static Optional<Name> getFromFullName(String name) {
+        if(name == null || name.equals("")) return Optional.empty();
+		
         name = name.trim();
         
-		if(name == null || name.equals("")) return Optional.empty();
+        // If there are quotes around the whole thing, we can ignore them.
+        Pattern surroundedByQuotes = Pattern.compile("^(['\"])\\s*(.*)\\s*\\1$");
+        Matcher matcherSurroundedByQuotes = surroundedByQuotes.matcher(name);
+        
+        if(matcherSurroundedByQuotes.matches()) {
+        	name = matcherSurroundedByQuotes.group(2);
+        }
+		
 		String[] components = name.split("\\s+");
 		
 		// The first name should be alphabetic, otherwise we fail right away.
