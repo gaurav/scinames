@@ -318,10 +318,23 @@ public class BinomialChangesSceneController {
 				
 				// We don't currently use the clicked change, since currently all options
 				// change *all* the selected changes, but this may change in the future.
-				Change change = row.getItem();
+				PotentialChange change = row.getItem();
 				
 				if(event.getClickCount() == 1 && event.isPopupTrigger()) {
 					ContextMenu changeMenu = new ContextMenu();
+					
+					Menu lookupChange = new Menu("Look up change");
+					lookupChange.getItems().addAll(
+						changesByPotentialChange.getOrDefault(change, new HashSet<>())
+							.stream()
+							.map(ch -> createMenuItem(ch.toString(), action -> {
+								binomialChangesView.getProjectView().openDetailedView(ch);
+							}))
+							.collect(Collectors.toList())
+					);
+					changeMenu.getItems().add(lookupChange);
+					
+					changeMenu.getItems().add(new SeparatorMenuItem());
 					
 					Menu searchForName = new Menu("Search for name");
 					searchForName.getItems().addAll(
@@ -332,25 +345,7 @@ public class BinomialChangesSceneController {
 							.collect(Collectors.toList())
 					);
 					changeMenu.getItems().add(searchForName);
-					changeMenu.getItems().add(new SeparatorMenuItem());
 					
-					changeMenu.getItems().add(createMenuItem("Edit note", action -> {
-						List<Change> changes = new ArrayList<>(changesTableView.getSelectionModel().getSelectedItems());
-						
-						String combinedNotes = changes.stream()
-								.map(ch -> ch.getNote().orElse("").trim())
-								.distinct()
-								.collect(Collectors.joining("\n"))
-								.trim();
-						
-						Optional<String> result = askUserForTextArea("Modify the note for these " + changes.size() + " changes:", combinedNotes);
-						
-						if(result.isPresent()) {
-							String note = result.get().trim();
-							LOGGER.info("Using 'Edit note' to set note to '" + note + "' on changes " + changes);
-							changes.forEach(ch -> ch.noteProperty().set(note));
-						}
-					}));
 					changeMenu.getItems().add(new SeparatorMenuItem());
 					
 					// Create a submenu for tags and urls.
@@ -376,39 +371,6 @@ public class BinomialChangesSceneController {
 						}
 					).forEach(mi -> lookupURLs.getItems().add(mi));
 					changeMenu.getItems().add(lookupURLs);
-					
-					changeMenu.getItems().add(new SeparatorMenuItem());
-					changeMenu.getItems().add(createMenuItem("Prepend text to all notes", action -> {
-						List<Change> changes = new ArrayList<>(changesTableView.getSelectionModel().getSelectedItems());
-						
-						Optional<String> result = askUserForTextField("Enter tags to prepend to notes in " + changes.size() + " changes:");
-						
-						if(result.isPresent()) {
-							String tags = result.get().trim();
-							changes.forEach(ch -> {
-								String prevValue = change.getNote().orElse("").trim();
-								
-								LOGGER.info("Prepending tags '" + tags + "' to previous value '" + prevValue + "' for change " + ch);
-								
-								ch.noteProperty().set((tags + " " + prevValue).trim());
-							});
-						}
-					}));
-					changeMenu.getItems().add(createMenuItem("Append text to all notes", action -> {
-						List<Change> changes = new ArrayList<>(changesTableView.getSelectionModel().getSelectedItems());
-						Optional<String> result = askUserForTextField("Enter tags to append to notes in " + changes.size() + " changes:");
-						
-						if(result.isPresent()) {
-							String tags = result.get().trim();
-							changes.forEach(ch -> {
-								String prevValue = ch.getNote().orElse("").trim();
-								
-								LOGGER.info("Appending tags '" + tags + "' to previous value '" + prevValue + "' for change " + ch);
-								
-								ch.noteProperty().setValue((prevValue + " " + tags).trim());
-							});
-						}
-					}));
 					
 					changeMenu.show(binomialChangesView.getScene().getWindow(), event.getScreenX(), event.getScreenY());
 				}

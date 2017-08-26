@@ -200,14 +200,15 @@ public class Change {
 	public Set<URI> getURIs() {
 		// Do we even have a note?
 		Optional<String> optNote = getNote();
-		
 		if(!optNote.isPresent()) return new HashSet<>();
+		
 		String note = optNote.get();
 		
 		// Find URIs in notes.
 		Set<URI> uris = new HashSet<>();
 		
-		Matcher urlMatcher = Pattern.compile("\\b(https?://.*?|doi:.*?)(?<!\\S)").matcher(noteProperty().get());
+		// I used (?<!\\S) to match the end of the URL, I wonder why?
+		Matcher urlMatcher = Pattern.compile("\\b(https?://.*?|doi:.*?)\\s*").matcher(note);
 		while(urlMatcher.find()) {
 			String uri = urlMatcher.group(1);
 			

@@ -447,7 +447,7 @@ public class DatasetSceneController {
 		if(row == -1)
 			row = 0;
 		
-		LOGGER.fine("Selecting change in row " + row + " (change " + ch + ")");
+		LOGGER.info("Selecting change in row " + row + " (change " + ch + ")");
 		
 		changesTableView.getSelectionModel().clearAndSelect(row);
 		changesTableView.scrollTo(row);
