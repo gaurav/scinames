@@ -235,17 +235,24 @@ public final class SearchViewController implements Initializable {
 		});
 	}
 	
+	// options
+	public static final String SEARCH_CHANGES_BY_NAME = "Search changes by name";
+	public static final String SEARCH_DATA_BY_NAME = "Search data by name";
+	public static final String SEARCH_BY_TAG = "Search by tag";
+	public static final String SEARCH_BY_NAME_CLUSTER = "Search by name cluster";
+	
+	
 	private void setupSearchBy() {
 		// Search by Choice Box.
 		searchByChoiceBox.getItems().clear();
 		searchByChoiceBox.getItems().addAll(
-			// Eventually, we'll want to add data-related searches too, I guess 
-			"Search by name",
-			"Search by name cluster",
-			"Search by tag"
+			SEARCH_CHANGES_BY_NAME,
+			SEARCH_DATA_BY_NAME,
+			SEARCH_BY_NAME_CLUSTER,
+			SEARCH_BY_TAG
 		);
 		searchByChoiceBox.getSelectionModel().clearAndSelect(0);
-		searchByChoiceBox.getSelectionModel().selectedItemProperty().addListener((ChangeListener) (a, b, c) -> {
+		searchByChoiceBox.getSelectionModel().selectedItemProperty().addListener((ChangeListener<String>) (a, b, c) -> {
 			searchByCurrentSearchBy();
 		});
 		
@@ -271,10 +278,10 @@ public final class SearchViewController implements Initializable {
 		String searchBy = searchByChoiceBox.getSelectionModel().getSelectedItem();
 		Project project = searchView.getProjectView().getProject();
 		
-		if(searchBy == null) searchBy = "Search by name";
+		if(searchBy == null) searchBy = SEARCH_CHANGES_BY_NAME;
 		
 		switch(searchBy) {
-			case "Search by name":
+			case SEARCH_CHANGES_BY_NAME:
 				Set<Name> names = project.getDatasets().stream()
 					.flatMap(ds -> ds.getNamesInAllRows().stream())
 					.collect(Collectors.toSet());
@@ -290,7 +297,7 @@ public final class SearchViewController implements Initializable {
 				).collect(Collectors.toList());
 				break;
 				
-			case "Search by name cluster":
+			case SEARCH_BY_NAME_CLUSTER:
 				NameClusterManager ncm = project.getNameClusterManager();
 				searchResults = ncm.getSpeciesClusters().sorted().map((NameCluster cluster) ->
 					new SearchResult<Change>(
@@ -301,7 +308,7 @@ public final class SearchViewController implements Initializable {
 				).collect(Collectors.toList());
 				break;
 				
-			case "Search by tag":
+			case SEARCH_BY_TAG:
 				Map<Tag, List<Change>> tagGroups = new HashMap<>();
 				project.getAllChanges().forEach(ch -> {
 					Set<Tag> tags = ch.getTags();
