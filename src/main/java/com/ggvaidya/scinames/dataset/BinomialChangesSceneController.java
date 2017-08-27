@@ -327,7 +327,7 @@ public class BinomialChangesSceneController {
 					lookupChange.getItems().addAll(
 						changesByPotentialChange.getOrDefault(change, new HashSet<>())
 							.stream()
-							.map(ch -> createMenuItem(ch.toString(), action -> {
+							.map(ch -> createMenuItem(ch.toString() + " in " + ch.getDataset().toString(), action -> {
 								binomialChangesView.getProjectView().openDetailedView(ch);
 							}))
 							.collect(Collectors.toList())

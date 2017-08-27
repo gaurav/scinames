@@ -162,10 +162,9 @@ public class Change {
 	 * Return the note as an optional string.
 	 */
 	public Optional<String> getNote() {
-		// We don't need to invoke noteProperty unless ...
-		if(!properties.containsKey("note")) return Optional.empty(); 
-		
-		return Optional.ofNullable(noteProperty().getValue());
+		String note = properties.getOrDefault("note", null);
+		if(note == null || note.equals("")) return Optional.empty();
+		else return Optional.of(note);
 	}
 	
 	/**
@@ -208,7 +207,7 @@ public class Change {
 		Set<URI> uris = new HashSet<>();
 		
 		// I used (?<!\\S) to match the end of the URL, I wonder why?
-		Matcher urlMatcher = Pattern.compile("\\b(https?://.*?|doi:.*?)\\s*").matcher(note);
+		Matcher urlMatcher = Pattern.compile("\\b(https?://.*|doi:.*)\\s*").matcher(note);
 		while(urlMatcher.find()) {
 			String uri = urlMatcher.group(1);
 			

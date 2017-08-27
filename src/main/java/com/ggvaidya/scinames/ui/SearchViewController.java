@@ -283,7 +283,7 @@ public final class SearchViewController implements Initializable {
 		switch(searchBy) {
 			case SEARCH_CHANGES_BY_NAME:
 				Set<Name> names = project.getDatasets().stream()
-					.flatMap(ds -> ds.getNamesInAllRows().stream())
+					.flatMap(ds -> ds.getReferencedNames())
 					.collect(Collectors.toSet());
 					
 				searchResults = names.stream().sorted().map(key -> 
