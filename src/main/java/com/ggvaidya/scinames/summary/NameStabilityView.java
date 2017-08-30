@@ -120,6 +120,7 @@ public final class NameStabilityView {
 		cols.add(createTableColumnFromPrecalc(precalc, "year"));
 		cols.add(createTableColumnFromPrecalc(precalc, "count_binomial"));
 		cols.add(createTableColumnFromPrecalc(precalc, "count_genera"));
+		cols.add(createTableColumnFromPrecalc(precalc, "count_monotypic_genera"));
 		cols.add(createTableColumnFromPrecalc(precalc, "names_added"));
 		//cols.add(createTableColumnFromPrecalc(precalc, "names_added_list"));
 		cols.add(createTableColumnFromPrecalc(precalc, "names_deleted"));
@@ -181,6 +182,17 @@ public final class NameStabilityView {
 			Set<Name> recognizedGenera = recognizedBinomials.stream().flatMap(n -> n.asGenus()).collect(Collectors.toSet());
 			precalc.put(ds, "count_genera", String.valueOf(recognizedGenera.size()));
 			precalc.put(ds, "mean_binomials_per_genera", new BigDecimal(((double)recognizedBinomials.size())/recognizedGenera.size()).setScale(2, BigDecimal.ROUND_HALF_EVEN).toPlainString());
+			
+			Map<Name, List<Name>> countBinomialsPerGenus = recognizedBinomials.stream()
+				// Eliminate names that have zero (or more than one?!) genus name.
+				.filter(n -> (n.asGenus().count() == 1))
+				.collect(
+					Collectors.groupingBy(n -> n.asGenus().findAny().get())
+				);
+			
+			precalc.put(ds, "count_monotypic_genera", 
+				String.valueOf(countBinomialsPerGenus.entrySet().stream().filter(entry -> new HashSet<>(entry.getValue()).size() == 1).count())
+			);
 			
 			// Species added and deleted
 			Set<Name> namesAdded = ds.getChanges(project).filter(ch -> ch.getType().equals(ChangeType.ADDITION)).flatMap(ch -> ch.getToStream()).collect(Collectors.toSet());
