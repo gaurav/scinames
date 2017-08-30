@@ -287,6 +287,10 @@ public class BinomialChangesSceneController {
 		);
 		changesTableView.getColumns().add(colTerminalEpithet);
 		
+		TableColumn<PotentialChange, String> dateForRCol = new TableColumn<>("DateYMD");
+		dateForRCol.setCellValueFactory(cvf -> new ReadOnlyObjectWrapper<>(cvf.getValue().getDataset().getDate().asYYYYmmDD("-")));
+		changesTableView.getColumns().add(dateForRCol);
+		
 		// Properties
 		TableColumn<PotentialChange, String> colProperties = new TableColumn<>("Properties");
 		colProperties.setCellValueFactory(
@@ -509,8 +513,21 @@ public class BinomialChangesSceneController {
 			Set<Name> namesChanged = new HashSet<>(namesAdded);
 			namesChanged.addAll(namesDeleted);
 			
+			Set<Change> changesSummarized = new HashSet<>();
+			
 			for(Name n: namesChanged) {
-				Set<Change> changes = changesByBinomialName.get(n);
+				Set<Change> allChangesAssociatedWithName = changesByBinomialName.get(n);
+				Set<Change> changes = allChangesAssociatedWithName.stream()
+					// Don't summarize the same change into multiple changes
+					// (e.g. if A + B -> C, we don't want this to turn up three times,
+					//  under 'A', 'B' and 'C'
+					.filter(ch -> !changesSummarized.contains(ch))
+					.collect(Collectors.toSet());
+				
+				// No changes left? Skip this name!
+				if(changes.isEmpty()) continue;
+				
+				changesSummarized.addAll(changes);
 				
 				PotentialChange potentialChange = new PotentialChange(
 					ds, 
@@ -594,7 +611,11 @@ public class BinomialChangesSceneController {
 			// Add the data.
 			for(int x = 0; x < tv.getItems().size(); x++) {
 				ObservableValue cellObservableValue = col.getCellObservableValue(x);
-				column.add(cellObservableValue.getValue().toString());
+				Object val = (Object) cellObservableValue.getValue();
+				if(val == null)
+					column.add(""); // or NA?
+				else
+					column.add(val.toString());
 			}
 			
 			result.add(column);
