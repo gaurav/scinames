@@ -940,6 +940,9 @@ public class BinomialChangesSceneController {
 			String.valueOf(potentialChanges.stream().filter(ch -> ch.getNote().isPresent()).count()))
 		);
 		
+		// Calculate overall addition and deletion.
+		
+		
 		// Summarize by types of change.
 		Map<ChangeType, List<Change>> potentialChangesByType = potentialChanges.stream().collect(Collectors.groupingBy(ch -> ch.getType()));
 		summary.addAll(

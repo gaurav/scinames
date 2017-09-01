@@ -305,16 +305,24 @@ public class ProjectXMLReader {
 						break;
 				
 					case "changes":
+						if(!dataset.explicitChangesProperty().isEmpty()) {
+							throw new XMLStreamException("Dataset contains multiple sets of changes in, with the second set starting with: " + start);
+						}
+						
+						List<Change> changes = new LinkedList<>();
+						
 						while(reader.hasNext()) {
 							nextTag = reader.nextTag();
 							
 							if(nextTag.isEndElement())
 								break;
 							else if(nextTag.isStartElement() && nextTag.asStartElement().getName().getLocalPart().equals("change")) {
-								dataset.explicitChangesProperty().add(readChange(reader, nextTag.asStartElement(), dataset));
+								changes.add(readChange(reader, nextTag.asStartElement(), dataset));
 							} else
 								throw new XMLStreamException("Unexpected element in 'change':" +  nextTag);
 						}
+						
+						dataset.explicitChangesProperty().setAll(changes);
 						
 						break;
 						
