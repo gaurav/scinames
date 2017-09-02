@@ -18,6 +18,7 @@ package com.ggvaidya.scinames.ui;
 
 import com.ggvaidya.scinames.dataset.*;
 import com.ggvaidya.scinames.model.Dataset;
+import com.ggvaidya.scinames.model.Project;
 
 import java.io.File;
 import java.io.IOException;
@@ -41,6 +42,10 @@ public class DatasetDiffView {
 	private DatasetDiffController controller;
 
 	public DatasetDiffView(ProjectView pv) {
+		this(pv, null, null);
+	}
+		
+	public DatasetDiffView(ProjectView pv, Dataset first, Dataset second) {
 		projectView = pv;
 		
 		// Load scene from FXML.
@@ -55,16 +60,17 @@ public class DatasetDiffView {
 		controller = loader.getController();
 		controller.setDatasetDiffView(this);
 		
+		Project proj = pv.getProject();
+		
+		if(first == null) first = proj.getFirstDataset().orElse(null);
+		if(first != null) controller.setFirst(first);
+		
+		if(second == null) second = proj.getLastDataset().orElse(null);
+		if(second != null) controller.setSecond(second);
+		
 		stage = new Stage();
 		stage.setTitle("Dataset comparison");
 		stage.setScene(scene);
-	}
-	
-	public DatasetDiffView(ProjectView pv, Dataset first, Dataset second) {
-		this(pv);
-		
-		controller.setFirst(first);
-		controller.setSecond(second);
 	}
 
 	public Stage getStage() {

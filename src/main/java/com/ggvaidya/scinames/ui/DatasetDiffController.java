@@ -23,6 +23,8 @@ import java.io.StringWriter;
 import java.math.BigDecimal;
 import java.math.MathContext;
 import java.net.URL;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -139,38 +141,93 @@ public class DatasetDiffController implements Initializable {
 	@FXML private TextField statusTextField;
 	
 	/* Helper methods */
-	private TableColumn createTableColumnFromPrecalc(String title, Table<String, Dataset, String> precalc, Dataset ds1, Dataset ds2) {
-		TableColumn<String, String> tc = new TableColumn(title);
-		tc.setCellValueFactory(cvf -> {
-			String rowName = cvf.getValue();
-			String colName = cvf.getTableColumn().getText();
+	
+	private ObservableList<String> getComparisonStatRowHeaders() {
+		ObservableList<String> rowHeadings = FXCollections.observableArrayList();
+		
+		rowHeadings.add("Number of rows");
+		rowHeadings.add("Number of columns");
+		rowHeadings.add("Number of names recognized");
+		rowHeadings.add("Number of names in rows");
+		
+		return rowHeadings;
+	}
+	
+	private Table<String, Dataset, String> getComparisonStats(Dataset... datasets) {
+		Table<String, Dataset, String> precalc = HashBasedTable.create();
+		
+		// No datasets? Give up now.
+		if(datasets.length == 0) return precalc;
+		
+		// For each row, we start with the actual stats for the first dataset and 
+		// then provide diffs to subsequent datasets.
+		Dataset ds1 = datasets[0];
+		Project project = datasetDiffView.getProjectView().getProject();
+
+		precalc.put("Number of rows", ds1, String.valueOf(ds1.getRowCount()));
+		
+		Set<Name> namesInRows1 = ds1.getNamesInAllRows();
+		precalc.put("Number of names in rows", ds1, String.valueOf(namesInRows1.size()));
+		
+		Set<Name> recognizedNames1 = project.getRecognizedNames(ds1);
+		precalc.put("Number of names recognized", ds1, String.valueOf(recognizedNames1.size()));
+		
+		Set<DatasetColumn> ds1_cols = new HashSet<>(ds1.getColumns());
+		precalc.put("Number of columns", ds1, String.valueOf(ds1_cols.size()));
+		
+		// Now do comparison stats for each subsequent dataset.
+		for(Dataset ds: datasets) {
+			if(ds == ds1) continue;
 			
-			if(colName == null)
-				throw new RuntimeException("colName missing at " + cvf);
+			precalc.put("Number of rows", ds, 
+				ds.getRowCount()
+				+ ": " + (ds.getRowCount() - ds1.getRowCount())
+				+ " (" + percentage(ds.getRowCount() - ds1.getRowCount(), ds1.getRowCount()) + ")"
+			);
 			
-			if(colName.equals("")) {
-				return new ReadOnlyStringWrapper(rowName);
-			} else if(colName.equals("Dataset 1")) {
-				return new ReadOnlyStringWrapper(precalc.get(rowName, ds1));
-			} else if(colName.equals("Dataset 2")) {
-				return new ReadOnlyStringWrapper(precalc.get(rowName, ds2));
-			} else if(colName.equals("Percentage")) {
-				// SO HACKY OMG
-				try {
-					int num1 = Integer.parseInt(precalc.get(rowName, ds1));
-					int num2 = Integer.parseInt(precalc.get(rowName, ds2));				
-				
-					return new ReadOnlyStringWrapper(
-						percentage(num2 - num1, num1)	
-					);
-				} catch(NumberFormatException ex) {
-					return new ReadOnlyStringWrapper("(none)");
-				}
-			} else {
-				return new ReadOnlyStringWrapper("Unexpected row name: '" + rowName + "'");
-			}
-		});
-		return tc;
+			Set<Name> recognizedNames = project.getRecognizedNames(ds);
+			
+			precalc.put("Number of names recognized", ds, 
+				recognizedNames.size()
+				+ ": " + (recognizedNames.size() - recognizedNames1.size())
+				+ " (" + compareSets(recognizedNames1, recognizedNames)
+				+ ", " + percentage(recognizedNames.size() - recognizedNames1.size(), recognizedNames1.size()) + ")"
+			);
+			
+			Set<Name> namesInRows = ds.getNamesInAllRows();
+			precalc.put("Number of names in rows", ds, 
+				namesInRows.size()
+				+ ": " + (namesInRows.size() - namesInRows1.size())
+				+ " (" + compareSets(namesInRows1, namesInRows)
+				+ ", " + percentage(namesInRows.size() - namesInRows1.size(), namesInRows1.size()) + ")"
+			);
+			
+			Set<DatasetColumn> ds_cols = new HashSet<>(ds.getColumns());
+			precalc.put("Number of columns", ds, 
+				ds_cols.size()
+				+ ": " + (ds_cols.size() - ds1_cols.size())
+				+ " (" + compareSets(ds1.getColumns(), ds.getColumns())
+				+ ", " + percentage(ds.getColumns().size() - ds1.getColumns().size(), ds1.getColumns().size()) + ")"
+			);
+		}
+		
+		return precalc;
+	}
+	
+	@SuppressWarnings({ "rawtypes", "unchecked" })
+	private String compareSets(Collection a, Collection b) {
+		return compareSets(new HashSet(a), new HashSet(b)); 
+	}
+	
+	@SuppressWarnings({ "rawtypes", "unchecked" })
+	private String compareSets(Set a, Set b) {
+		Set added = new HashSet(b);
+		added.removeAll(a);
+		
+		Set removed = new HashSet(a);
+		removed.removeAll(b);
+		
+		return "+" + added.size() + ", -" + removed.size(); 
 	}
 	
 	private String percentage(double numer, double denom) {
@@ -182,34 +239,23 @@ public class DatasetDiffController implements Initializable {
 		Dataset ds1 = dataset1ComboBox.getValue();
 		Dataset ds2 = dataset2ComboBox.getValue();
 		
-		ObservableList<String> rowHeadings = FXCollections.observableArrayList();
-		
-		Table<String, Dataset, String> precalc = HashBasedTable.create();
-
-		precalc.put("Number of rows", ds1, String.valueOf(ds1.getRowCount()));
-		precalc.put("Number of rows", ds2, String.valueOf(ds2.getRowCount()));
-		rowHeadings.add("Number of rows");
-
-		precalc.put("Number of names", ds1, String.valueOf(ds1.getNamesInAllRows().size()));
-		precalc.put("Number of names", ds2, String.valueOf(ds2.getNamesInAllRows().size()));
-		rowHeadings.add("Number of names");
-
-		precalc.put("Columns", ds1, ds1.getColumns().stream().map(col -> col.getName()).collect(Collectors.joining(", ")));
-		precalc.put("Columns", ds2, ds2.getColumns().stream().map(col -> col.getName()).collect(Collectors.joining(", ")));
-		rowHeadings.add("Columns");
-		
-		precalc.put("Column count", ds1, String.valueOf(ds1.getColumns().size()));
-		precalc.put("Column count", ds2, String.valueOf(ds2.getColumns().size()));
-		rowHeadings.add("Column count");
+		Table<String, Dataset, String> precalc = getComparisonStats(ds1, ds2);
 		
 		ObservableList<TableColumn> cols = comparisonTableView.getColumns();
 		cols.clear();
-		cols.add(createTableColumnFromPrecalc("", precalc, ds1, ds2));
-		cols.add(createTableColumnFromPrecalc("Dataset 1", precalc, ds1, ds2));
-		cols.add(createTableColumnFromPrecalc("Dataset 2", precalc, ds1, ds2));
-		cols.add(createTableColumnFromPrecalc("Percentage", precalc, ds1, ds2));
 		
-		comparisonTableView.setItems(rowHeadings);
+		TableColumn<String, String> rowName = new TableColumn<>("");
+		rowName.setCellValueFactory(cvf -> new ReadOnlyStringWrapper(cvf.getValue()));
+		cols.add(rowName);
+		
+		for(Dataset ds: Arrays.asList(ds1, ds2)) {
+			TableColumn<String, String> datasetCol = new TableColumn<>(ds.getName());
+			datasetCol.setCellValueFactory(cvf -> new ReadOnlyStringWrapper(precalc.get(cvf.getValue(), ds)));
+			cols.add(datasetCol);
+		}
+		
+		// The "items" here are just the rows we've calculated.
+		comparisonTableView.setItems(getComparisonStatRowHeaders());
 	}
 	
 	private TableColumn<DatasetRow, String> createTableColumnForDatasetColumn(String colName, DatasetColumn column) {
