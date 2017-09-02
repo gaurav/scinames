@@ -16,6 +16,7 @@
  */
 package com.ggvaidya.scinames.ui;
 
+import java.awt.dnd.DnDConstants;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -39,6 +40,9 @@ import java.util.stream.Collectors;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVPrinter;
 
+import com.ggvaidya.scinames.dataset.DatasetViewAsTabular;
+import com.ggvaidya.scinames.model.Change;
+import com.ggvaidya.scinames.model.ChangeType;
 import com.ggvaidya.scinames.model.Dataset;
 import com.ggvaidya.scinames.model.DatasetColumn;
 import com.ggvaidya.scinames.model.DatasetRow;
@@ -143,14 +147,24 @@ public class DatasetDiffController implements Initializable {
 	/* Helper methods */
 	
 	private ObservableList<String> getComparisonStatRowHeaders() {
-		ObservableList<String> rowHeadings = FXCollections.observableArrayList();
+		ObservableList<String> rowHeader = FXCollections.observableArrayList();
 		
-		rowHeadings.add("Number of rows");
-		rowHeadings.add("Number of columns");
-		rowHeadings.add("Number of names recognized");
-		rowHeadings.add("Number of names in rows");
+		rowHeader.add("Number of rows");
+		rowHeader.add("Number of columns");
+		rowHeader.add("Number of names recognized");
+		rowHeader.add("Number of names in rows");
+		rowHeader.add("Number of binomial names recognized");
+		rowHeader.add("Number of binomial names in rows");
+		rowHeader.add("Number of changes");
 		
-		return rowHeadings;
+		Project project = datasetDiffView.getProjectView().getProject();
+		rowHeader.addAll(
+			project.getChanges().map(ch -> ch.getType()).distinct().sorted().map(
+				type -> "Number of changes of type '" + type.getType() + "'"
+			).collect(Collectors.toList())
+		);
+		
+		return rowHeader;
 	}
 	
 	private Table<String, Dataset, String> getComparisonStats(Dataset... datasets) {
@@ -172,8 +186,25 @@ public class DatasetDiffController implements Initializable {
 		Set<Name> recognizedNames1 = project.getRecognizedNames(ds1);
 		precalc.put("Number of names recognized", ds1, String.valueOf(recognizedNames1.size()));
 		
+		Set<Name> binomialNamesInRows1 = ds1.getNamesInAllRows().stream().flatMap(n -> n.asBinomial()).collect(Collectors.toSet());
+		precalc.put("Number of binomial names in rows", ds1, String.valueOf(binomialNamesInRows1.size()));
+		
+		Set<Name> binomialRecognizedNames1 = project.getRecognizedNames(ds1).stream().flatMap(n -> n.asBinomial()).collect(Collectors.toSet());
+		precalc.put("Number of binomial names recognized", ds1, String.valueOf(binomialRecognizedNames1.size()));		
+		
 		Set<DatasetColumn> ds1_cols = new HashSet<>(ds1.getColumns());
 		precalc.put("Number of columns", ds1, String.valueOf(ds1_cols.size()));
+		
+		List<Change> ds1_changes = ds1.getChanges(project).collect(Collectors.toList());
+		precalc.put("Number of changes", ds1, String.valueOf(ds1_changes.size()));
+		
+		Map<ChangeType, Long> ds1_changes_by_type = ds1_changes.stream().collect(Collectors.groupingBy(
+			ch -> ch.getType(),
+			Collectors.counting()
+		));
+		for(ChangeType ct: ds1_changes_by_type.keySet()) {
+			precalc.put("Number of changes of type '" + ct.getType() + "'", ds1, String.valueOf(ds1_changes_by_type.get(ct)));
+		}
 		
 		// Now do comparison stats for each subsequent dataset.
 		for(Dataset ds: datasets) {
@@ -202,6 +233,23 @@ public class DatasetDiffController implements Initializable {
 				+ ", " + percentage(namesInRows.size() - namesInRows1.size(), namesInRows1.size()) + ")"
 			);
 			
+			Set<Name> binomialRecognizedNames = project.getRecognizedNames(ds).stream().flatMap(n -> n.asBinomial()).collect(Collectors.toSet());
+			
+			precalc.put("Number of binomial names recognized", ds, 
+				binomialRecognizedNames.size()
+				+ ": " + (binomialRecognizedNames.size() - binomialRecognizedNames1.size())
+				+ " (" + compareSets(binomialRecognizedNames1, binomialRecognizedNames)
+				+ ", " + percentage(binomialRecognizedNames.size() - binomialRecognizedNames1.size(), binomialRecognizedNames1.size()) + ")"
+			);
+			
+			Set<Name> binomialNamesInRows = ds.getNamesInAllRows().stream().flatMap(n -> n.asBinomial()).collect(Collectors.toSet());
+			precalc.put("Number of binomial names in rows", ds, 
+				binomialNamesInRows.size()
+				+ ": " + (binomialNamesInRows.size() - binomialNamesInRows1.size())
+				+ " (" + compareSets(binomialNamesInRows1, binomialNamesInRows)
+				+ ", " + percentage(binomialNamesInRows.size() - binomialNamesInRows1.size(), binomialNamesInRows1.size()) + ")"
+			);
+			
 			Set<DatasetColumn> ds_cols = new HashSet<>(ds.getColumns());
 			precalc.put("Number of columns", ds, 
 				ds_cols.size()
@@ -209,6 +257,32 @@ public class DatasetDiffController implements Initializable {
 				+ " (" + compareSets(ds1.getColumns(), ds.getColumns())
 				+ ", " + percentage(ds.getColumns().size() - ds1.getColumns().size(), ds1.getColumns().size()) + ")"
 			);
+			
+			// What we want here is actually the number of changes SINCE ds1
+			// So:
+			List<Dataset> datasetsBetween1AndDs = new LinkedList<>();
+			boolean ds1_found = false;
+			for(Dataset dt: project.getDatasets()) {
+				// Don't start until we see the first dataset.
+				if(dt == ds1) { ds1_found = true; continue; }
+				
+				// Add every subsequent dataset
+				if(ds1_found) datasetsBetween1AndDs.add(dt);
+				
+				// Until we find the current dataset.
+				if(dt == ds) break;
+			}
+			
+			List<Change> ds_changes = datasetsBetween1AndDs.stream().flatMap(dt -> dt.getChanges(project)).collect(Collectors.toList());
+			precalc.put("Number of changes", ds, String.valueOf(ds_changes.size()));
+			
+			Map<ChangeType, Long> ds_changes_by_type = ds_changes.stream().collect(Collectors.groupingBy(
+				ch -> ch.getType(),
+				Collectors.counting()
+			));
+			for(ChangeType ct: ds_changes_by_type.keySet()) {
+				precalc.put("Number of changes of type '" + ct.getType() + "'", ds, String.valueOf(ds_changes_by_type.get(ct)));
+			}
 		}
 		
 		return precalc;

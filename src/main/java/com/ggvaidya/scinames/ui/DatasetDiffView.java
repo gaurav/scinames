@@ -60,6 +60,11 @@ public class DatasetDiffView {
 		controller = loader.getController();
 		controller.setDatasetDiffView(this);
 		
+		stage = new Stage();
+		stage.setTitle("Dataset comparison");
+		stage.setScene(scene);
+		
+		// Set up first and second, if possible.
 		Project proj = pv.getProject();
 		
 		if(first == null) first = proj.getFirstDataset().orElse(null);
@@ -67,10 +72,6 @@ public class DatasetDiffView {
 		
 		if(second == null) second = proj.getLastDataset().orElse(null);
 		if(second != null) controller.setSecond(second);
-		
-		stage = new Stage();
-		stage.setTitle("Dataset comparison");
-		stage.setScene(scene);
 	}
 
 	public Stage getStage() {
