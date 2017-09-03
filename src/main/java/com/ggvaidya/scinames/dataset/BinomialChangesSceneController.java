@@ -34,6 +34,8 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.logging.Logger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -230,8 +232,17 @@ public class BinomialChangesSceneController {
 		colNote.setCellFactory(TextFieldTableCell.forTableColumn());
 		colNote.setCellValueFactory(new PropertyValueFactory<>("note"));
 		colNote.setPrefWidth(100.0);
-		colNote.setEditable(true);
 		changesTableView.getColumns().add(colNote);
+		
+		TableColumn<PotentialChange, String> colReason = new TableColumn<>("Reason");
+		colReason.setCellValueFactory(cvf -> new ReadOnlyStringWrapper(calculateReason(cvf.getValue())));
+		colReason.setPrefWidth(100.0);
+		changesTableView.getColumns().add(colReason);
+		
+		TableColumn<PotentialChange, String> colReasonDate = new TableColumn<>("ReasonDate");
+		colReasonDate.setCellValueFactory(cvf -> new ReadOnlyStringWrapper(calculateReasonDate(cvf.getValue())));
+		colReasonDate.setPrefWidth(100.0);
+		changesTableView.getColumns().add(colReasonDate);
 		
 		TableColumn<PotentialChange, String> colCitations = new TableColumn<>("Citations");
 		colCitations.setCellValueFactory(
@@ -384,6 +395,61 @@ public class BinomialChangesSceneController {
 		});
 		
 		LOGGER.info("setupTableWithChanges() completed");
+	}
+	
+	private String calculateReason(PotentialChange pc) {
+		Set<Change> changes = changesByPotentialChange.get(pc);
+		
+		Pattern findReason = Pattern.compile("^\\s*#(\\w+)\\b");
+		
+		return changes.stream()
+			.flatMap(ch -> {
+				Optional<String> note = ch.getNote();
+				if(note.isPresent()) return Stream.of(note.get());
+				else return Stream.empty();
+			})
+			.flatMap(note -> {
+				Set<String> reasons = new HashSet<>();
+				
+				// Each note may contain multiple dates.
+				Matcher matcher = findReason.matcher(note);
+				while(matcher.find()) {
+					reasons.add(matcher.group(1));
+				}
+				
+				return reasons.stream();
+			})
+			.distinct()
+			.sorted()
+			.collect(Collectors.joining("|"));
+	}
+	
+	private String calculateReasonDate(PotentialChange pc) {
+		Set<Change> changes = changesByPotentialChange.get(pc);
+		
+		Pattern findDate = Pattern.compile("\\b(\\d{4})\\b");
+		
+		return changes.stream()
+			.flatMap(ch -> {
+				Optional<String> note = ch.getNote();
+				if(note.isPresent()) return Stream.of(note.get());
+				else return Stream.empty();
+			})
+			.flatMap(note -> {
+				List<SimplifiedDate> dates = new LinkedList<>();
+				
+				// Each note may contain multiple dates.
+				Matcher matcher = findDate.matcher(note);
+				while(matcher.find()) {
+					dates.add(new SimplifiedDate(matcher.group(1)));
+				}
+				
+				return dates.stream();
+			})
+			.map(sd -> sd.asYYYYmmDD("-"))
+			.distinct()
+			.sorted()
+			.collect(Collectors.joining("|"));
 	}
 	
 	private MenuItem createMenuItem(String name, EventHandler<ActionEvent> handler) {
@@ -954,6 +1020,21 @@ public class BinomialChangesSceneController {
 				.collect(Collectors.toList())
 		);
 		
+		// Summarize by reason.
+		Map<String, Long> potentialChangesByReason = potentialChanges.stream().map(pc -> pc.getType() + " because of " + calculateReason(pc))
+			.collect(Collectors.groupingBy(
+				Function.identity(),
+				Collectors.counting()
+			));
+		summary.addAll(
+			potentialChangesByReason.keySet().stream().sorted()
+				.map(reason -> new AbstractMap.SimpleEntry<String, String>(
+					"Number of binomial changes for reason '" + reason + "'", 
+					potentialChangesByReason.get(reason).toString()
+				))
+				.collect(Collectors.toList())
+		);
+		
 		// Make an additional data about it.
 		Map<String, List<Map.Entry<String, String>>> map = new HashMap<>();
 		map.put("Summary", summary);
@@ -969,9 +1050,17 @@ public class BinomialChangesSceneController {
 		cols.add(colValue);
 		
 		TableColumn<Map.Entry<String, String>, String> colPercent = new TableColumn<>("Percentage");
-		colPercent.setCellValueFactory(cdf -> new ReadOnlyStringWrapper(
-			(numChanges == 0 ? "NA" : ((double)Long.parseLong(cdf.getValue().getValue()) / numChanges * 100) + "%")
-		));
+		colPercent.setCellValueFactory(cdf -> {
+			String result = "NA";
+			
+			if(cdf.getValue() != null && cdf.getValue().getValue() != null && !cdf.getValue().getValue().equals("null")) {
+				long longVal = Long.parseLong(cdf.getValue().getValue());
+			
+				result = (longVal == 0) ? "NA" : (((double) longVal / numChanges * 100) + "%");
+			}
+			
+			return new ReadOnlyStringWrapper(result);
+		});
 		cols.add(colPercent);
 		
 		return new AdditionalData<String, Entry<String, String>>(
