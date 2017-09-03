@@ -240,7 +240,26 @@ public class BinomialChangesSceneController {
 		changesTableView.getColumns().add(colReason);
 		
 		TableColumn<PotentialChange, String> colReasonDate = new TableColumn<>("ReasonDate");
-		colReasonDate.setCellValueFactory(cvf -> new ReadOnlyStringWrapper(calculateReasonDate(cvf.getValue())));
+		colReasonDate.setCellValueFactory(cvf -> {
+			String result;
+			Set<SimplifiedDate> dates = calculateReasonDate(cvf.getValue());
+			
+			if(dates.size() > 1) {
+				result = "(" + dates.size() + ") " + dates.stream()
+					.distinct()
+					.sorted()
+					.map(sd -> sd.asYYYYmmDD("-"))
+					.collect(Collectors.joining("|"));
+				
+			} else if(dates.size() == 1) {
+				result = dates.iterator().next().asYYYYmmDD("-");
+
+			} else {
+				result = "NA";
+			}
+			
+			return new ReadOnlyStringWrapper(result);
+		});
 		colReasonDate.setPrefWidth(100.0);
 		changesTableView.getColumns().add(colReasonDate);
 		
@@ -404,17 +423,16 @@ public class BinomialChangesSceneController {
 		
 		return changes.stream()
 			.flatMap(ch -> {
-				Optional<String> note = ch.getNote();
-				if(note.isPresent()) return Stream.of(note.get());
-				else return Stream.empty();
-			})
-			.flatMap(note -> {
+				Optional<String> optNote = ch.getNote();
+				if(!optNote.isPresent()) return Stream.empty();
+				String note = optNote.get();
+				
 				Set<String> reasons = new HashSet<>();
 				
-				// Each note may contain multiple dates.
+				// Each note only contains a single reason.
 				Matcher matcher = findReason.matcher(note);
 				while(matcher.find()) {
-					reasons.add(matcher.group(1));
+					reasons.add(tweakReason(matcher.group(1), note, pc));
 				}
 				
 				return reasons.stream();
@@ -424,10 +442,39 @@ public class BinomialChangesSceneController {
 			.collect(Collectors.joining("|"));
 	}
 	
-	private String calculateReasonDate(PotentialChange pc) {
+	private String tweakReason(String reason, String note, PotentialChange pch) {
+		Project project = binomialChangesView.getProjectView().getProject();
+		
+		if(reason.equals("described") || reason.equals("renamed") || reason.equals("spnov") || reason.equals("combnov")) {
+			// was the description since the date of the first checklist?
+			Optional<Dataset> optDsFirst = project.getFirstDataset();
+			if(optDsFirst.isPresent()) {
+				SimplifiedDate earliest_date = optDsFirst.get().getDate();
+				
+				if(earliest_date != null) {
+					Set<SimplifiedDate> dates = calculateReasonDate(pch);
+					
+					boolean anyMatch = dates.stream().anyMatch(sd -> earliest_date.compareTo(sd) < 0);
+					boolean allMatch = dates.stream().allMatch(sd -> earliest_date.compareTo(sd) < 0);
+					
+					if(allMatch) {
+						reason = reason + "_all_after_earliest";
+					} else if(anyMatch) {
+						reason = reason + "_some_after_earliest";
+					} else {
+						reason = reason + "_before_earliest";
+					}
+				}
+			}
+		}
+		
+		return reason;
+	}
+	
+	private Set<SimplifiedDate> calculateReasonDate(PotentialChange pc) {
 		Set<Change> changes = changesByPotentialChange.get(pc);
 		
-		Pattern findDate = Pattern.compile("\\b(\\d{4})\\b");
+		Pattern findDate = Pattern.compile("\\s+(\\d{4})\\b");
 		
 		return changes.stream()
 			.flatMap(ch -> {
@@ -446,10 +493,7 @@ public class BinomialChangesSceneController {
 				
 				return dates.stream();
 			})
-			.map(sd -> sd.asYYYYmmDD("-"))
-			.distinct()
-			.sorted()
-			.collect(Collectors.joining("|"));
+			.collect(Collectors.toSet());
 	}
 	
 	private MenuItem createMenuItem(String name, EventHandler<ActionEvent> handler) {
