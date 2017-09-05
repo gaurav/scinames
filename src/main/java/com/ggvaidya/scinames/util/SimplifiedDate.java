@@ -266,8 +266,30 @@ public class SimplifiedDate implements Comparable<SimplifiedDate> {
 		month = Integer.parseInt(attr.getOrDefault("month", "0"));
 		day = Integer.parseInt(attr.getOrDefault("day", "0"));
 	}
-
+	
+	/**
+	 * This function is now guaranteed to return 'YYYY<sep>MM<sep>DD';
+	 * if we don't know a month or date, we'll force it to 01. Only
+	 * if the year is unknown will we return 'NA'.
+	 * 
+	 * @param separator
+	 * @return
+	 */
 	public String asYYYYmmDD(String separator) {
+		if(year == 0) return "NA";
+		
+		String str_month = String.valueOf(month);
+		if(month == 0) str_month = "1";
+		if(month < 10) str_month = "0" + str_month;
+		
+		String str_day = String.valueOf(day);
+		if(day == 0) str_day = "1";
+		if(day < 10) str_day = "0" + str_day;
+		
+		return year + separator + str_month + separator + str_day;
+	}
+
+	public String asYYYYmmDDSkippingBlanks(String separator) {
 		StringBuilder builder = new StringBuilder();
 		builder.append(year);
 		

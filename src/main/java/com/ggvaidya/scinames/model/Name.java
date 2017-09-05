@@ -112,7 +112,8 @@ public class Name implements Comparable<Name> {
 		"null",
 		"na",
 		"unknown",
-		"undetermined"
+		"undetermined",
+		"undifferentiated"
 	));
 	
 	/* 
