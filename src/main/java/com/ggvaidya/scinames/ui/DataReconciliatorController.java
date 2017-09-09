@@ -161,6 +161,10 @@ public class DataReconciliatorController implements Initializable {
 		}
 	}
 	
+	private Set<String> getOneElementSet(long val) {
+		return getOneElementSet(String.valueOf(val));
+	}
+	
 	private Set<String> getOneElementSet(String str) {
 		HashSet<String> hs = new HashSet<>();
 		hs.add(str);
@@ -273,6 +277,8 @@ public class DataReconciliatorController implements Initializable {
 		existingColNames.add("name");
 		existingColNames.add("names_in_dataset");		
 		existingColNames.add("all_names_in_cluster");
+		existingColNames.add("dataset_rows_for_name");
+		existingColNames.add("distinct_dataset_rows_for_name");
 		
 		// If these are taxon concepts, there's three other columns we want
 		// to emit.
@@ -386,8 +392,14 @@ public class DataReconciliatorController implements Initializable {
 				));
 			}
 			
+			List<DatasetRow> rowsForName = new LinkedList<>();
+			
 			// Okay, here's where we reconcile!
 			for(Name n: cluster.getNames()) {
+				// TODO: okay, we also want a count of the total number of unique rows
+				// that have been reconciled "into" this name -- it's a by-name summary
+				// of what's going on in the dataset. So how?
+				
 				// TODO: there's probably an optimization here, in which we should
 				// loop on the smaller set (either loop on 'datasets' and compare
 				// to cluster, or loop on cluster.foundIn and compare to 'datasets').
@@ -399,6 +411,9 @@ public class DataReconciliatorController implements Initializable {
 				
 					// Check to see if we have any rows for this name; if not, skip.
 					if(!rowsByName.containsKey(n)) continue;
+					
+					// Save all the rows.
+					rowsForName.addAll(rowsByName.get(n));
 
 					Set<DatasetRow> matched = rowsByName.get(n);
 					// LOGGER.log(Level.FINE, "Adding {0} rows under name ''{1}''", new Object[]{matched.size(), n.getFullName()});
@@ -428,6 +443,9 @@ public class DataReconciliatorController implements Initializable {
 					}
 				}
 			}
+			
+			precalc.put(cluster, "dataset_rows_for_name", getOneElementSet(rowsForName.size()));
+			precalc.put(cluster, "distinct_dataset_rows_for_name", getOneElementSet(new HashSet<>(rowsForName).size()));
 		}
 		
 		LOGGER.info("Setting up columns: " + existingColNames);
