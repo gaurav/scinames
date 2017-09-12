@@ -23,6 +23,7 @@ import java.io.StringWriter;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -77,6 +78,7 @@ public class DataReconciliatorController implements Initializable {
 	
 	private static final Dataset ALL = new Dataset("All", SimplifiedDate.MIN, Dataset.TYPE_DATASET);
 	private static final String RECONCILE_BY_NAME = "Names";
+	private static final String RECONCILE_BY_SPECIES_NAME = "Species (binomial) names";
 	private static final String RECONCILE_BY_SPECIES_NAME_CLUSTER = "Species name clusters";
 	private static final String RECONCILE_BY_NAME_CLUSTER = "All name clusters";	
 	private static final String RECONCILE_BY_SPECIES_TAXON_CONCEPT = "Species taxon concepts";	
@@ -107,6 +109,7 @@ public class DataReconciliatorController implements Initializable {
 		includeDataFromComboBox.getSelectionModel().select(0);		
 		
 		reconcileUsingComboBox.getItems().add(RECONCILE_BY_NAME);
+		reconcileUsingComboBox.getItems().add(RECONCILE_BY_SPECIES_NAME);
 		reconcileUsingComboBox.getItems().add(RECONCILE_BY_SPECIES_NAME_CLUSTER);
 		reconcileUsingComboBox.getItems().add(RECONCILE_BY_NAME_CLUSTER);		
 		reconcileUsingComboBox.getItems().add(RECONCILE_BY_SPECIES_TAXON_CONCEPT);	
@@ -170,6 +173,15 @@ public class DataReconciliatorController implements Initializable {
 		hs.add(str);
 		return hs;
 	}
+	
+	private List<NameCluster> createSingleNameClusters(Dataset dt, Collection<Name> names) {
+		// Convenience method: we create a set of NameClusters, each 
+		// consisting of a single name.
+		return names.stream()
+			.sorted()
+			.map(n -> new NameCluster(dt, n))
+			.collect(Collectors.toList());
+	}
 		
 	private void reconcileDataFromOneDataset() {
 		Project project = dataReconciliatorView.getProjectView().getProject();
@@ -218,8 +230,21 @@ public class DataReconciliatorController implements Initializable {
 		boolean flag_nameClustersAreTaxonConcepts = false;
 		switch(reconciliationMethod) {
 			case RECONCILE_BY_NAME:
-				LOGGER.log(Level.SEVERE, "Reconciliation method ''{0}'' has not yet been implemented!", reconciliationMethod);
-				return;
+				// namesInDataset already has all the names we want.
+				
+				nameClusters = createSingleNameClusters(namesDataset, namesInDataset);
+				
+				break;
+				
+			case RECONCILE_BY_SPECIES_NAME:
+				namesInDataset = namesInDataset.stream()
+					.filter(n -> n.hasSpecificEpithet())
+					.flatMap(n -> n.asBinomial())
+					.distinct().collect(Collectors.toSet());
+			
+				nameClusters = createSingleNameClusters(namesDataset, namesInDataset);
+
+				break;
 			
 			case RECONCILE_BY_SPECIES_NAME_CLUSTER:
 				// nameClusters = project.getNameClusterManager().getSpeciesClustersAfterFiltering(project).collect(Collectors.toList());
@@ -278,7 +303,7 @@ public class DataReconciliatorController implements Initializable {
 		existingColNames.add("names_in_dataset");		
 		existingColNames.add("all_names_in_cluster");
 		existingColNames.add("dataset_rows_for_name");
-		existingColNames.add("distinct_dataset_rows_for_name");
+		// existingColNames.add("distinct_dataset_rows_for_name");
 		
 		// If these are taxon concepts, there's three other columns we want
 		// to emit.
@@ -395,57 +420,48 @@ public class DataReconciliatorController implements Initializable {
 			List<DatasetRow> rowsForName = new LinkedList<>();
 			
 			// Okay, here's where we reconcile!
-			for(Name n: cluster.getNames()) {
-				// TODO: okay, we also want a count of the total number of unique rows
-				// that have been reconciled "into" this name -- it's a by-name summary
-				// of what's going on in the dataset. So how?
+			Set<DatasetRow> rowsToReconcile = new HashSet<>();
 				
-				// TODO: there's probably an optimization here, in which we should
-				// loop on the smaller set (either loop on 'datasets' and compare
-				// to cluster, or loop on cluster.foundIn and compare to 'datasets').
-				for(Dataset ds: datasets) {
-					Map<Name, Set<DatasetRow>> rowsByName = ds.getRowsByName();
-					
-					// Are we included in this name cluster? If not, skip!
-					if(!cluster.getFoundIn().contains(ds)) continue;
+			// Collect all the rows from all the datasets for this name.
+			for(Dataset ds: datasets) {
+				rowsToReconcile.addAll(
+					cluster.getNames().stream().flatMap(n -> ds.getRowsByName(n).stream()).collect(Collectors.toList())
+				);
+			}
 				
-					// Check to see if we have any rows for this name; if not, skip.
-					if(!rowsByName.containsKey(n)) continue;
-					
-					// Save all the rows.
-					rowsForName.addAll(rowsByName.get(n));
+			// Now we need to actually reconcile the data from these unique row objects.
+			Set<DatasetColumn> columns = rowsToReconcile.stream()
+				.flatMap(row -> row.getColumns().stream())
+				.collect(Collectors.toSet());				
+			
+			for(DatasetColumn col: columns) {
+				String colName = col.getName();
+				String baseColName = colName;
 
-					Set<DatasetRow> matched = rowsByName.get(n);
-					// LOGGER.log(Level.FINE, "Adding {0} rows under name ''{1}''", new Object[]{matched.size(), n.getFullName()});
-				
-					Map<Set<DatasetColumn>, List<DatasetRow>> rowsByCols = matched.stream().collect(
-						Collectors.groupingBy((DatasetRow row) -> row.getColumns())
-					);
-				
-					for(Set<DatasetColumn> cols: rowsByCols.keySet()) {
-						for(DatasetColumn col: cols) {
-							String colName = col.getName();
-
-							if(existingColNames.contains(colName))
-								colName = "datasets." + colName;
-
-							if(!precalc.contains(cluster, colName))
-								precalc.put(cluster, colName, new HashSet<>());
-
-							for(DatasetRow row: rowsByCols.get(cols)) {
-								if(!row.hasColumn(col)) continue;
-
-								precalc.get(cluster, colName).add(row.get(col));											
-							}
-
-							LOGGER.log(Level.FINE, "Added {0} rows under name ''{1}''", new Object[]{rowsByCols.get(cols).size(), n.getFullName()});	
-						}
-					}
+				// Figure out a unique name for this column name.
+				int uniqueColumnCount = 1;
+				while(existingColNames.contains(colName)) {
+					uniqueColumnCount++;
+					colName = baseColName + "." + uniqueColumnCount;
 				}
+				existingColNames.add(colName);
+
+				// Make sure we get this column down into 'precalc'. 
+				if(!precalc.contains(cluster, colName))
+					precalc.put(cluster, colName, new HashSet<>());
+
+				// Add all values for all rows in this column.
+				Set<String> vals = rowsToReconcile.stream().flatMap(row -> {
+					if(!row.hasColumn(col)) return Stream.empty();
+					else return Stream.of(row.get(col));
+				}).collect(Collectors.toSet());
+				
+				precalc.get(cluster, colName).addAll(vals);
+				
+				LOGGER.fine("Added " + vals.size() + " rows under name cluster '" + cluster + "'");
 			}
 			
-			precalc.put(cluster, "dataset_rows_for_name", getOneElementSet(rowsForName.size()));
-			precalc.put(cluster, "distinct_dataset_rows_for_name", getOneElementSet(new HashSet<>(rowsForName).size()));
+			precalc.put(cluster, "dataset_rows_for_name", getOneElementSet(rowsToReconcile.size()));
 		}
 		
 		LOGGER.info("Setting up columns: " + existingColNames);
