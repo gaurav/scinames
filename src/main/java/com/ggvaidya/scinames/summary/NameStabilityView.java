@@ -47,6 +47,7 @@ import com.ggvaidya.scinames.model.Name;
 import com.ggvaidya.scinames.model.NameCluster;
 import com.ggvaidya.scinames.model.NameClusterManager;
 import com.ggvaidya.scinames.model.Project;
+import com.ggvaidya.scinames.model.TaxonConcept;
 import com.ggvaidya.scinames.tabulardata.TabularDataViewController;
 import com.ggvaidya.scinames.ui.ProjectView;
 import com.google.common.collect.HashBasedTable;
@@ -138,6 +139,11 @@ public final class NameStabilityView {
 		cols.add(createTableColumnFromPrecalc(precalc, "clusters_identical_to_prev"));
 		cols.add(createTableColumnFromPrecalc(precalc, "clusters_identical_to_prev_pc_this"));
 		cols.add(createTableColumnFromPrecalc(precalc, "clusters_identical_to_prev_pc_union"));
+		
+		cols.add(createTableColumnFromPrecalc(precalc, "circumscriptions_identical_to_prev"));
+		cols.add(createTableColumnFromPrecalc(precalc, "circumscriptions_identical_to_prev_pc_this"));
+		cols.add(createTableColumnFromPrecalc(precalc, "circumscriptions_identical_to_prev_pc_union"));
+		
 		cols.add(createTableColumnFromPrecalc(precalc, "names_identical_to_next"));
 		cols.add(createTableColumnFromPrecalc(precalc, "names_identical_to_next_pc_this"));
 		cols.add(createTableColumnFromPrecalc(precalc, "names_identical_to_next_pc_union"));		
@@ -150,6 +156,11 @@ public final class NameStabilityView {
 		cols.add(createTableColumnFromPrecalc(precalc, "clusters_identical_to_first"));
 		cols.add(createTableColumnFromPrecalc(precalc, "clusters_identical_to_first_pc_this"));	
 		cols.add(createTableColumnFromPrecalc(precalc, "clusters_identical_to_first_pc_union"));
+		
+		cols.add(createTableColumnFromPrecalc(precalc, "circumscriptions_identical_to_first"));
+		cols.add(createTableColumnFromPrecalc(precalc, "circumscriptions_identical_to_first_pc_this"));
+		cols.add(createTableColumnFromPrecalc(precalc, "circumscriptions_identical_to_first_pc_union"));
+		
 		cols.add(createTableColumnFromPrecalc(precalc, "names_identical_to_last"));
 		cols.add(createTableColumnFromPrecalc(precalc, "names_identical_to_last_pc_this"));
 		cols.add(createTableColumnFromPrecalc(precalc, "names_identical_to_last_pc_union"));		
@@ -266,6 +277,10 @@ public final class NameStabilityView {
 				precalc.put(ds, "clusters_identical_to_first", String.valueOf(getBinomialClustersIntersection(project, ds, firstDataset).size()));
 				precalc.put(ds, "clusters_identical_to_first_pc_this", new BigDecimal((double)getBinomialClustersIntersection(project, ds, firstDataset).size()/clustersForDataset * 100).setScale(2, BigDecimal.ROUND_HALF_EVEN).toPlainString());
 				precalc.put(ds, "clusters_identical_to_first_pc_union", new BigDecimal((double)getBinomialClustersIntersection(project, ds, firstDataset).size()/getBinomialClustersUnion(project, ds, firstDataset).size() * 100).setScale(2, BigDecimal.ROUND_HALF_EVEN).toPlainString());
+				
+				precalc.put(ds, "circumscriptions_identical_to_first", String.valueOf(getBinomialTaxonConceptsIntersection(project, ds, firstDataset).size()));
+				precalc.put(ds, "circumscriptions_identical_to_first_pc_this", new BigDecimal((double)getBinomialTaxonConceptsIntersection(project, ds, firstDataset).size()/clustersForDataset * 100).setScale(2, BigDecimal.ROUND_HALF_EVEN).toPlainString());
+				precalc.put(ds, "circumscriptions_identical_to_first_pc_union", new BigDecimal((double)getBinomialTaxonConceptsIntersection(project, ds, firstDataset).size()/getBinomialTaxonConceptsUnion(project, ds, prevDataset).size() * 100).setScale(2, BigDecimal.ROUND_HALF_EVEN).toPlainString());
 			}
 			
 			if(lastDataset == null) {
@@ -282,7 +297,7 @@ public final class NameStabilityView {
 				}
 				precalc.put(ds, "clusters_identical_to_last", String.valueOf(getBinomialClustersIntersection(project, ds, lastDataset).size()));
 				precalc.put(ds, "clusters_identical_to_last_pc_this", new BigDecimal((double)getBinomialClustersIntersection(project, ds, lastDataset).size()/clustersForDataset * 100).setScale(2, BigDecimal.ROUND_HALF_EVEN).toPlainString());
-				precalc.put(ds, "clusters_identical_to_last_pc_union", new BigDecimal((double)getBinomialClustersIntersection(project, ds, lastDataset).size()/getBinomialClustersUnion(project, ds, lastDataset).size() * 100).setScale(2, BigDecimal.ROUND_HALF_EVEN).toPlainString());
+				precalc.put(ds, "clusters_identical_to_last_pc_union", new BigDecimal((double)getBinomialClustersIntersection(project, ds, lastDataset).size()/getBinomialClustersUnion(project, ds, lastDataset).size() * 100).setScale(2, BigDecimal.ROUND_HALF_EVEN).toPlainString());				
 			}
 			
 			if(prevDataset == null) {
@@ -300,6 +315,10 @@ public final class NameStabilityView {
 				precalc.put(ds, "clusters_identical_to_prev", String.valueOf(getBinomialClustersIntersection(project, ds, prevDataset).size()));
 				precalc.put(ds, "clusters_identical_to_prev_pc_this", new BigDecimal((double)getBinomialClustersIntersection(project, ds, prevDataset).size()/clustersForDataset * 100).setScale(2, BigDecimal.ROUND_HALF_EVEN).toPlainString());
 				precalc.put(ds, "clusters_identical_to_prev_pc_union", new BigDecimal((double)getBinomialClustersIntersection(project, ds, prevDataset).size()/getBinomialClustersUnion(project, ds, prevDataset).size() * 100).setScale(2, BigDecimal.ROUND_HALF_EVEN).toPlainString());
+				
+				precalc.put(ds, "circumscriptions_identical_to_prev", String.valueOf(getBinomialTaxonConceptsIntersection(project, ds, prevDataset).size()));
+				precalc.put(ds, "circumscriptions_identical_to_prev_pc_this", new BigDecimal((double)getBinomialTaxonConceptsIntersection(project, ds, prevDataset).size()/clustersForDataset * 100).setScale(2, BigDecimal.ROUND_HALF_EVEN).toPlainString());
+				precalc.put(ds,  "circumscriptions_identical_to_prev_pc_union", new BigDecimal((double)getBinomialTaxonConceptsIntersection(project, ds, prevDataset).size()/getBinomialTaxonConceptsUnion(project, ds, prevDataset).size() * 100).setScale(2, BigDecimal.ROUND_HALF_EVEN).toPlainString());
 			}
 		
 			if(nextDataset == null) {
@@ -390,6 +409,39 @@ public final class NameStabilityView {
 		
 		Set<NameCluster> clusters1 = new HashSet<>(ncm.getClusters(p.getRecognizedNames(ds1).stream().flatMap(n -> n.asBinomial()).collect(Collectors.toList())));
 		Set<NameCluster> clusters2 = new HashSet<>(ncm.getClusters(p.getRecognizedNames(ds2).stream().flatMap(n -> n.asBinomial()).collect(Collectors.toList())));
+		
+		clusters1.addAll(clusters2);
+	
+		return clusters1;
+	}
+	
+	// TODO: sleepy, tired, stressed! Please recheck!
+	private Map<Dataset, Set<TaxonConcept>> taxonConceptsByDataset = new HashMap<>(); 
+	private Set<TaxonConcept> getTaxonConceptsForDataset(Project p, Dataset ds) {
+		if(taxonConceptsByDataset.containsKey(ds)) return taxonConceptsByDataset.get(ds);
+		
+		NameClusterManager ncm = p.getNameClusterManager();
+		Set<TaxonConcept> taxonConcepts = ncm.getClusters(p.getRecognizedNames(ds)).stream()
+			.flatMap(nc -> nc.getTaxonConcepts(p).stream())
+			// Now this includes taxon concepts not included in this dataset!
+			// So filter down!
+			.filter(tc -> tc.getFoundIn().contains(ds))
+			.collect(Collectors.toSet());
+		
+		taxonConceptsByDataset.put(ds, taxonConcepts);
+		return taxonConcepts;
+	}
+	
+	private Set<TaxonConcept> getBinomialTaxonConceptsIntersection(Project p, Dataset ds1, Dataset ds2) {
+		Set<TaxonConcept> clusters1 = getTaxonConceptsForDataset(p, ds1);
+		Set<TaxonConcept> clusters2 = getTaxonConceptsForDataset(p, ds2);
+		
+		return clusters1.stream().filter(c -> clusters2.contains(c)).collect(Collectors.toSet());
+	}
+	
+	private Set<TaxonConcept> getBinomialTaxonConceptsUnion(Project p, Dataset ds1, Dataset ds2) {
+		Set<TaxonConcept> clusters1 = getTaxonConceptsForDataset(p, ds1);
+		Set<TaxonConcept> clusters2 = getTaxonConceptsForDataset(p, ds2);
 		
 		clusters1.addAll(clusters2);
 	
