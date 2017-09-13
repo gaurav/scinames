@@ -183,7 +183,7 @@ public class Project {
 		lastModified.addListener(chl -> clearRecognizedNamesCache());
 	}
 	
-	public void clearRecognizedNamesCache() {
+	public synchronized void clearRecognizedNamesCache() {
 		LOGGER.info("Clearing recognized names cache");
 		recognizedNamesCache.clear();
 	}
@@ -198,7 +198,10 @@ public class Project {
 	 * @param d The dataset you want recognized names from.
 	 * @return The set of names recognized at the end of this dataset.
 	 */
-	public Set<Name> getRecognizedNames(Dataset d) {
+	public synchronized Set<Name> getRecognizedNames(Dataset d) {
+		// A null dataset has no recognized names.
+		if(d == null) return new HashSet<>();
+		
 		if(recognizedNamesCache.containsKey(d))
 			return recognizedNamesCache.get(d);
 		
