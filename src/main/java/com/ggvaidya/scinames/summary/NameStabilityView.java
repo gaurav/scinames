@@ -416,17 +416,40 @@ public final class NameStabilityView {
 	}
 	
 	// TODO: sleepy, tired, stressed! Please recheck!
+	private Map<NameCluster, List<TaxonConcept>> nameClusterTaxonConceptCache = new HashMap<>();
 	private Map<Dataset, Set<TaxonConcept>> taxonConceptsByDataset = new HashMap<>(); 
 	private Set<TaxonConcept> getTaxonConceptsForDataset(Project p, Dataset ds) {
 		if(taxonConceptsByDataset.containsKey(ds)) return taxonConceptsByDataset.get(ds);
 		
+		LOGGER.info("Starting getTaxonConceptsForDataset(" + p + ", " + ds + ")");
 		NameClusterManager ncm = p.getNameClusterManager();
-		Set<TaxonConcept> taxonConcepts = ncm.getClusters(p.getRecognizedNames(ds)).stream()
-			.flatMap(nc -> nc.getTaxonConcepts(p).stream())
-			// Now this includes taxon concepts not included in this dataset!
-			// So filter down!
+		
+		// Get all binomial name clusters
+		List<NameCluster> nameClusterStream = ncm.getClusters(p.getRecognizedNames(ds).stream().flatMap(n -> n.asBinomial()).collect(Collectors.toList()));
+		
+		LOGGER.info("Starting name cluster to taxon concept conversion");
+		
+		// Get the corresponding taxon concepts, caching them as we go.
+		List<TaxonConcept> taxonConceptStream = nameClusterStream.stream()
+			.flatMap(nc -> {
+				if(nameClusterTaxonConceptCache.containsKey(nc)) return nameClusterTaxonConceptCache.get(nc).stream();
+				
+				List<TaxonConcept> tcs = nc.getTaxonConcepts(p);
+				nameClusterTaxonConceptCache.put(nc, tcs);
+				
+				return tcs.stream();
+			})
+			.collect(Collectors.toList());
+		
+		LOGGER.info("Finished name cluster to taxon concept conversion");
+		
+		// Finally, this includes taxon concepts that don't apply to this dataset.
+		// So: we filter it down here!
+		Set<TaxonConcept> taxonConcepts = taxonConceptStream.stream()
 			.filter(tc -> tc.getFoundIn().contains(ds))
 			.collect(Collectors.toSet());
+		
+		LOGGER.info("Finished getTaxonConceptsForDataset(" + p + ", " + ds + ")");
 		
 		taxonConceptsByDataset.put(ds, taxonConcepts);
 		return taxonConcepts;
