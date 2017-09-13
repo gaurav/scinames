@@ -77,6 +77,7 @@ public class DataReconciliatorController implements Initializable {
 	private static final Logger LOGGER = Logger.getLogger(DataReconciliatorController.class.getSimpleName());
 	
 	private static final Dataset ALL = new Dataset("All", SimplifiedDate.MIN, Dataset.TYPE_DATASET);
+	private static final Dataset NONE = new Dataset("None", SimplifiedDate.MIN, Dataset.TYPE_DATASET);
 	private static final String RECONCILE_BY_NAME = "Names";
 	private static final String RECONCILE_BY_SPECIES_NAME = "Species (binomial) names";
 	private static final String RECONCILE_BY_SPECIES_NAME_CLUSTER = "Species name clusters";
@@ -104,7 +105,8 @@ public class DataReconciliatorController implements Initializable {
 		useNamesFromComboBox.getSelectionModel().select(0);
 		
 		ArrayList<Dataset> ds_includeDataFrom = new ArrayList<>(p.getDatasets());
-		ds_includeDataFrom.add(0, ALL); // Hee.
+		ds_includeDataFrom.add(0, ALL); 	// Hee.
+		ds_includeDataFrom.add(0, NONE); 	// Also hee.
 		includeDataFromComboBox.setItems(FXCollections.observableList(ds_includeDataFrom));
 		includeDataFromComboBox.getSelectionModel().select(0);		
 		
@@ -293,6 +295,8 @@ public class DataReconciliatorController implements Initializable {
 		List<Dataset> datasets = null;
 		if(dataDataset == ALL)
 			datasets = project.getDatasets();
+		else if(dataDataset == NONE)
+			datasets = new ArrayList<>();
 		else
 			datasets = Arrays.asList(dataDataset);
 		
@@ -359,7 +363,9 @@ public class DataReconciliatorController implements Initializable {
 				precalc.put(cluster, "name", getOneElementSet(firstName));				
 			}
 			
-			precalc.put(cluster, "all_names_in_cluster", cluster.getNames().stream().map(n -> n.getFullName()).collect(Collectors.toSet()));			
+			precalc.put(cluster, "all_names_in_cluster", cluster.getNames().stream().map(n -> n.getFullName()).collect(Collectors.toSet()));
+			
+			LOGGER.info("Cluster calculation began for " + cluster);
 			
 			// If it's a taxon concept, precalculate a few more columns.
 			if(flag_nameClustersAreTaxonConcepts) {
@@ -379,12 +385,16 @@ public class DataReconciliatorController implements Initializable {
 				precalc.put(cluster, "taxon_concepts", tcs.stream().map(tc -> tc.toString()).collect(Collectors.toSet()));
 			}
 			
+			LOGGER.info("Cluster calculation ended for " + cluster);
+			
 			// When was this first added?
 			List<Dataset> foundInSorted = cluster.getFoundInSortedWithDates();
 			if(!foundInSorted.isEmpty()) {
 				precalc.put(cluster, "first_added_dataset", getOneElementSet(foundInSorted.get(0).getCitation()));
 				precalc.put(cluster, "first_added_year", getOneElementSet(foundInSorted.get(0).getDate().getYearAsString()));
 			}
+			
+			LOGGER.info("Trajectory began for " + cluster);
 			
 			// For name clusters we can also figure out trajectories!
 			if(!flag_nameClustersAreTaxonConcepts) {
@@ -417,9 +427,11 @@ public class DataReconciliatorController implements Initializable {
 				));
 			}
 			
-			List<DatasetRow> rowsForName = new LinkedList<>();
+			LOGGER.info("Trajectory ended for " + cluster);
 			
 			// Okay, here's where we reconcile!
+			LOGGER.info("Reconciliation began for " + cluster);
+			
 			Set<DatasetRow> rowsToReconcile = new HashSet<>();
 				
 			// Collect all the rows from all the datasets for this name.
@@ -458,8 +470,10 @@ public class DataReconciliatorController implements Initializable {
 				
 				precalc.get(cluster, colName).addAll(vals);
 				
-				LOGGER.fine("Added " + vals.size() + " rows under name cluster '" + cluster + "'");
+				LOGGER.info("Added " + vals.size() + " rows under name cluster '" + cluster + "'");
 			}
+			
+			LOGGER.info("Reconciliation completed for " + cluster);
 			
 			precalc.put(cluster, "dataset_rows_for_name", getOneElementSet(rowsToReconcile.size()));
 		}
@@ -483,7 +497,19 @@ public class DataReconciliatorController implements Initializable {
 		dataTableView.refresh();
 		
 		// Fill in status text field.
-		statusTextField.setText(dataTableView.getItems().size() + " rows across " + cols.size() + " reconciled columns");
+		long distinctNameCount = precalc.cellSet().stream()
+			.map(cluster -> precalc.get(cluster, "name"))
+			.distinct()
+			.count();
+		String str_duplicates = "";
+		if(distinctNameCount != dataTableView.getItems().size()) {
+			str_duplicates = " for " + distinctNameCount + " distinct names";
+		}
+		
+		statusTextField.setText(
+			dataTableView.getItems().size() + " rows across " + cols.size() + " reconciled columns"
+				+ str_duplicates
+		);
 		
 		LOGGER.info("All done!");
 	}
