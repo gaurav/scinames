@@ -38,6 +38,7 @@ import com.ggvaidya.scinames.model.Project;
 import com.ggvaidya.scinames.model.change.ChangeGenerator;
 import com.ggvaidya.scinames.model.change.ChangeTypeStringConverter;
 import com.ggvaidya.scinames.model.change.GenusChangesFromComposition;
+import com.ggvaidya.scinames.model.change.GenusReorganizationFromRenames;
 import com.ggvaidya.scinames.model.change.NameSetStringConverter;
 import com.ggvaidya.scinames.model.change.PotentialChange;
 import com.ggvaidya.scinames.model.change.RenamesFromIdsInChanges;
@@ -162,7 +163,8 @@ public class BulkChangeEditorController {
 		new RenamesFromIdsInChanges(),
 		new RenamesFromIdsInData(),
 		new SynonymsFromColumnChangeGenerator(),
-		new GenusChangesFromComposition()
+		new GenusChangesFromComposition(),
+		new GenusReorganizationFromRenames()
 	));
 	
 	private ObservableList<PotentialChange> foundChanges = FXCollections.observableList(new LinkedList<>());
