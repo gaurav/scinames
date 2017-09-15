@@ -347,9 +347,11 @@ public class DataReconciliatorController implements Initializable {
 			for(Name n: rowsByName.keySet()) {
 				Set<DatasetRow> rows = rowsByName.get(n);
 				
-				if(reconciliationMethod.equals(RECONCILE_BY_SPECIES_NAME) || reconciliationMethod.equals(RECONCILE_BY_SPECIES_NAME_CLUSTER)) {
+				if(
+					!reconciliationMethod.equals(RECONCILE_BY_NAME)
+				) {
 					// If we're reconciling by binomial names, then
-					// we should include binomial names, too.
+					// we should include binomial names for each row, too.
 					Optional<Name> binomialName = n.asBinomial().findAny();
 					if(binomialName.isPresent()) {
 						Set<DatasetRow> rowsForBinomial = rowsByName.get(binomialName.get());
