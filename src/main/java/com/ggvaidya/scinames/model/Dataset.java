@@ -217,6 +217,17 @@ public class Dataset implements Citable, Comparable<Dataset> {
 	}
 	
 	public Set<DatasetRow> getRowsByName(Name name) {
+		// Make sure that our caches have been built.
+		getNamesByRow();
+		
+		// And then use them caches.
+		Set<DatasetRow> rows = rowsByName.get(name);
+		if(rows == null) return new HashSet<>();
+		return rows;
+		
+		/*
+		 * WTF is this?
+		 * 
 		Set<Name> namesInAllRows = getNamesInAllRows();
 		if(!namesInAllRows.contains(name)) return new HashSet<>();
 		
@@ -224,6 +235,7 @@ public class Dataset implements Citable, Comparable<Dataset> {
 			.filter(entry -> entry.getValue().contains(name))
 			.map(entry -> entry.getKey())
 			.collect(Collectors.toSet());
+		*/
 	}
 	
 	/* Managing previous timepoint */

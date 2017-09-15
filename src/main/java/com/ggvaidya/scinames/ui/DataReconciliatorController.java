@@ -29,6 +29,7 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.ResourceBundle;
 import java.util.Set;
 import java.util.logging.Level;
@@ -192,7 +193,7 @@ public class DataReconciliatorController implements Initializable {
 		
 		Dataset namesDataset = useNamesFromComboBox.getSelectionModel().getSelectedItem();
 		List<NameCluster> nameClusters = null;
-		Set<Name> namesInDataset = null;
+		List<Name> namesInDataset = null;
 		
 		// Set up namesInDataset.
 		switch(namesToUseComboBox.getValue()) {
@@ -200,9 +201,11 @@ public class DataReconciliatorController implements Initializable {
 				if(namesDataset == ALL) {
 					namesInDataset = project.getDatasets().stream()
 						.flatMap(ds -> ds.getNamesInAllRows().stream())
-						.collect(Collectors.toSet());
+						.distinct()
+						.sorted()
+						.collect(Collectors.toList());
 				} else {
-					namesInDataset = namesDataset.getNamesInAllRows();
+					namesInDataset = namesDataset.getNamesInAllRows().stream().sorted().distinct().collect(Collectors.toList());
 				}
 				break;
 				
@@ -210,9 +213,11 @@ public class DataReconciliatorController implements Initializable {
 				if(namesDataset == ALL) {
 					namesInDataset = project.getDatasets().stream()
 						.flatMap(ds -> ds.getReferencedNames())
-						.collect(Collectors.toSet());
+						.distinct()
+						.sorted()
+						.collect(Collectors.toList());
 				} else {
-					namesInDataset = namesDataset.getReferencedNames().collect(Collectors.toSet());
+					namesInDataset = namesDataset.getReferencedNames().sorted().collect(Collectors.toList());
 				}
 				
 				break;
@@ -221,9 +226,11 @@ public class DataReconciliatorController implements Initializable {
 				if(namesDataset == ALL) {
 					namesInDataset = project.getDatasets().stream()
 						.flatMap(ds -> project.getRecognizedNames(ds).stream())
-						.collect(Collectors.toSet());
+						.distinct()
+						.sorted()
+						.collect(Collectors.toList());
 				} else {
-					namesInDataset = project.getRecognizedNames(namesDataset);
+					namesInDataset = project.getRecognizedNames(namesDataset).stream().sorted().collect(Collectors.toList());
 				}
 				
 				break;
@@ -242,7 +249,9 @@ public class DataReconciliatorController implements Initializable {
 				namesInDataset = namesInDataset.stream()
 					.filter(n -> n.hasSpecificEpithet())
 					.flatMap(n -> n.asBinomial())
-					.distinct().collect(Collectors.toSet());
+					.distinct()
+					.sorted()
+					.collect(Collectors.toList());
 			
 				nameClusters = createSingleNameClusters(namesDataset, namesInDataset);
 
@@ -254,7 +263,9 @@ public class DataReconciliatorController implements Initializable {
 				namesInDataset = namesInDataset.stream()
 					.filter(n -> n.hasSpecificEpithet())
 					.flatMap(n -> n.asBinomial())
-					.distinct().collect(Collectors.toSet());
+					.distinct()
+					.sorted()
+					.collect(Collectors.toList());
 				
 				nameClusters = project.getNameClusterManager().getClusters(namesInDataset);
 
@@ -325,12 +336,80 @@ public class DataReconciliatorController implements Initializable {
 		}
 		
 		existingColNames.add("first_added_dataset");
-		existingColNames.add("first_added_year");	
+		existingColNames.add("first_added_year");
+		
+		// Precalculate all dataset rows.
+		Map<Name, Set<DatasetRow>> datasetRowsByName = new HashMap<>();
+		for(Dataset ds: datasets) {
+			Map<Name, Set<DatasetRow>> rowsByName = ds.getRowsByName();
+			
+			// Merge into the main list.
+			for(Name n: rowsByName.keySet()) {
+				Set<DatasetRow> rows = rowsByName.get(n);
+				
+				if(reconciliationMethod.equals(RECONCILE_BY_SPECIES_NAME) || reconciliationMethod.equals(RECONCILE_BY_SPECIES_NAME_CLUSTER)) {
+					// If we're reconciling by binomial names, then
+					// we should include binomial names, too.
+					Optional<Name> binomialName = n.asBinomial().findAny();
+					if(binomialName.isPresent()) {
+						Set<DatasetRow> rowsForBinomial = rowsByName.get(binomialName.get());
+						if(rowsForBinomial != null)
+							rows.addAll(rowsForBinomial);
+						
+						// Don't write this to the sub-binomial name,
+						// just write to the binomial name.
+						n = binomialName.get();
+					}
+				}
+				
+				if(!datasetRowsByName.containsKey(n))
+					datasetRowsByName.put(n, new HashSet<>());
+				
+				datasetRowsByName.get(n).addAll(rows);
+			}
+		}
+				
+		LOGGER.info("Precalculating all dataset rows");
+		
+		// Finally, come up with unique names for every dataset we might have.
+		Map<DatasetColumn, String> datasetColumnMap = new HashMap<>();
+
+		existingColNames.addAll(
+			datasets.stream().flatMap(ds -> ds.getColumns().stream())
+				.distinct()
+				.map(col -> {
+					String colName = col.getName();
+					String baseName = colName;
+					
+					int uniqueCounter = 0;
+					while(existingColNames.contains(colName)) {
+						// Duplicate column name! Map it elsewhere.
+						uniqueCounter++;
+						colName = baseName + "." + uniqueCounter;
+					}
+					
+					// Where did we map it to?
+					datasetColumnMap.put(col, colName);
+					
+					// Okay, now return the new column name we need to create.
+					return colName;
+				})
+				.collect(Collectors.toList())
+		);
 
 		LOGGER.info("Precalculating " + nameClusters.size() + " name clusters");
 		
+		// Make sure names and name clusters are unique, otherwise bail.
+		// Earlier this was being ensured by keeping namesInDataset as a
+		// Set, but since it's a List now, duplicates might sneak in.
+		assert(namesInDataset.size() == new HashSet<>(namesInDataset).size());
+		assert(nameClusters.size() == new HashSet<>(nameClusters).size());
+		
+		int totalClusterCount = nameClusters.size();
+		int currentClusterCount = 0;
 		for(NameCluster cluster: nameClusters) {
-			LOGGER.info("Precalculating name cluster: " + cluster);			
+			currentClusterCount++;
+			LOGGER.info("(" + currentClusterCount + "/" + totalClusterCount + ") Precalculating name cluster: " + cluster);			
 			
 			precalc.put(cluster, "id", getOneElementSet(cluster.getId().toString()));
 			
@@ -342,7 +421,7 @@ public class DataReconciliatorController implements Initializable {
 			} else {
 				// hey, here's something cool we can do: figure out which name(s)
 				// this dataset uses from this cluster!
-				Set<Name> namesToFilterTo = namesInDataset;
+				Set<Name> namesToFilterTo = new HashSet<>(namesInDataset);
 				
 				List<String> namesInCluster = cluster.getNames().stream()
 					.filter(n -> namesToFilterTo.contains(n))
@@ -365,7 +444,7 @@ public class DataReconciliatorController implements Initializable {
 			
 			precalc.put(cluster, "all_names_in_cluster", cluster.getNames().stream().map(n -> n.getFullName()).collect(Collectors.toSet()));
 			
-			LOGGER.info("Cluster calculation began for " + cluster);
+			LOGGER.fine("Cluster calculation began for " + cluster);
 			
 			// If it's a taxon concept, precalculate a few more columns.
 			if(flag_nameClustersAreTaxonConcepts) {
@@ -385,7 +464,7 @@ public class DataReconciliatorController implements Initializable {
 				precalc.put(cluster, "taxon_concepts", tcs.stream().map(tc -> tc.toString()).collect(Collectors.toSet()));
 			}
 			
-			LOGGER.info("Cluster calculation ended for " + cluster);
+			LOGGER.fine("Cluster calculation ended for " + cluster);
 			
 			// When was this first added?
 			List<Dataset> foundInSorted = cluster.getFoundInSortedWithDates();
@@ -394,7 +473,7 @@ public class DataReconciliatorController implements Initializable {
 				precalc.put(cluster, "first_added_year", getOneElementSet(foundInSorted.get(0).getDate().getYearAsString()));
 			}
 			
-			LOGGER.info("Trajectory began for " + cluster);
+			LOGGER.fine("Trajectory began for " + cluster);
 			
 			// For name clusters we can also figure out trajectories!
 			if(!flag_nameClustersAreTaxonConcepts) {
@@ -427,55 +506,53 @@ public class DataReconciliatorController implements Initializable {
 				));
 			}
 			
-			LOGGER.info("Trajectory ended for " + cluster);
+			LOGGER.fine("Trajectory ended for " + cluster);
 			
 			// Okay, here's where we reconcile!
-			LOGGER.info("Reconciliation began for " + cluster);
+			LOGGER.fine("Reconciliation began for " + cluster);
 			
-			Set<DatasetRow> rowsToReconcile = new HashSet<>();
-				
-			// Collect all the rows from all the datasets for this name.
-			for(Dataset ds: datasets) {
-				rowsToReconcile.addAll(
-					cluster.getNames().stream().flatMap(n -> ds.getRowsByName(n).stream()).collect(Collectors.toList())
-				);
-			}
-				
 			// Now we need to actually reconcile the data from these unique row objects.
-			Set<DatasetColumn> columns = rowsToReconcile.stream()
-				.flatMap(row -> row.getColumns().stream())
-				.collect(Collectors.toSet());				
+			Set<DatasetRow> allDatasetRowsCombined = new HashSet<>();
 			
-			for(DatasetColumn col: columns) {
-				String colName = col.getName();
-				String baseColName = colName;
-
-				// Figure out a unique name for this column name.
-				int uniqueColumnCount = 1;
-				while(existingColNames.contains(colName)) {
-					uniqueColumnCount++;
-					colName = baseColName + "." + uniqueColumnCount;
+			for(Name name: cluster.getNames()) {
+				// We don't have to convert cluster names to binomial,
+				// because the cluster formation -- or the hacky thing we do
+				// for RECONCILE_SPECIES_NAME -- should already have done that!
+				//
+				// Where necessary, the previous code will automatically
+				// set up datasetRowsByName so it matched binomial names.
+				Set<DatasetRow> rowsToReconcile = datasetRowsByName.get(name);
+				if(rowsToReconcile == null) continue;
+				
+				allDatasetRowsCombined.addAll(rowsToReconcile);
+				
+				Set<DatasetColumn> columns = rowsToReconcile.stream()
+					.flatMap(row -> row.getColumns().stream())
+					.collect(Collectors.toSet());				
+			
+				for(DatasetColumn col: columns) {
+					// We've precalculated column names.
+					String colName = datasetColumnMap.get(col);
+	
+					// Make sure we get this column down into 'precalc'. 
+					if(!precalc.contains(cluster, colName))
+						precalc.put(cluster, colName, new HashSet<>());
+	
+					// Add all values for all rows in this column.
+					Set<String> vals = rowsToReconcile.stream().flatMap(row -> {
+						if(!row.hasColumn(col)) return Stream.empty();
+						else return Stream.of(row.get(col));
+					}).collect(Collectors.toSet());
+					
+					precalc.get(cluster, colName).addAll(vals);
+					
+					LOGGER.fine("Added " + vals.size() + " rows under name cluster '" + cluster + "'");
 				}
-				existingColNames.add(colName);
-
-				// Make sure we get this column down into 'precalc'. 
-				if(!precalc.contains(cluster, colName))
-					precalc.put(cluster, colName, new HashSet<>());
-
-				// Add all values for all rows in this column.
-				Set<String> vals = rowsToReconcile.stream().flatMap(row -> {
-					if(!row.hasColumn(col)) return Stream.empty();
-					else return Stream.of(row.get(col));
-				}).collect(Collectors.toSet());
-				
-				precalc.get(cluster, colName).addAll(vals);
-				
-				LOGGER.info("Added " + vals.size() + " rows under name cluster '" + cluster + "'");
 			}
 			
-			LOGGER.info("Reconciliation completed for " + cluster);
+			LOGGER.info("(" + currentClusterCount + "/" + totalClusterCount + ") Reconciliation completed for " + cluster);
 			
-			precalc.put(cluster, "dataset_rows_for_name", getOneElementSet(rowsToReconcile.size()));
+			precalc.put(cluster, "dataset_rows_for_name", getOneElementSet(allDatasetRowsCombined.size()));
 		}
 		
 		LOGGER.info("Setting up columns: " + existingColNames);

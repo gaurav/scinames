@@ -85,12 +85,13 @@ public class GenusReorganizationFromRenames implements ChangeGenerator {
 		NameClusterManager ncm = p.getNameClusterManager();
 		
 		// Step 1. Find all name clusters recognized by this dataset.
-		List<Name> currentlyRecognized = p.getRecognizedNames(ds).stream().flatMap(n -> n.asBinomial()).collect(Collectors.toList());
+		Set<Name> currentlyRecognized = new HashSet<>(p.getRecognizedNames(ds).stream().flatMap(n -> n.asBinomial()).collect(Collectors.toList()));
 		Set<String> currentlyRecognizedGenera = currentlyRecognized.stream()
 			.map(n -> n.getGenus())
 			.collect(Collectors.toSet());
 		
 		// Step 2. For each name, find synonyms involving currently recognized genera.
+		int synonymCurrentlyRecognized = 0;
 		LinkedList<Synonymy> synonyms = new LinkedList<>();
 		for(Name currentName: currentlyRecognized) {
 			String nameGenus = currentName.getGenus();
@@ -111,7 +112,15 @@ public class GenusReorganizationFromRenames implements ChangeGenerator {
 				
 				// Ignore genera not currently recognized.
 				if(!currentlyRecognizedGenera.contains(otherGenus)) continue;
-					
+				
+				// Okay, hang on. Is this "other" name still recognized?
+				// Because that would be weird.
+				if(currentlyRecognized.contains(otherName)) {
+					synonymCurrentlyRecognized++;
+					LOGGER.severe("[" + synonymCurrentlyRecognized + "] Name '" + otherName + "' is a synonym of '" + currentName + "', but it is also currently recognized! Ignoring.");
+					continue;
+				}
+				
 				// We have a synonymy that involves a currently recognized genus!
 				// The only problem is, we don't know where the synonymy came from.
 				// Oh well.
