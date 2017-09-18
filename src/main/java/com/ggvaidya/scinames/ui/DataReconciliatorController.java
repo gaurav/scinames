@@ -83,7 +83,11 @@ public class DataReconciliatorController implements Initializable {
 	private static final String RECONCILE_BY_SPECIES_NAME = "Species (binomial) names";
 	private static final String RECONCILE_BY_SPECIES_NAME_CLUSTER = "Species name clusters";
 	private static final String RECONCILE_BY_NAME_CLUSTER = "All name clusters";	
-	private static final String RECONCILE_BY_SPECIES_TAXON_CONCEPT = "Species taxon concepts";	
+	private static final String RECONCILE_BY_SPECIES_TAXON_CONCEPT = "Species taxon concepts";
+	
+	private static final String USE_NAMES_IN_DATASET_ROWS = "Use names in dataset rows";
+	private static final String USE_ALL_RECOGNIZED_NAMES = "Use all recognized names";
+	private static final String USE_ALL_REFERENCED_NAMES = "Use all referenced names";
 	
 	private DataReconciliatorView dataReconciliatorView;
 	public void setDataReconciliatorView(DataReconciliatorView drv) {
@@ -93,9 +97,9 @@ public class DataReconciliatorController implements Initializable {
 		Project p = drv.getProjectView().getProject();
 		
 		namesToUseComboBox.getItems().addAll(
-			"Use names in dataset rows",
-			"Use all referenced names",
-			"Use all recognized names"
+			USE_NAMES_IN_DATASET_ROWS,
+			USE_ALL_REFERENCED_NAMES,
+			USE_ALL_RECOGNIZED_NAMES
 		);
 		namesToUseComboBox.getSelectionModel().clearAndSelect(0);
 		
@@ -115,7 +119,8 @@ public class DataReconciliatorController implements Initializable {
 		reconcileUsingComboBox.getItems().add(RECONCILE_BY_SPECIES_NAME);
 		reconcileUsingComboBox.getItems().add(RECONCILE_BY_SPECIES_NAME_CLUSTER);
 		reconcileUsingComboBox.getItems().add(RECONCILE_BY_NAME_CLUSTER);		
-		reconcileUsingComboBox.getItems().add(RECONCILE_BY_SPECIES_TAXON_CONCEPT);	
+		// reconcileUsingComboBox.getItems().add(RECONCILE_BY_SPECIES_TAXON_CONCEPT);
+			// Using a new, UNTESTED algorithm now! Please test before using!
 		reconcileUsingComboBox.getSelectionModel().select(RECONCILE_BY_SPECIES_NAME_CLUSTER);
 		
 		// Fill in the table with the defaults.
@@ -130,17 +135,17 @@ public class DataReconciliatorController implements Initializable {
 		
 	}
 	
-	private TableColumn<NameCluster, String> createColumnFromPrecalc(String colName, Table<NameCluster, String, Set<String>> precalc) {
-		TableColumn<NameCluster, String> column = new TableColumn<>(colName);
+	private TableColumn<String, String> createColumnFromPrecalc(String colName, Table<String, String, Set<String>> precalc) {
+		TableColumn<String, String> column = new TableColumn<>(colName);
 		column.cellValueFactoryProperty().set(
-			(TableColumn.CellDataFeatures<NameCluster, String> cdf) -> {
-				NameCluster nc = cdf.getValue();
+			(TableColumn.CellDataFeatures<String, String> cdf) -> {
+				String clusterID = cdf.getValue();
 				
 				// There might be columns found in some dataset but not in others
 				// so we detect those cases here and put in "NA"s instead.
 				String output = "NA";
-				if(precalc.contains(nc, colName))
-					output = precalc.get(nc, colName).stream().collect(Collectors.joining("; "));
+				if(precalc.contains(clusterID, colName))
+					output = precalc.get(clusterID, colName).stream().collect(Collectors.joining("; "));
 				
 				return new ReadOnlyStringWrapper(output);
 			}
@@ -189,7 +194,7 @@ public class DataReconciliatorController implements Initializable {
 	private void reconcileDataFromOneDataset() {
 		Project project = dataReconciliatorView.getProjectView().getProject();
 		String reconciliationMethod = reconcileUsingComboBox.getValue();
-		Table<NameCluster, String, Set<String>> precalc = HashBasedTable.create();
+		Table<String, String, Set<String>> precalc = HashBasedTable.create();
 		
 		Dataset namesDataset = useNamesFromComboBox.getSelectionModel().getSelectedItem();
 		List<NameCluster> nameClusters = null;
@@ -197,7 +202,7 @@ public class DataReconciliatorController implements Initializable {
 		
 		// Set up namesInDataset.
 		switch(namesToUseComboBox.getValue()) {
-			case "Use names in dataset rows":
+			case USE_NAMES_IN_DATASET_ROWS:
 				if(namesDataset == ALL) {
 					namesInDataset = project.getDatasets().stream()
 						.flatMap(ds -> ds.getNamesInAllRows().stream())
@@ -209,7 +214,7 @@ public class DataReconciliatorController implements Initializable {
 				}
 				break;
 				
-			case "Use all referenced names":
+			case USE_ALL_REFERENCED_NAMES:
 				if(namesDataset == ALL) {
 					namesInDataset = project.getDatasets().stream()
 						.flatMap(ds -> ds.getReferencedNames())
@@ -222,7 +227,7 @@ public class DataReconciliatorController implements Initializable {
 				
 				break;
 				
-			case "Use all recognized names":
+			case USE_ALL_RECOGNIZED_NAMES:
 				if(namesDataset == ALL) {
 					namesInDataset = project.getDatasets().stream()
 						.flatMap(ds -> project.getRecognizedNames(ds).stream())
@@ -235,6 +240,11 @@ public class DataReconciliatorController implements Initializable {
 				
 				break;
 		}
+		
+		// IMPORTANT NOTE
+		// This algorithm now relies on nameClusters and namesInDataset
+		// having EXACTLY the same size. So please make sure every combination
+		// of logic here lines up exactly.
 		
 		boolean flag_nameClustersAreTaxonConcepts = false;
 		switch(reconciliationMethod) {
@@ -268,7 +278,7 @@ public class DataReconciliatorController implements Initializable {
 					.collect(Collectors.toList());
 				
 				nameClusters = project.getNameClusterManager().getClusters(namesInDataset);
-
+				
 				break;
 				
 			case RECONCILE_BY_NAME_CLUSTER:
@@ -278,10 +288,41 @@ public class DataReconciliatorController implements Initializable {
 				break;	
 				
 			case RECONCILE_BY_SPECIES_TAXON_CONCEPT:
-				nameClusters = project.getNameClusterManager().getClusters(
-					namesInDataset
-				).stream().flatMap(cl -> cl.getTaxonConcepts(project).stream()).collect(Collectors.toList());	
+				/*
+				 * WARNING: untested! Please test before using!
+				 */
 				
+				List<NameCluster> nameClustersByName = project.getNameClusterManager().getClusters(
+					namesInDataset
+				);
+				
+				List<Name> namesInDatasetCorresponding = new LinkedList<>();
+				List<NameCluster> nameClustersCorresponding = new LinkedList<>();
+				
+				for(int x = 0; x < namesInDataset.size(); x++) {
+					Name name = namesInDataset.get(0);
+					NameCluster nameCluster = nameClustersByName.get(0);
+					List<TaxonConcept> taxonConcepts;
+					
+					if(nameCluster == null) {
+						taxonConcepts = new ArrayList<>();
+					} else {
+						taxonConcepts = nameCluster.getTaxonConcepts(project); 
+					}
+					
+					// Now we need to unwind this data structure: each entry in nameClusters  
+					// should have a corresponding entry in namesInDataset.
+					for(TaxonConcept tc: taxonConcepts) {
+						namesInDatasetCorresponding.add(name);
+						nameClustersCorresponding.add((NameCluster) tc);
+					}
+				}
+				
+				// All good? Let's swap in those variables to replace their actual counterparts.
+				namesInDataset = namesInDatasetCorresponding;
+				nameClusters = nameClustersCorresponding;
+				
+				// This is special, at least for now. Maybe some day it won't?
 				flag_nameClustersAreTaxonConcepts = true;
 				
 				break;
@@ -299,8 +340,6 @@ public class DataReconciliatorController implements Initializable {
 		LOGGER.info("Name clusters ready to display: " + nameClusters.size() + " clusters");
 		LOGGER.info("Based on " + namesInDataset.size() + " names from " + namesDataset + ": " + namesInDataset);		
 				
-		dataTableView.setItems(FXCollections.observableList(nameClusters));
-		
 		// What columns do we have from the other dataset?
 		Dataset dataDataset = includeDataFromComboBox.getSelectionModel().getSelectedItem();
 		List<Dataset> datasets = null;
@@ -318,12 +357,12 @@ public class DataReconciliatorController implements Initializable {
 		existingColNames.add("names_in_dataset");		
 		existingColNames.add("all_names_in_cluster");
 		existingColNames.add("dataset_rows_for_name");
+		existingColNames.add("name_cluster_id");
 		// existingColNames.add("distinct_dataset_rows_for_name");
 		
 		// If these are taxon concepts, there's three other columns we want
 		// to emit.
 		if(flag_nameClustersAreTaxonConcepts) {
-			existingColNames.add("name_cluster_id");
 			existingColNames.add("starts_with");
 			existingColNames.add("ends_with");
 			existingColNames.add("is_ongoing");
@@ -337,6 +376,8 @@ public class DataReconciliatorController implements Initializable {
 		
 		existingColNames.add("first_added_dataset");
 		existingColNames.add("first_added_year");
+		
+		existingColNames.add("reconciliation_duplicate_of");
 		
 		// Precalculate all dataset rows.
 		Map<Name, Set<DatasetRow>> datasetRowsByName = new HashMap<>();
@@ -405,68 +446,88 @@ public class DataReconciliatorController implements Initializable {
 		// Earlier this was being ensured by keeping namesInDataset as a
 		// Set, but since it's a List now, duplicates might sneak in.
 		assert(namesInDataset.size() == new HashSet<>(namesInDataset).size());
-		assert(nameClusters.size() == new HashSet<>(nameClusters).size());
+		
+		// Since it's a list, we can set it up so that it always corresponds to
+		// the correct name cluster.
+		assert(namesInDataset.size() == nameClusters.size());
+		
+		// Now, nameClusters should NOT be de-duplicated: we might have the same
+		// cluster appear multiple times! If so, we'll set 
+		// "reconciliation_duplicate_of" to point to the first reconciliation,
+		// so we don't duplicate reconciliations.
+		
+		
+		// Let's track which IDs we use for duplicated name clusters.
+		Map<NameCluster, List<String>> idsForNameClusters = new HashMap<>();
+		
+		if(nameClusters.size() != new HashSet<>(nameClusters).size()) {
+			
+			LOGGER.warning(
+				"Clusters not unique: " + nameClusters.size() + 
+				" clusters found, but only " + new HashSet<>(nameClusters).size() + " are unique."
+			);
+		}
+		
+		// Track duplicates.
+		Map<NameCluster, List<String>> clusterIDsPerNameCluster = new HashMap<>(); 
 		
 		int totalClusterCount = nameClusters.size();
 		int currentClusterCount = 0;
+		List<String> nameClusterIDs = new LinkedList<>();
 		for(NameCluster cluster: nameClusters) {
 			currentClusterCount++;
-			LOGGER.info("(" + currentClusterCount + "/" + totalClusterCount + ") Precalculating name cluster: " + cluster);			
 			
-			precalc.put(cluster, "id", getOneElementSet(cluster.getId().toString()));
+			// Probably don't need GUIDs here, right?
+			String clusterID = String.valueOf(currentClusterCount);
+			nameClusterIDs.add(clusterID);
+			
+			LOGGER.info("(" + currentClusterCount + "/" + totalClusterCount + ") Precalculating name cluster: " + cluster);			
+
+			precalc.put(clusterID, "id", getOneElementSet(clusterID));
+			precalc.put(clusterID, "name_cluster_id", getOneElementSet(cluster.getId().toString()));
+			
+			// The 'name' should come from namesInDataset.
+			precalc.put(clusterID, "name", getOneElementSet(namesInDataset.get(currentClusterCount - 1).getFullName()));
 			
 			// Okay, here's what we need to do:
 			//	- If names is ALL, then we can't do better than cluster.getName().
 			if(namesDataset == ALL) {
-				precalc.put(cluster, "names_in_dataset",  cluster.getNames().stream().map(n -> n.getFullName()).collect(Collectors.toSet()));
-				precalc.put(cluster, "name", getOneElementSet(cluster.getName().getFullName()));	
+				precalc.put(clusterID, "names_in_dataset",  cluster.getNames().stream().map(n -> n.getFullName()).collect(Collectors.toSet()));
 			} else {
 				// hey, here's something cool we can do: figure out which name(s)
 				// this dataset uses from this cluster!
-				
-				// Okay, so here's a problem: for any reconciliation methods that
-				// aggregates data, we could end up with multiple entries for the
-				// same "entity".
-				// 
-				// For reconciliationMethod ==
-				//	- RECONCILE_BY_NAME: not a problem
-				//	- RECONCILE_BY_SPECIES_NAME: multiple subspecies will be aggregated into
-				//		the same species; not a problem.
-				//	- RECONCILE_BY_SPECIES_NAME_CLUSTER: different synonyms for the same species
-				//		might be aggregated into the same species cluster; if so, we will see
-				//		the same cluster appear multiple times.
-				//  - RECONCILE_BY_NAME_CLUSTER: different synonyms for the same name might be
-				//		aggregated into the cluster; if so, we will see the same cluster appear
-				//		multiple times.
-				//  - RECONCILE_BY_SPECIES_TAXON_CONCEPT: could happen, though less likely than
-				//		species name clusters!
-				//
-				// So, for those last three types, we need 
-				
-				if()
-				
 				Set<Name> namesToFilterTo = new HashSet<>(namesInDataset);
 				
 				List<String> namesInCluster = cluster.getNames().stream()
 					.filter(n -> namesToFilterTo.contains(n))
 					.map(n -> n.getFullName())
 					.collect(Collectors.toList());
-				String firstName = "";
 				
-				if(namesInCluster.size() > 0) {
-					firstName = namesInCluster.get(0);
-				} else {
-					LOGGER.warning("Cluster " + cluster + " has names " + cluster.getNames() + " but no recognized name for " + namesDataset);
-					
-					// This happens in some taxon concepts.
-					firstName = "(not found in dataset)";
-				}
-				
-				precalc.put(cluster, "names_in_dataset", new HashSet<>(namesInCluster));
-				precalc.put(cluster, "name", getOneElementSet(firstName));				
+				precalc.put(clusterID, "names_in_dataset", new HashSet<>(namesInCluster));
 			}
 			
-			precalc.put(cluster, "all_names_in_cluster", cluster.getNames().stream().map(n -> n.getFullName()).collect(Collectors.toSet()));
+			precalc.put(clusterID, "all_names_in_cluster", cluster.getNames().stream().map(n -> n.getFullName()).collect(Collectors.toSet()));
+			
+			// Is this a duplicate?
+			if(clusterIDsPerNameCluster.containsKey(cluster)) {
+				List<String> duplicatedRows = clusterIDsPerNameCluster.get(cluster);
+				
+				// Only the first one should have the actual data.
+				
+				precalc.put(clusterID, "reconciliation_duplicate_of", getOneElementSet(duplicatedRows.get(0)));
+				duplicatedRows.add(clusterID);
+				
+				// Okay, do no other work on this cluster, since all the actual information is
+				// in the other entry.
+				continue;
+				
+			} else {
+				precalc.put(clusterID, "reconciliation_duplicate_of", getOneElementSet("NA"));
+				
+				List<String> clusterIds = new LinkedList<>();
+				clusterIds.add(clusterID);
+				clusterIDsPerNameCluster.put(cluster, clusterIds);
+			}
 			
 			LOGGER.fine("Cluster calculation began for " + cluster);
 			
@@ -474,18 +535,17 @@ public class DataReconciliatorController implements Initializable {
 			if(flag_nameClustersAreTaxonConcepts) {
 				TaxonConcept tc = (TaxonConcept) cluster;
 				
-				precalc.put(cluster, "name_cluster_id", getOneElementSet(tc.getNameCluster().getId().toString()));
-				precalc.put(cluster, "starts_with", tc.getStartsWith().stream().map(ch -> ch.toString()).collect(Collectors.toSet()));
-				precalc.put(cluster, "ends_with", tc.getEndsWith().stream().map(ch -> ch.toString()).collect(Collectors.toSet()));
-				precalc.put(cluster, "is_ongoing", getOneElementSet(tc.isOngoing(project) ? "yes" : "no"));
+				precalc.put(clusterID, "starts_with", tc.getStartsWith().stream().map(ch -> ch.toString()).collect(Collectors.toSet()));
+				precalc.put(clusterID, "ends_with", tc.getEndsWith().stream().map(ch -> ch.toString()).collect(Collectors.toSet()));
+				precalc.put(clusterID, "is_ongoing", getOneElementSet(tc.isOngoing(project) ? "yes" : "no"));
 			} else {
 				// If it's a true name cluster, then perhaps people will want
 				// to know what taxon concepts are in here? Maybe for some sort
 				// of PhD?
 				List<TaxonConcept> tcs = cluster.getTaxonConcepts(project);
 				
-				precalc.put(cluster, "taxon_concept_count", getOneElementSet(String.valueOf(tcs.size())));
-				precalc.put(cluster, "taxon_concepts", tcs.stream().map(tc -> tc.toString()).collect(Collectors.toSet()));
+				precalc.put(clusterID, "taxon_concept_count", getOneElementSet(String.valueOf(tcs.size())));
+				precalc.put(clusterID, "taxon_concepts", tcs.stream().map(tc -> tc.toString()).collect(Collectors.toSet()));
 			}
 			
 			LOGGER.fine("Cluster calculation ended for " + cluster);
@@ -493,8 +553,8 @@ public class DataReconciliatorController implements Initializable {
 			// When was this first added?
 			List<Dataset> foundInSorted = cluster.getFoundInSortedWithDates();
 			if(!foundInSorted.isEmpty()) {
-				precalc.put(cluster, "first_added_dataset", getOneElementSet(foundInSorted.get(0).getCitation()));
-				precalc.put(cluster, "first_added_year", getOneElementSet(foundInSorted.get(0).getDate().getYearAsString()));
+				precalc.put(clusterID, "first_added_dataset", getOneElementSet(foundInSorted.get(0).getCitation()));
+				precalc.put(clusterID, "first_added_year", getOneElementSet(foundInSorted.get(0).getDate().getYearAsString()));
 			}
 			
 			LOGGER.fine("Trajectory began for " + cluster);
@@ -517,15 +577,15 @@ public class DataReconciliatorController implements Initializable {
 					}
 				).collect(Collectors.toList());
 				
-				precalc.put(cluster, "trajectory", getOneElementSet(
+				precalc.put(clusterID, "trajectory", getOneElementSet(
 					String.join(" -> ", trajectorySteps)
 				));
 				
-				precalc.put(cluster, "trajectory_without_renames", getOneElementSet(
+				precalc.put(clusterID, "trajectory_without_renames", getOneElementSet(
 					trajectorySteps.stream().filter(ch -> !ch.contains("rename")).collect(Collectors.joining(" -> "))
 				));
 				
-				precalc.put(cluster, "trajectory_lumps_splits", getOneElementSet(
+				precalc.put(clusterID, "trajectory_lumps_splits", getOneElementSet(
 					trajectorySteps.stream().filter(ch -> ch.contains("split") || ch.contains("lump")).collect(Collectors.joining(" -> "))	
 				));
 			}
@@ -559,8 +619,8 @@ public class DataReconciliatorController implements Initializable {
 					String colName = datasetColumnMap.get(col);
 	
 					// Make sure we get this column down into 'precalc'. 
-					if(!precalc.contains(cluster, colName))
-						precalc.put(cluster, colName, new HashSet<>());
+					if(!precalc.contains(clusterID, colName))
+						precalc.put(clusterID, colName, new HashSet<>());
 	
 					// Add all values for all rows in this column.
 					Set<String> vals = rowsToReconcile.stream().flatMap(row -> {
@@ -568,7 +628,7 @@ public class DataReconciliatorController implements Initializable {
 						else return Stream.of(row.get(col));
 					}).collect(Collectors.toSet());
 					
-					precalc.get(cluster, colName).addAll(vals);
+					precalc.get(clusterID, colName).addAll(vals);
 					
 					LOGGER.fine("Added " + vals.size() + " rows under name cluster '" + cluster + "'");
 				}
@@ -576,8 +636,11 @@ public class DataReconciliatorController implements Initializable {
 			
 			LOGGER.info("(" + currentClusterCount + "/" + totalClusterCount + ") Reconciliation completed for " + cluster);
 			
-			precalc.put(cluster, "dataset_rows_for_name", getOneElementSet(allDatasetRowsCombined.size()));
+			precalc.put(clusterID, "dataset_rows_for_name", getOneElementSet(allDatasetRowsCombined.size()));
 		}
+		
+		// Set up table items.
+		dataTableView.setItems(FXCollections.observableList(nameClusterIDs));
 		
 		LOGGER.info("Setting up columns: " + existingColNames);
 		
@@ -593,7 +656,7 @@ public class DataReconciliatorController implements Initializable {
 		colNames = colNames.filter(colName -> !existingColNames.contains(colName));
 		
 		// And add tablecolumns for the rest.
-		List<TableColumn<NameCluster, String>> cols = colNames.distinct().sorted().map(colName -> createColumnFromPrecalc(colName, precalc)).collect(Collectors.toList());
+		List<TableColumn<String, String>> cols = colNames.distinct().sorted().map(colName -> createColumnFromPrecalc(colName, precalc)).collect(Collectors.toList());
 		dataTableView.getColumns().addAll(cols);
 		dataTableView.refresh();
 		
@@ -628,7 +691,7 @@ public class DataReconciliatorController implements Initializable {
 	public List<List<String>> getDataAsTable() {
 		// What columns do we have?
 		List<List<String>> result = new LinkedList<>();		
-		List<TableColumn<NameCluster, ?>> columns = dataTableView.getColumns();
+		List<TableColumn<String, ?>> columns = dataTableView.getColumns();
 		
 		columns.forEach(col -> {
 			List<String> column = new LinkedList<>();
@@ -722,6 +785,6 @@ public class DataReconciliatorController implements Initializable {
 	@FXML private ComboBox<Dataset> includeDataFromComboBox;
 	@FXML private ComboBox<String> reconcileUsingComboBox;	
 	@FXML private TabPane upperTabPane;
-	@FXML private TableView<NameCluster> dataTableView;
+	@FXML private TableView<String> dataTableView;
 	@FXML private TextField statusTextField;
 }

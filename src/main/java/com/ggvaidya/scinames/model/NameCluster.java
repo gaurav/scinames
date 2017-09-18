@@ -57,8 +57,8 @@ public class NameCluster {
 	// Check equality with another name cluster.
 	public boolean equals(NameCluster cluster) {
 		return 
-			cluster.names.equals(names) &&
-			cluster.foundIn.equals(foundIn)
+			names.equals(cluster.names) &&
+			foundIn.equals(cluster.foundIn)
 		;
 	}
 	

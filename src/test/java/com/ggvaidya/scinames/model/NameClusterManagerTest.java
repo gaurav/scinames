@@ -64,6 +64,22 @@ public class NameClusterManagerTest {
 		return ncm;
 	}
 	
+	@Test
+	public void identicalClustersInSet() {
+		NameClusterManager ncm = buildNameClusterManager();
+		
+		List<NameCluster> clusters = ncm.getClusters(Arrays.asList(
+			Name.get("Ornithorhynchus", "anatinus"),
+			Name.get("Platypus", "anatinus")
+		));
+		
+		// Should return TWO clusters.
+		assertEquals(2, clusters.size());
+		
+		// But two IDENTICAL clusters.
+		assertEquals(1, new HashSet<>(clusters));
+	}
+	
     /**
      * Test clustering using the NameClusterManager.
      */
