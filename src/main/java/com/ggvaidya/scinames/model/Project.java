@@ -391,43 +391,39 @@ public class Project {
 	}	
 	
 	/* Name cluster manager! */
-	public void resetNameClusterManager() {
-		synchronized(this) {
-			nameClusterManager = null;
-		}
+	public synchronized void resetNameClusterManager() {
+		nameClusterManager = null;
 	}
 	
-	public NameClusterManager getNameClusterManager() {
-		synchronized(this) {
-			if(nameClusterManager == null) {
-				LOGGER.info("New name cluster manager calculation triggered.");
-	
-				// Recreate a name cluster manager based on all the renames in the project.
-				nameClusterManager = new NameClusterManager();
+	public synchronized NameClusterManager getNameClusterManager() {
+		if(nameClusterManager == null) {
+			LOGGER.info("New name cluster manager calculation triggered.");
+
+			// Recreate a name cluster manager based on all the renames in the project.
+			nameClusterManager = new NameClusterManager();
+			
+			for(Dataset ds: getDatasets()) {
 				
-				for(Dataset ds: getDatasets()) {
-					
-					// Add all referenced names so they'll show up at least once.
-					for(Name n: ds.getReferencedNames().collect(Collectors.toList())) {
-						nameClusterManager.addCluster(new NameCluster(ds, n));
-					}
-				
-					// Add all renames as synonymies, building up clusters as we go.
-					List<Change> renames = ds.getChanges(this).filter(ch -> ch.getType().equals(ChangeType.RENAME)).collect(Collectors.toList());
-					for(Change ch: renames) {
-						for(Name from: ch.getFrom()) {
-							for(Name to: ch.getTo()) {
-								nameClusterManager.addCluster(new Synonymy(from, to, ch.getDataset()));
-							}
+				// Add all referenced names so they'll show up at least once.
+				for(Name n: ds.getReferencedNames().collect(Collectors.toList())) {
+					nameClusterManager.addCluster(new NameCluster(ds, n));
+				}
+			
+				// Add all renames as synonymies, building up clusters as we go.
+				List<Change> renames = ds.getChanges(this).filter(ch -> ch.getType().equals(ChangeType.RENAME)).collect(Collectors.toList());
+				for(Change ch: renames) {
+					for(Name from: ch.getFrom()) {
+						for(Name to: ch.getTo()) {
+							nameClusterManager.addCluster(new Synonymy(from, to, ch.getDataset()));
 						}
 					}
 				}
-				
-				LOGGER.info("New name cluster manager calculation completed.");
 			}
 			
-			return nameClusterManager;
-		} 
+			LOGGER.info("New name cluster manager calculation completed.");
+		}
+		
+		return nameClusterManager; 
 	}
 	
 	/* Constructors */

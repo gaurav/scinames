@@ -423,6 +423,28 @@ public class DataReconciliatorController implements Initializable {
 			} else {
 				// hey, here's something cool we can do: figure out which name(s)
 				// this dataset uses from this cluster!
+				
+				// Okay, so here's a problem: for any reconciliation methods that
+				// aggregates data, we could end up with multiple entries for the
+				// same "entity".
+				// 
+				// For reconciliationMethod ==
+				//	- RECONCILE_BY_NAME: not a problem
+				//	- RECONCILE_BY_SPECIES_NAME: multiple subspecies will be aggregated into
+				//		the same species; not a problem.
+				//	- RECONCILE_BY_SPECIES_NAME_CLUSTER: different synonyms for the same species
+				//		might be aggregated into the same species cluster; if so, we will see
+				//		the same cluster appear multiple times.
+				//  - RECONCILE_BY_NAME_CLUSTER: different synonyms for the same name might be
+				//		aggregated into the cluster; if so, we will see the same cluster appear
+				//		multiple times.
+				//  - RECONCILE_BY_SPECIES_TAXON_CONCEPT: could happen, though less likely than
+				//		species name clusters!
+				//
+				// So, for those last three types, we need 
+				
+				if()
+				
 				Set<Name> namesToFilterTo = new HashSet<>(namesInDataset);
 				
 				List<String> namesInCluster = cluster.getNames().stream()
