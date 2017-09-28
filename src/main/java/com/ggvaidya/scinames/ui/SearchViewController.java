@@ -64,6 +64,7 @@ import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableRow;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TableView.TableViewSelectionModel;
+import javafx.scene.input.MouseButton;
 import javafx.scene.control.TextField;
 import javafx.stage.Stage;
 
@@ -193,16 +194,31 @@ public final class SearchViewController implements Initializable {
 					// Someday.
 					
 					contextMenu.show(searchView.getScene().getWindow(), event.getScreenX(), event.getScreenY());
+					event.consume();
+					
 				} else if(event.getClickCount() == 2) {
 					// So much easier.
 					// But causes the entire application to crash, so I'm commenting out for now.
-					// TODO
-					// searchView.getProjectView().openDetailedView(item);
+					searchView.getProjectView().openDetailedView(item);
+					event.consume();
 				}
 			});
 			
 			return row;
 		});
+		
+		// Or we could try ...
+		/*
+		controller.getTableView().setOnMouseClicked(evt -> {
+			if(evt.getButton() == MouseButton.PRIMARY && evt.getClickCount() == 2) {
+				// Double-click!
+				@SuppressWarnings("rawtypes")
+				Change ch = (Change) controller.getTableView().getSelectionModel().getSelectedItem();
+				projectView.openDetailedView(ch);
+				
+				evt.consume();
+			}
+		});*/
 		
 		// Step 3. When the filtered 
 		filteredTableView.getSelectionModel().selectedItemProperty().addListener((ChangeListener) (a, b, c) -> {

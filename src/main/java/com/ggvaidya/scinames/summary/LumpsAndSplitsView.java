@@ -31,6 +31,7 @@ import com.ggvaidya.scinames.model.ChangeType;
 import com.ggvaidya.scinames.model.Project;
 import com.ggvaidya.scinames.tabulardata.TabularDataViewController;
 import com.ggvaidya.scinames.ui.ProjectView;
+import com.ggvaidya.scinames.validation.ValidationError;
 import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.Table;
 
@@ -41,6 +42,7 @@ import javafx.collections.ObservableList;
 import javafx.collections.transformation.SortedList;
 import javafx.scene.Scene;
 import javafx.scene.control.TableColumn;
+import javafx.scene.input.MouseButton;
 import javafx.stage.Stage;
 
 /**
@@ -103,6 +105,19 @@ public final class LumpsAndSplitsView {
 		
 		// Load up name cluster manager.
 		// NameClusterManager nameClusterManager = projectView.getProject().getNameClusterManager();
+		
+		// On double-click, go straight to that splump
+		// Double-click on rows should take you to the entry.
+		controller.getTableView().setOnMouseClicked(evt -> {
+			if(evt.getButton() == MouseButton.PRIMARY && evt.getClickCount() == 2) {
+				// Double-click!
+				@SuppressWarnings("rawtypes")
+				Change ch = (Change) controller.getTableView().getSelectionModel().getSelectedItem();
+				projectView.openDetailedView(ch);
+				
+				evt.consume();
+			}
+		});
 		
 		// Setup table.
 		controller.getTableEditableProperty().set(false);
