@@ -133,40 +133,68 @@ public final class NameStabilityView {
 		cols.add(createTableColumnFromPrecalc(precalc, "mean_binomials_per_genera"));
 		cols.add(createTableColumnFromPrecalc(precalc, "median_binomials_per_genera"));
 		cols.add(createTableColumnFromPrecalc(precalc, "mode_binomials_per_genera_list"));
+		
+		/* All them stability calculations */
+		
 		cols.add(createTableColumnFromPrecalc(precalc, "names_identical_to_prev"));
 		cols.add(createTableColumnFromPrecalc(precalc, "names_identical_to_prev_pc_this"));
-		cols.add(createTableColumnFromPrecalc(precalc, "names_identical_to_prev_pc_union"));		
+		cols.add(createTableColumnFromPrecalc(precalc, "names_identical_to_prev_pc_union"));
+		cols.add(createTableColumnFromPrecalc(precalc, "names_identical_to_prev_pc_prev"));	
+		
 		cols.add(createTableColumnFromPrecalc(precalc, "clusters_identical_to_prev"));
 		cols.add(createTableColumnFromPrecalc(precalc, "clusters_identical_to_prev_pc_this"));
 		cols.add(createTableColumnFromPrecalc(precalc, "clusters_identical_to_prev_pc_union"));
+		cols.add(createTableColumnFromPrecalc(precalc, "clusters_identical_to_prev_pc_prev"));
 		
 		cols.add(createTableColumnFromPrecalc(precalc, "circumscriptions_identical_to_prev"));
 		cols.add(createTableColumnFromPrecalc(precalc, "circumscriptions_identical_to_prev_pc_this"));
 		cols.add(createTableColumnFromPrecalc(precalc, "circumscriptions_identical_to_prev_pc_union"));
+		cols.add(createTableColumnFromPrecalc(precalc, "circumscriptions_identical_to_prev_pc_prev"));
 		
 		cols.add(createTableColumnFromPrecalc(precalc, "names_identical_to_next"));
 		cols.add(createTableColumnFromPrecalc(precalc, "names_identical_to_next_pc_this"));
-		cols.add(createTableColumnFromPrecalc(precalc, "names_identical_to_next_pc_union"));		
+		cols.add(createTableColumnFromPrecalc(precalc, "names_identical_to_next_pc_union"));
+		cols.add(createTableColumnFromPrecalc(precalc, "names_identical_to_next_pc_next"));
+		
 		cols.add(createTableColumnFromPrecalc(precalc, "clusters_identical_to_next"));
 		cols.add(createTableColumnFromPrecalc(precalc, "clusters_identical_to_next_pc_this"));
-		cols.add(createTableColumnFromPrecalc(precalc, "clusters_identical_to_next_pc_union"));	
+		cols.add(createTableColumnFromPrecalc(precalc, "clusters_identical_to_next_pc_union"));
+		cols.add(createTableColumnFromPrecalc(precalc, "clusters_identical_to_next_pc_next"));
+		
+		cols.add(createTableColumnFromPrecalc(precalc, "circumscriptions_identical_to_next"));
+		cols.add(createTableColumnFromPrecalc(precalc, "circumscriptions_identical_to_next_pc_this"));
+		cols.add(createTableColumnFromPrecalc(precalc, "circumscriptions_identical_to_next_pc_union"));
+		cols.add(createTableColumnFromPrecalc(precalc, "circumscriptions_identical_to_next_pc_next"));
+		
 		cols.add(createTableColumnFromPrecalc(precalc, "names_identical_to_first"));
 		cols.add(createTableColumnFromPrecalc(precalc, "names_identical_to_first_pc_this"));
-		cols.add(createTableColumnFromPrecalc(precalc, "names_identical_to_first_pc_union"));		
+		cols.add(createTableColumnFromPrecalc(precalc, "names_identical_to_first_pc_union"));
+		cols.add(createTableColumnFromPrecalc(precalc, "names_identical_to_first_pc_first"));		
+		
 		cols.add(createTableColumnFromPrecalc(precalc, "clusters_identical_to_first"));
 		cols.add(createTableColumnFromPrecalc(precalc, "clusters_identical_to_first_pc_this"));	
 		cols.add(createTableColumnFromPrecalc(precalc, "clusters_identical_to_first_pc_union"));
+		cols.add(createTableColumnFromPrecalc(precalc, "clusters_identical_to_first_pc_first"));
 		
 		cols.add(createTableColumnFromPrecalc(precalc, "circumscriptions_identical_to_first"));
 		cols.add(createTableColumnFromPrecalc(precalc, "circumscriptions_identical_to_first_pc_this"));
 		cols.add(createTableColumnFromPrecalc(precalc, "circumscriptions_identical_to_first_pc_union"));
+		cols.add(createTableColumnFromPrecalc(precalc, "circumscriptions_identical_to_first_pc_first"));
 		
 		cols.add(createTableColumnFromPrecalc(precalc, "names_identical_to_last"));
 		cols.add(createTableColumnFromPrecalc(precalc, "names_identical_to_last_pc_this"));
-		cols.add(createTableColumnFromPrecalc(precalc, "names_identical_to_last_pc_union"));		
+		cols.add(createTableColumnFromPrecalc(precalc, "names_identical_to_last_pc_union"));
+		cols.add(createTableColumnFromPrecalc(precalc, "names_identical_to_last_pc_last"));
+		
 		cols.add(createTableColumnFromPrecalc(precalc, "clusters_identical_to_last"));
 		cols.add(createTableColumnFromPrecalc(precalc, "clusters_identical_to_last_pc_this"));	
 		cols.add(createTableColumnFromPrecalc(precalc, "clusters_identical_to_last_pc_union"));
+		cols.add(createTableColumnFromPrecalc(precalc, "clusters_identical_to_last_pc_last"));
+
+		cols.add(createTableColumnFromPrecalc(precalc, "circumscriptions_identical_to_last"));
+		cols.add(createTableColumnFromPrecalc(precalc, "circumscriptions_identical_to_last_pc_this"));
+		cols.add(createTableColumnFromPrecalc(precalc, "circumscriptions_identical_to_last_pc_union"));
+		cols.add(createTableColumnFromPrecalc(precalc, "circumscriptions_identical_to_last_pc_last"));
 		
 		Set<String> recognitionColumns = new HashSet<>();
 
@@ -236,7 +264,6 @@ public final class NameStabilityView {
 					.collect(Collectors.joining(", "))
 			);
 			*/
-					
 			
 			// Species added and deleted
 			Set<Name> namesAdded = ds.getChanges(project).filter(ch -> ch.getType().equals(ChangeType.ADDITION)).flatMap(ch -> ch.getToStream()).collect(Collectors.toSet());
@@ -266,7 +293,6 @@ public final class NameStabilityView {
 			precalc.put(ds, "species_added_list", speciesAdded.stream().sorted().map(n -> n.getFullName()).collect(Collectors.joining(", ")));
 			precalc.put(ds, "species_deleted", String.valueOf(speciesDeleted.size()));
 			precalc.put(ds, "species_deleted_list", speciesDeleted.stream().sorted().map(n -> n.getFullName()).collect(Collectors.joining(", ")));
-			
 			
 			// Measures of species per genera
 			java.util.Map<String, Set<Name>> binomialsPerGenera = recognizedBinomials.stream().collect(
@@ -302,18 +328,21 @@ public final class NameStabilityView {
 				precalc.put(ds, "names_identical_to_first", String.valueOf(getBinomialNamesIntersection(project, ds, firstChecklist).size()));
 				precalc.put(ds, "names_identical_to_first_pc_this", new BigDecimal((double)getBinomialNamesIntersection(project, ds, firstChecklist).size()/recognizedBinomials.size() * 100).setScale(2, BigDecimal.ROUND_HALF_EVEN).toPlainString());
 				precalc.put(ds, "names_identical_to_first_pc_union", new BigDecimal((double)getBinomialNamesIntersection(project, ds, firstChecklist).size()/getBinomialNamesUnion(project, ds, firstChecklist).size() * 100).setScale(2, BigDecimal.ROUND_HALF_EVEN).toPlainString());
+				precalc.put(ds, "names_identical_to_first_pc_first", new BigDecimal((double)getBinomialNamesIntersection(project, ds, firstChecklist).size()/getBinomialNamesUnion(project, firstChecklist, firstChecklist).size() * 100).setScale(2, BigDecimal.ROUND_HALF_EVEN).toPlainString());
 
 				int clustersForDataset = project.getNameClusterManager().getClusters(recognizedBinomials).size();
 				if(clustersForDataset != recognizedBinomials.size()) {
 					throw new RuntimeException("We have " + clustersForDataset + " clusters for this dataset, but " + recognizedBinomials.size() + " recognized binomials. What?");
 				}
 				precalc.put(ds, "clusters_identical_to_first", String.valueOf(getBinomialClustersIntersection(project, ds, firstChecklist).size()));
-				precalc.put(ds, "clusters_identical_to_first_pc_this", new BigDecimal((double)getBinomialClustersIntersection(project, ds, firstChecklist).size()/clustersForDataset * 100).setScale(2, BigDecimal.ROUND_HALF_EVEN).toPlainString());
+				precalc.put(ds, "clusters_identical_to_first_pc_this", new BigDecimal((double)getBinomialClustersIntersection(project, ds, firstChecklist).size()/getBinomialClustersUnion(project, ds, ds).size() * 100).setScale(2, BigDecimal.ROUND_HALF_EVEN).toPlainString());
 				precalc.put(ds, "clusters_identical_to_first_pc_union", new BigDecimal((double)getBinomialClustersIntersection(project, ds, firstChecklist).size()/getBinomialClustersUnion(project, ds, firstChecklist).size() * 100).setScale(2, BigDecimal.ROUND_HALF_EVEN).toPlainString());
+				precalc.put(ds, "clusters_identical_to_first_pc_first", new BigDecimal((double)getBinomialClustersIntersection(project, ds, firstChecklist).size()/getBinomialClustersUnion(project, firstChecklist, firstChecklist).size() * 100).setScale(2, BigDecimal.ROUND_HALF_EVEN).toPlainString());
 				
 				precalc.put(ds, "circumscriptions_identical_to_first", String.valueOf(getBinomialTaxonConceptsIntersection(project, ds, firstChecklist).size()));
-				precalc.put(ds, "circumscriptions_identical_to_first_pc_this", new BigDecimal((double)getBinomialTaxonConceptsIntersection(project, ds, firstChecklist).size()/clustersForDataset * 100).setScale(2, BigDecimal.ROUND_HALF_EVEN).toPlainString());
-				precalc.put(ds, "circumscriptions_identical_to_first_pc_union", new BigDecimal((double)getBinomialTaxonConceptsIntersection(project, ds, firstChecklist).size()/getBinomialTaxonConceptsUnion(project, ds, prevChecklist).size() * 100).setScale(2, BigDecimal.ROUND_HALF_EVEN).toPlainString());
+				precalc.put(ds, "circumscriptions_identical_to_first_pc_this", new BigDecimal((double)getBinomialTaxonConceptsIntersection(project, ds, firstChecklist).size()/getBinomialTaxonConceptsUnion(project, ds, ds).size() * 100).setScale(2, BigDecimal.ROUND_HALF_EVEN).toPlainString());
+				precalc.put(ds, "circumscriptions_identical_to_first_pc_union", new BigDecimal((double)getBinomialTaxonConceptsIntersection(project, ds, firstChecklist).size()/getBinomialTaxonConceptsUnion(project, ds, firstChecklist).size() * 100).setScale(2, BigDecimal.ROUND_HALF_EVEN).toPlainString());
+				precalc.put(ds, "circumscriptions_identical_to_first_pc_first", new BigDecimal((double)getBinomialTaxonConceptsIntersection(project, ds, firstChecklist).size()/getBinomialTaxonConceptsUnion(project, firstChecklist, firstChecklist).size() * 100).setScale(2, BigDecimal.ROUND_HALF_EVEN).toPlainString());
 			}
 			
 			if(lastChecklist == null) {
@@ -322,15 +351,22 @@ public final class NameStabilityView {
 			} else {
 				precalc.put(ds, "names_identical_to_last", String.valueOf(getBinomialNamesIntersection(project, ds, lastChecklist).size()));
 				precalc.put(ds, "names_identical_to_last_pc_this", new BigDecimal((double)getBinomialNamesIntersection(project, ds, lastChecklist).size()/recognizedBinomials.size() * 100).setScale(2, BigDecimal.ROUND_HALF_EVEN).toPlainString());
-				precalc.put(ds, "names_identical_to_last_pc_union", new BigDecimal((double)getBinomialNamesIntersection(project, ds, lastChecklist).size()/getBinomialNamesUnion(project, ds, firstChecklist).size() * 100).setScale(2, BigDecimal.ROUND_HALF_EVEN).toPlainString());
+				precalc.put(ds, "names_identical_to_last_pc_union", new BigDecimal((double)getBinomialNamesIntersection(project, ds, lastChecklist).size()/getBinomialNamesUnion(project, ds, lastChecklist).size() * 100).setScale(2, BigDecimal.ROUND_HALF_EVEN).toPlainString());
+				precalc.put(ds, "names_identical_to_last_pc_last", new BigDecimal((double)getBinomialNamesIntersection(project, ds, lastChecklist).size()/getBinomialNamesUnion(project, lastChecklist, lastChecklist).size() * 100).setScale(2, BigDecimal.ROUND_HALF_EVEN).toPlainString());
 
 				int clustersForDataset = project.getNameClusterManager().getClusters(recognizedBinomials).size();
 				if(clustersForDataset != recognizedBinomials.size()) {
 					throw new RuntimeException("We have " + clustersForDataset + " clusters for this dataset, but " + recognizedBinomials.size() + " recognized binomials. What?");
 				}
 				precalc.put(ds, "clusters_identical_to_last", String.valueOf(getBinomialClustersIntersection(project, ds, lastChecklist).size()));
-				precalc.put(ds, "clusters_identical_to_last_pc_this", new BigDecimal((double)getBinomialClustersIntersection(project, ds, lastChecklist).size()/clustersForDataset * 100).setScale(2, BigDecimal.ROUND_HALF_EVEN).toPlainString());
-				precalc.put(ds, "clusters_identical_to_last_pc_union", new BigDecimal((double)getBinomialClustersIntersection(project, ds, lastChecklist).size()/getBinomialClustersUnion(project, ds, lastChecklist).size() * 100).setScale(2, BigDecimal.ROUND_HALF_EVEN).toPlainString());				
+				precalc.put(ds, "clusters_identical_to_last_pc_this", new BigDecimal((double)getBinomialClustersIntersection(project, ds, lastChecklist).size()/getBinomialClustersUnion(project, ds, ds).size() * 100).setScale(2, BigDecimal.ROUND_HALF_EVEN).toPlainString());
+				precalc.put(ds, "clusters_identical_to_last_pc_union", new BigDecimal((double)getBinomialClustersIntersection(project, ds, lastChecklist).size()/getBinomialClustersUnion(project, ds, lastChecklist).size() * 100).setScale(2, BigDecimal.ROUND_HALF_EVEN).toPlainString());
+				precalc.put(ds, "clusters_identical_to_last_pc_last", new BigDecimal((double)getBinomialClustersIntersection(project, ds, lastChecklist).size()/getBinomialClustersUnion(project, lastChecklist, lastChecklist).size() * 100).setScale(2, BigDecimal.ROUND_HALF_EVEN).toPlainString());
+			
+				precalc.put(ds, "circumscriptions_identical_to_last", String.valueOf(getBinomialTaxonConceptsIntersection(project, ds, lastChecklist).size()));
+				precalc.put(ds, "circumscriptions_identical_to_last_pc_this", new BigDecimal((double)getBinomialTaxonConceptsIntersection(project, ds, lastChecklist).size()/getBinomialTaxonConceptsUnion(project, ds, ds).size() * 100).setScale(2, BigDecimal.ROUND_HALF_EVEN).toPlainString());
+				precalc.put(ds, "circumscriptions_identical_to_last_pc_union", new BigDecimal((double)getBinomialTaxonConceptsIntersection(project, ds, lastChecklist).size()/getBinomialTaxonConceptsUnion(project, ds, lastChecklist).size() * 100).setScale(2, BigDecimal.ROUND_HALF_EVEN).toPlainString());
+				precalc.put(ds, "circumscriptions_identical_to_last_pc_last", new BigDecimal((double)getBinomialTaxonConceptsIntersection(project, ds, lastChecklist).size()/getBinomialTaxonConceptsUnion(project, lastChecklist, lastChecklist).size() * 100).setScale(2, BigDecimal.ROUND_HALF_EVEN).toPlainString());
 			}
 			
 			if(prevChecklist == null) {
@@ -340,18 +376,23 @@ public final class NameStabilityView {
 				precalc.put(ds, "names_identical_to_prev", String.valueOf(getBinomialNamesIntersection(project, ds, prevChecklist).size()));
 				precalc.put(ds, "names_identical_to_prev_pc_this", new BigDecimal((double)getBinomialNamesIntersection(project, ds, prevChecklist).size()/recognizedBinomials.size() * 100).setScale(2, BigDecimal.ROUND_HALF_EVEN).toPlainString());
 				precalc.put(ds, "names_identical_to_prev_pc_union", new BigDecimal((double)getBinomialNamesIntersection(project, ds, prevChecklist).size()/getBinomialNamesUnion(project, ds, prevChecklist).size() * 100).setScale(2, BigDecimal.ROUND_HALF_EVEN).toPlainString());
+				precalc.put(ds, "names_identical_to_prev_pc_prev", new BigDecimal((double)getBinomialNamesIntersection(project, ds, prevChecklist).size()/getBinomialNamesUnion(project, prevChecklist, prevChecklist).size() * 100).setScale(2, BigDecimal.ROUND_HALF_EVEN).toPlainString());
 				
 				int clustersForDataset = project.getNameClusterManager().getClusters(recognizedBinomials).size();
 				if(clustersForDataset != recognizedBinomials.size()) {
 					throw new RuntimeException("We have " + clustersForDataset + " clusters for this dataset, but " + recognizedBinomials.size() + " recognized binomials. What?");
 				}
 				precalc.put(ds, "clusters_identical_to_prev", String.valueOf(getBinomialClustersIntersection(project, ds, prevChecklist).size()));
-				precalc.put(ds, "clusters_identical_to_prev_pc_this", new BigDecimal((double)getBinomialClustersIntersection(project, ds, prevChecklist).size()/clustersForDataset * 100).setScale(2, BigDecimal.ROUND_HALF_EVEN).toPlainString());
+				precalc.put(ds, "clusters_identical_to_prev_pc_this", new BigDecimal((double)getBinomialClustersIntersection(project, ds, prevChecklist).size()/getBinomialClustersUnion(project, ds, ds).size() * 100).setScale(2, BigDecimal.ROUND_HALF_EVEN).toPlainString());
 				precalc.put(ds, "clusters_identical_to_prev_pc_union", new BigDecimal((double)getBinomialClustersIntersection(project, ds, prevChecklist).size()/getBinomialClustersUnion(project, ds, prevChecklist).size() * 100).setScale(2, BigDecimal.ROUND_HALF_EVEN).toPlainString());
+				precalc.put(ds, "clusters_identical_to_prev_pc_prev", new BigDecimal((double)getBinomialClustersIntersection(project, ds, prevChecklist).size()/getBinomialClustersUnion(project, prevChecklist, prevChecklist).size() * 100).setScale(2, BigDecimal.ROUND_HALF_EVEN).toPlainString());
 				
 				precalc.put(ds, "circumscriptions_identical_to_prev", String.valueOf(getBinomialTaxonConceptsIntersection(project, ds, prevChecklist).size()));
-				precalc.put(ds, "circumscriptions_identical_to_prev_pc_this", new BigDecimal((double)getBinomialTaxonConceptsIntersection(project, ds, prevChecklist).size()/clustersForDataset * 100).setScale(2, BigDecimal.ROUND_HALF_EVEN).toPlainString());
+				precalc.put(ds, "circumscriptions_identical_to_prev_pc_this", new BigDecimal((double)getBinomialTaxonConceptsIntersection(project, ds, prevChecklist).size()/getBinomialTaxonConceptsUnion(project, ds, ds).size() * 100).setScale(2, BigDecimal.ROUND_HALF_EVEN).toPlainString());
 				precalc.put(ds,  "circumscriptions_identical_to_prev_pc_union", new BigDecimal((double)getBinomialTaxonConceptsIntersection(project, ds, prevChecklist).size()/getBinomialTaxonConceptsUnion(project, ds, prevChecklist).size() * 100).setScale(2, BigDecimal.ROUND_HALF_EVEN).toPlainString());
+				precalc.put(ds,  "circumscriptions_identical_to_prev_pc_prev", new BigDecimal((double)getBinomialTaxonConceptsIntersection(project, ds, prevChecklist).size()/getBinomialTaxonConceptsUnion(project, prevChecklist, prevChecklist).size() * 100).setScale(2, BigDecimal.ROUND_HALF_EVEN).toPlainString());
+				
+				// FYI, getBinomialTaxonConceptsUnion(project, ds, prevChecklist).size() should always be equal to the number of species in the dataset.
 			}
 		
 			if(nextChecklist == null) {
@@ -361,14 +402,21 @@ public final class NameStabilityView {
 				precalc.put(ds, "names_identical_to_next", String.valueOf(getBinomialNamesIntersection(project, ds, nextChecklist).size()));
 				precalc.put(ds, "names_identical_to_next_pc_this", new BigDecimal((double)getBinomialNamesIntersection(project, ds, nextChecklist).size()/recognizedBinomials.size() * 100).setScale(2, BigDecimal.ROUND_HALF_EVEN).toPlainString());
 				precalc.put(ds, "names_identical_to_next_pc_union", new BigDecimal((double)getBinomialNamesIntersection(project, ds, nextChecklist).size()/getBinomialNamesUnion(project, ds, nextChecklist).size() * 100).setScale(2, BigDecimal.ROUND_HALF_EVEN).toPlainString());
+				precalc.put(ds, "names_identical_to_next_pc_next", new BigDecimal((double)getBinomialNamesIntersection(project, ds, nextChecklist).size()/getBinomialNamesUnion(project, nextChecklist, nextChecklist).size() * 100).setScale(2, BigDecimal.ROUND_HALF_EVEN).toPlainString());
 				
 				int clustersForDataset = project.getNameClusterManager().getClusters(recognizedBinomials).size();
 				if(clustersForDataset != recognizedBinomials.size()) {
 					throw new RuntimeException("We have " + clustersForDataset + " clusters for this dataset, but " + recognizedBinomials.size() + " recognized binomials. What?");
 				}
 				precalc.put(ds, "clusters_identical_to_next", String.valueOf(getBinomialClustersIntersection(project, ds, nextChecklist).size()));
-				precalc.put(ds, "clusters_identical_to_next_pc_this", new BigDecimal((double)getBinomialClustersIntersection(project, ds, nextChecklist).size()/clustersForDataset * 100).setScale(2, BigDecimal.ROUND_HALF_EVEN).toPlainString());
+				precalc.put(ds, "clusters_identical_to_next_pc_this", new BigDecimal((double)getBinomialClustersIntersection(project, ds, nextChecklist).size()/getBinomialClustersUnion(project, ds, ds).size() * 100).setScale(2, BigDecimal.ROUND_HALF_EVEN).toPlainString());
 				precalc.put(ds, "clusters_identical_to_next_pc_union", new BigDecimal((double)getBinomialClustersIntersection(project, ds, nextChecklist).size()/getBinomialClustersUnion(project, ds, nextChecklist).size() * 100).setScale(2, BigDecimal.ROUND_HALF_EVEN).toPlainString());
+				precalc.put(ds, "clusters_identical_to_next_pc_next", new BigDecimal((double)getBinomialClustersIntersection(project, ds, nextChecklist).size()/getBinomialClustersUnion(project, nextChecklist, nextChecklist).size() * 100).setScale(2, BigDecimal.ROUND_HALF_EVEN).toPlainString());
+			
+				precalc.put(ds, "circumscriptions_identical_to_next", String.valueOf(getBinomialTaxonConceptsIntersection(project, ds, nextChecklist).size()));
+				precalc.put(ds, "circumscriptions_identical_to_next_pc_this", new BigDecimal((double)getBinomialTaxonConceptsIntersection(project, ds, nextChecklist).size()/getBinomialTaxonConceptsUnion(project, ds, ds).size() * 100).setScale(2, BigDecimal.ROUND_HALF_EVEN).toPlainString());
+				precalc.put(ds, "circumscriptions_identical_to_next_pc_union", new BigDecimal((double)getBinomialTaxonConceptsIntersection(project, ds, nextChecklist).size()/getBinomialTaxonConceptsUnion(project, ds, nextChecklist).size() * 100).setScale(2, BigDecimal.ROUND_HALF_EVEN).toPlainString());
+				precalc.put(ds, "circumscriptions_identical_to_next_pc_next", new BigDecimal((double)getBinomialTaxonConceptsIntersection(project, ds, nextChecklist).size()/getBinomialTaxonConceptsUnion(project, nextChecklist, nextChecklist).size() * 100).setScale(2, BigDecimal.ROUND_HALF_EVEN).toPlainString());
 			}
 			
 			// For the visualization thingie.
@@ -452,7 +500,7 @@ public final class NameStabilityView {
 	private Map<NameCluster, List<TaxonConcept>> nameClusterTaxonConceptCache = new HashMap<>();
 	private Map<Dataset, Set<TaxonConcept>> taxonConceptsByDataset = new HashMap<>(); 
 	private Set<TaxonConcept> getTaxonConceptsForDataset(Project p, Dataset ds) {
-		if(taxonConceptsByDataset.containsKey(ds)) return taxonConceptsByDataset.get(ds);
+		if(taxonConceptsByDataset.containsKey(ds)) return new HashSet<>(taxonConceptsByDataset.get(ds));
 		
 		LOGGER.info("Starting getTaxonConceptsForDataset(" + p + ", " + ds + ")");
 		NameClusterManager ncm = p.getNameClusterManager();
@@ -485,7 +533,10 @@ public final class NameStabilityView {
 		LOGGER.info("Finished getTaxonConceptsForDataset(" + p + ", " + ds + ")");
 		
 		taxonConceptsByDataset.put(ds, taxonConcepts);
-		return taxonConcepts;
+		
+		// For chrissake don't return the actual HashSet otherwise we're going to keep
+		// accumulating taxon concepts like some kind of crazy person.
+		return new HashSet<>(taxonConcepts);
 	}
 	
 	private Set<TaxonConcept> getBinomialTaxonConceptsIntersection(Project p, Dataset ds1, Dataset ds2) {
@@ -499,8 +550,9 @@ public final class NameStabilityView {
 		Set<TaxonConcept> clusters1 = getTaxonConceptsForDataset(p, ds1);
 		Set<TaxonConcept> clusters2 = getTaxonConceptsForDataset(p, ds2);
 		
-		clusters1.addAll(clusters2);
+		HashSet<TaxonConcept> combined = new HashSet<>(clusters1); 
+		combined.addAll(clusters2);
 	
-		return clusters1;
+		return combined;
 	}
 }
