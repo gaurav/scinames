@@ -68,12 +68,12 @@ public class RenamesFromIdsInChanges implements ChangeGenerator {
 	
 	public Stream<PotentialChange> getRenamesById(Project p, Dataset ds) {
 		// Nothing to do if there is no previous dataset;
-		if(ds.getPreviousDataset() == null || idColumn == null)
+		if(!ds.getPreviousDataset().isPresent() || idColumn == null)
 			return Stream.empty();
 		
 		LOGGER.info("getRenamesById(" + p + ", " + ds + ")");
 		
-		Dataset prevDataset = ds.getPreviousDataset().orElse(null);
+		Dataset prevDataset = ds.getPreviousDataset().get();
 		
 		// Index the values in the DatasetColumn for both this dataset and previous dataset.
 		LOGGER.info("Indexing " + ds + " by column " + idColumn);
