@@ -16,13 +16,17 @@
  */
 package com.ggvaidya.scinames.model.change;
 
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.logging.Logger;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import com.ggvaidya.scinames.model.Change;
+import org.apache.poi.ss.formula.eval.NotImplementedException;
+
 import com.ggvaidya.scinames.model.ChangeType;
 import com.ggvaidya.scinames.model.Dataset;
 import com.ggvaidya.scinames.model.DatasetColumn;
@@ -59,70 +63,122 @@ public class RenamesFromIdsInData implements ChangeGenerator {
 		idColumn = ds;
 	}
 	
-	public Stream<PotentialChange> generate(Project project) {
-		return project.getDatasets().stream().flatMap(ds -> generate(project, ds));
-	}
-
+	@Override
 	public Stream<PotentialChange> generate(Project project, Dataset ds) {
-		return getRenamesById(project, ds);
-	}	
+		throw new NotImplementedException("Cannot generate per dataset generate(" + project + ", " + ds + "): not supported");
+	}
 	
-	public Stream<PotentialChange> getRenamesById(Project project, Dataset ds) {
+	@Override
+	public Stream<PotentialChange> generate(Project project) {
 		// No idColumn? This won't work, then.
 		if(idColumn == null) return Stream.empty();
 		
-		// Which names were added in this database?
-		Map<Name, Set<String>> identifiersByName = ds.getChanges(project)
-			.filter(ch -> ch.getType().equals(ChangeType.ADDITION))
-			.flatMap(ch -> ch.getTo().stream())
-			.distinct()
-			.collect(Collectors.toMap(
-				n -> n, 
-				n -> ds.getRowsByName(n).stream().flatMap(row -> {
-					String val = row.get(idColumn);
-					if(val == null) return Stream.empty();
-					else return Stream.of(val);
-				}).collect(Collectors.toSet())
-			));
+		// We need atleast one dataset.
+		Dataset lastDataset = project.getLastDataset().orElse(null);
+		if(lastDataset == null) return Stream.empty();
 		
-		LOGGER.info("Identifiers by name: " + 
-				identifiersByName.keySet().size() + " names mapped to " + 
-				identifiersByName.values().stream().distinct().count() + " distinct identifiers");
+		// To start with, make a list of every name we have associated with every
+		// unique ID in this project.
+		Map<Name, List<Dataset>> datasetsByName = new HashMap<>();
+		Map<String, Set<Name>> namesByIdentifier = new HashMap<>();
+		for(Dataset ds: project.getDatasets()) {
+			ds.getReferencedNames().forEach(n -> {
+				if(!datasetsByName.containsKey(n)) datasetsByName.put(n, new LinkedList<>());
+				datasetsByName.get(n).add(ds);
+			});
+			
+			// We're only interested in rows that have a name associated with them.
+			Map<Name, Set<DatasetRow>> rowsByName = ds.getRowsByName();
+			for(Name n: rowsByName.keySet()) {
+				for(DatasetRow row: rowsByName.get(n)) {
+					String identifier = row.get(idColumn);
+					if(identifier == null || identifier.trim().equals("")) continue;
+					
+					if(!namesByIdentifier.containsKey(identifier))
+						namesByIdentifier.put(identifier, new HashSet<>());
+					
+					namesByIdentifier.get(identifier).add(n);
+				}
+			}
+		}
 		
-		// Do we see that identifier in *any* other rows anywhere in this project?
-		return identifiersByName.entrySet().stream()
-			.flatMap(es -> {
-				Name name = es.getKey();
-				Set<String> matchingIdentifiers = es.getValue();
+		// Now, make a list of every partially overlapping set of names we know about.
+		Map<Name, Set<Name>> partiallyOverlappingCircumscriptions = new HashMap<>();
+		project.getChanges().forEach(ch -> {
+			for(Name from: ch.getFrom()) {
+				for(Name to: ch.getTo()) {
+					// Add 'from' -> 'to'
+					if(!partiallyOverlappingCircumscriptions.containsKey(from))
+						partiallyOverlappingCircumscriptions.put(from, new HashSet<>());
+					
+					partiallyOverlappingCircumscriptions.get(from).add(to);
+					
+					// Add 'to' -> 'from'
+					if(!partiallyOverlappingCircumscriptions.containsKey(to))
+						partiallyOverlappingCircumscriptions.put(to, new HashSet<>());
+					
+					partiallyOverlappingCircumscriptions.get(to).add(from);					
+				}
+			}
+		});
+		
+		// Finally, look at every identifier set, and see if there's a pair of names that aren't
+		// associated with each other.
+		Map<Name, Set<Name>> newSynonyms = new HashMap<>();
+		
+		for(String identifier: namesByIdentifier.keySet()) {
+			Set<Name> names = namesByIdentifier.get(identifier);
+			
+			for(Name from: names) {
+				for(Name to: names) {
+					// We don't care if one is related to the other.
+					if(from == to) continue;
+					
+					// We don't care if we already know about this.
+					if(
+						partiallyOverlappingCircumscriptions.containsKey(from) &&
+						partiallyOverlappingCircumscriptions.get(from).contains(to)
+					) continue;
+					
+					// Have we already reported this synonym in the opposite direction?
+					if(
+						newSynonyms.containsKey(to) && 
+						newSynonyms.get(to).contains(from)
+					) continue;
+					
+					// A relation we don't know about! Report, report!
+					if(!newSynonyms.containsKey(from)) newSynonyms.put(from, new HashSet<>());
+					newSynonyms.get(from).add(to);
+				}
+			}
+		}
+		
+		// Write synonyms out!
+		List<PotentialChange> potentialChanges = new LinkedList<>();
+		for(Name from: newSynonyms.keySet()) {
+			for(Name to: newSynonyms.get(from)) {
+				Set<Dataset> datasets = new HashSet<>(datasetsByName.getOrDefault(from, new LinkedList<>()));
+				datasets.retainAll(new HashSet<>(datasetsByName.getOrDefault(to, new LinkedList<>())));
 				
-				// TODO: we could make this a LOT faster if we can skip the row we started with,
-				// but how?
+				// Now, which was first dataset where we see both names?
+				Dataset dataset = datasets.stream().sorted().findFirst().orElse(null);
 				
-				// Find all project rows that have one of these identifiers.
-				return project.getRows()
-					.filter(row -> {
-						String val = row.get(idColumn);
-						if(val == null) return false;
-						if(matchingIdentifiers.contains(val)) return true;
-						return false;
-					})
-					.distinct()
-					.flatMap(row -> {
-						// Turn each other name into a synonym. Since the original name
-						// was ADDED here, we need to synonym from that name to this.
-
-						return row.getDataset().getNamesInRow(row).stream()
-							// A lot of these matches are, um, to the name we started out with. Filter those out.
-							.filter(n -> (n != name))
-							.map(
-								otherName -> new Synonymy(
-									otherName, name, ds,
-									"Dataset " + row.getDataset().getCitation() + " has synonym under one of matching identifier " + matchingIdentifiers
-								)
-							);
-					});
-			})
-			.distinct() // deduplicate synonyms
-			.map(syn -> new PotentialChange(syn.getDataset(), ChangeType.RENAME, Stream.of(syn.getFrom()), Stream.of(syn.getTo()), RenamesFromIdsInData.class, syn.getNote()));
+				// No first dataset? Just use the last dataset.
+				dataset = lastDataset;
+				
+				potentialChanges.add(
+					new PotentialChange(
+						dataset, 
+						ChangeType.RENAME, 
+						Stream.of(from), 
+						Stream.of(to), 
+						RenamesFromIdsInData.class, 
+						"Found novel association between partially overlapping names"
+					)
+				);
+			}
+		}
+		
+		return potentialChanges.stream();
 	}
 }
