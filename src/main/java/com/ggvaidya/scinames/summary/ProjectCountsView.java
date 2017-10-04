@@ -97,7 +97,7 @@ public final class ProjectCountsView {
 		
 		// Set up columns.
 		cols.add(createTableColumnForObservable("dataset", new PropertyValueFactory<>("name")));
-		cols.add(createTableColumnForObservable("date", (new PropertyValueFactory<>("date"))));
+		cols.add(createTableColumnForDataset("date", ds -> ds.getDate().asYYYYmmDD("-")));
 		cols.add(createTableColumnForDataset("year", dataset -> dataset.getDate().getYearAsString()));
 		cols.add(createTableColumnForDataset("type", dataset -> dataset.isChecklist() ? "Checklist" : "Dataset"));		
 		cols.add(createTableColumnForDataset("binomial_count", 
