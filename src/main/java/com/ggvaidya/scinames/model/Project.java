@@ -203,10 +203,10 @@ public class Project {
 		if(d == null) return new HashSet<>();
 		
 		if(recognizedNamesCache.containsKey(d))
-			return recognizedNamesCache.get(d);
+			return new HashSet<>(recognizedNamesCache.get(d));
 		
 		recognizedNamesCache.put(d, d.getRecognizedNames(this).collect(Collectors.toSet()));
-		return recognizedNamesCache.get(d);
+		return new HashSet<>(recognizedNamesCache.get(d));
 	}
 	
 	

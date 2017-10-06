@@ -201,17 +201,21 @@ public final class NameStabilityView {
 		// Calculate binomials per dataset.
 		Map<Name, Set<Dataset>> datasetsPerName = new HashMap<>();
 		
+		// Prepare to loop!
+		List<Dataset> checklists = project.getChecklists();
+		
+		// BIRD HACK! Include all datasets!
+		// checklists = project.getDatasets();
+		
 		// Set table items. We're only interested in checklists, because
 		// there's no such thing as "name stability" between non-checklist datasets.
 		controller.getTableItemsProperty().set(
-			FXCollections.observableArrayList(projectView.getProject().getChecklists())
+			FXCollections.observableArrayList(checklists)
 		);
 		
-		// Prepare to loop!
 		List<Dataset> prevChecklists = new LinkedList<>();
-		Dataset firstChecklist = project.getChecklists().get(0);
-		Dataset lastChecklist = project.getChecklists().get(project.getChecklists().size() - 1);
-		int index = -1;
+		Dataset firstChecklist = checklists.get(0);
+		Dataset lastChecklist = checklists.get(checklists.size() - 1);
 		
 		// TODO: This used to be prevDataset, but prevChecklist makes a lot more sense, since we
 		// want to compare checklists with each other, ignoring datasets. Would be nice if someone
@@ -219,10 +223,11 @@ public final class NameStabilityView {
 		// that the previous checklist is also the previous dataset?
 		Dataset prevChecklist = null;
 		
-		for(Dataset ds: project.getChecklists()) {
+		int index = -1;
+		for(Dataset ds: checklists) {
 			index++;
 			
-			Dataset nextChecklist = (index < (project.getChecklists().size() - 1) ? project.getChecklists().get(index + 1) : null);
+			Dataset nextChecklist = (index < (checklists.size() - 1) ? checklists.get(index + 1) : null);
 			
 			precalc.put(ds, "dataset", ds.getName());
 			precalc.put(ds, "date", ds.getDate().asYYYYmmDD("-"));
@@ -506,7 +511,12 @@ public final class NameStabilityView {
 		NameClusterManager ncm = p.getNameClusterManager();
 		
 		// Get all binomial name clusters
-		List<NameCluster> nameClusterStream = ncm.getClusters(p.getRecognizedNames(ds).stream().flatMap(n -> n.asBinomial()).collect(Collectors.toList()));
+		List<NameCluster> nameClusterStream = ncm.getClusters(
+			p.getRecognizedNames(ds).stream()
+				.flatMap(n -> n.asBinomial())
+				.distinct()
+				.collect(Collectors.toList())
+		);
 		
 		LOGGER.info("Starting name cluster to taxon concept conversion");
 		
@@ -520,14 +530,42 @@ public final class NameStabilityView {
 				
 				return tcs.stream();
 			})
+			.distinct()
 			.collect(Collectors.toList());
 		
 		LOGGER.info("Finished name cluster to taxon concept conversion");
+		
+		/*
+		// BIRD HACK!
+		List<Dataset> allChecklists = projectView.getProject().getDatasets();
+		int dsIndex = allChecklists.indexOf(ds);
+		*/
 		
 		// Finally, this includes taxon concepts that don't apply to this dataset.
 		// So: we filter it down here!
 		Set<TaxonConcept> taxonConcepts = taxonConceptStream.stream()
 			.filter(tc -> tc.getFoundIn().contains(ds))
+			
+			/*
+			// BIRD HACK! getFoundIn only includes datasets in which the name
+			// was actually noticed, which means that "in between" checklists
+			// don't appear to count. So instead we'll approximate with ranges.
+			.filter(tc -> {
+				List<Dataset> foundIn = tc.getFoundInSorted();
+				if(foundIn.isEmpty()) return false;
+				
+				int foundInMin = allChecklists.indexOf(foundIn.get(0));
+				int foundInMax = allChecklists.indexOf(foundIn.get(foundIn.size() - 1));
+				
+				// Is "this" checklist inside that range?
+				if(foundInMin <= dsIndex && dsIndex <= foundInMax) {
+					// yay, inside that range!
+					return true;
+				} else
+					return false;
+			})
+			*/
+			
 			.collect(Collectors.toSet());
 		
 		LOGGER.info("Finished getTaxonConceptsForDataset(" + p + ", " + ds + ")");
