@@ -1,13 +1,16 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <xs:schema id="NewDataSet" 
-    xmlns:sciname = "http://gaurav.github.io/scinames-eclipse#"
-    targetNamespace="http://gaurav.github.io/scinames-eclipse#"
-    elementFormDefault="qualified" 
-    attributeFormDefault="unqualified" 
-    xmlns="" 
     xmlns:xs="http://www.w3.org/2001/XMLSchema" 
     xmlns:msdata="urn:schemas-microsoft-com:xml-msdata"
 >
+
+  <xs:annotation>
+    <xs:documentation xml:lang="en">
+      A description of an XML format used to store and transfer taxonomic
+      changes. Please see http://github.com/gaurav/scinames for more details.
+    </xs:documentation>
+  </xs:annotation>
+
   <xs:element name="properties">
     <xs:complexType>
       <xs:sequence>
@@ -37,7 +40,7 @@
   <xs:element name="project">
     <xs:complexType>
       <xs:sequence>
-        <xs:element ref="sciname:properties" minOccurs="0" maxOccurs="unbounded" />
+        <xs:element ref="properties" minOccurs="0" maxOccurs="unbounded" />
         <xs:element name="filters" minOccurs="0" maxOccurs="unbounded">
           <xs:complexType>
             <xs:sequence>
@@ -57,6 +60,7 @@
               <xs:element name="dataset" minOccurs="0" maxOccurs="unbounded">
                 <xs:complexType>
                   <xs:sequence>
+                    <xs:element ref="properties" minOccurs="0" maxOccurs="unbounded" />
                     <xs:element name="changes" minOccurs="0" maxOccurs="unbounded">
                       <xs:complexType>
                         <xs:sequence>
@@ -66,18 +70,18 @@
                                 <xs:element name="from" minOccurs="0" maxOccurs="unbounded">
                                   <xs:complexType>
                                     <xs:sequence>
-                                      <xs:element ref="sciname:name" minOccurs="0" maxOccurs="unbounded" />
+                                      <xs:element ref="name" minOccurs="0" maxOccurs="unbounded" />
                                     </xs:sequence>
                                   </xs:complexType>
                                 </xs:element>
                                 <xs:element name="to" minOccurs="0" maxOccurs="unbounded">
                                   <xs:complexType>
                                     <xs:sequence>
-                                      <xs:element ref="sciname:name" minOccurs="0" maxOccurs="unbounded" />
+                                      <xs:element ref="name" minOccurs="0" maxOccurs="unbounded" />
                                     </xs:sequence>
                                   </xs:complexType>
                                 </xs:element>
-                                <xs:element ref="sciname:properties" minOccurs="0" maxOccurs="unbounded" />
+                                <xs:element ref="properties" minOccurs="0" maxOccurs="unbounded" />
                               </xs:sequence>
                               <xs:attribute name="type" type="xs:string" />
                             </xs:complexType>
@@ -121,8 +125,9 @@
                   <xs:attribute name="name" type="xs:string" />
                   <xs:attribute name="nameExtractors" type="xs:string" />
                   <xs:attribute name="type" type="xs:string" />
-                  <xs:attribute name="year" type="xs:string" />
-                  <xs:attribute name="month" type="xs:string" />
+                  <xs:attribute name="year" type="xs:short" />
+                  <xs:attribute name="month" type="xs:short" />
+                  <xs:attribute name="day" type="xs:short" />
                 </xs:complexType>
               </xs:element>
             </xs:sequence>
@@ -135,9 +140,9 @@
   <xs:element name="NewDataSet" msdata:IsDataSet="true" msdata:UseCurrentLocale="true">
     <xs:complexType>
       <xs:choice minOccurs="0" maxOccurs="unbounded">
-        <xs:element ref="sciname:properties" />
-        <xs:element ref="sciname:name" />
-        <xs:element ref="sciname:project" />
+        <xs:element ref="properties" />
+        <xs:element ref="name" />
+        <xs:element ref="project" />
       </xs:choice>
     </xs:complexType>
   </xs:element>
