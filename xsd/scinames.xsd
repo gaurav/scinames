@@ -1,11 +1,35 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<xs:schema id="NewDataSet" xmlns="" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+<xs:schema id="NewDataSet" 
+    xmlns:sciname = "http://gaurav.github.io/scinames-eclipse#"
+    targetNamespace="http://gaurav.github.io/scinames-eclipse#"
+    elementFormDefault="qualified" 
+    attributeFormDefault="unqualified" 
+    xmlns="" 
+    xmlns:xs="http://www.w3.org/2001/XMLSchema" 
+    xmlns:msdata="urn:schemas-microsoft-com:xml-msdata"
+>
+  <xs:element name="properties">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element name="property" nillable="true" minOccurs="0" maxOccurs="unbounded">
+          <xs:complexType>
+            <xs:simpleContent msdata:ColumnName="property_Text" msdata:Ordinal="1">
+              <xs:extension base="xs:string">
+                <xs:attribute name="name" type="xs:string" />
+              </xs:extension>
+            </xs:simpleContent>
+          </xs:complexType>
+        </xs:element>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
   <xs:element name="name" nillable="true">
     <xs:complexType>
       <xs:simpleContent msdata:ColumnName="name_Text" msdata:Ordinal="2">
         <xs:extension base="xs:string">
           <xs:attribute name="genus" type="xs:string" />
           <xs:attribute name="specificEpithet" type="xs:string" />
+          <xs:attribute name="infraspecificEpithets" type="xs:string" />
         </xs:extension>
       </xs:simpleContent>
     </xs:complexType>
@@ -13,17 +37,15 @@
   <xs:element name="project">
     <xs:complexType>
       <xs:sequence>
-        <xs:element name="filters" type="xs:string" minOccurs="0" msdata:Ordinal="1" />
-        <xs:element name="properties" minOccurs="0" maxOccurs="unbounded">
+        <xs:element ref="sciname:properties" minOccurs="0" maxOccurs="unbounded" />
+        <xs:element name="filters" minOccurs="0" maxOccurs="unbounded">
           <xs:complexType>
             <xs:sequence>
-              <xs:element name="property" nillable="true" minOccurs="0" maxOccurs="unbounded">
+              <xs:element name="filter" minOccurs="0" maxOccurs="unbounded">
                 <xs:complexType>
-                  <xs:simpleContent msdata:ColumnName="property_Text" msdata:Ordinal="1">
-                    <xs:extension base="xs:string">
-                      <xs:attribute name="name" type="xs:string" />
-                    </xs:extension>
-                  </xs:simpleContent>
+                  <xs:attribute name="active" type="xs:string" />
+                  <xs:attribute name="name" type="xs:string" />
+                  <xs:attribute name="year" type="xs:string" />
                 </xs:complexType>
               </xs:element>
             </xs:sequence>
@@ -44,17 +66,18 @@
                                 <xs:element name="from" minOccurs="0" maxOccurs="unbounded">
                                   <xs:complexType>
                                     <xs:sequence>
-                                      <xs:element ref="name" minOccurs="0" maxOccurs="unbounded" />
+                                      <xs:element ref="sciname:name" minOccurs="0" maxOccurs="unbounded" />
                                     </xs:sequence>
                                   </xs:complexType>
                                 </xs:element>
                                 <xs:element name="to" minOccurs="0" maxOccurs="unbounded">
                                   <xs:complexType>
                                     <xs:sequence>
-                                      <xs:element ref="name" minOccurs="0" maxOccurs="unbounded" />
+                                      <xs:element ref="sciname:name" minOccurs="0" maxOccurs="unbounded" />
                                     </xs:sequence>
                                   </xs:complexType>
                                 </xs:element>
+                                <xs:element ref="sciname:properties" minOccurs="0" maxOccurs="unbounded" />
                               </xs:sequence>
                               <xs:attribute name="type" type="xs:string" />
                             </xs:complexType>
@@ -95,12 +118,11 @@
                       </xs:complexType>
                     </xs:element>
                   </xs:sequence>
-                  <xs:attribute name="day" type="xs:string" />
-                  <xs:attribute name="is_checklist" type="xs:string" />
-                  <xs:attribute name="month" type="xs:string" />
                   <xs:attribute name="name" type="xs:string" />
                   <xs:attribute name="nameExtractors" type="xs:string" />
+                  <xs:attribute name="type" type="xs:string" />
                   <xs:attribute name="year" type="xs:string" />
+                  <xs:attribute name="month" type="xs:string" />
                 </xs:complexType>
               </xs:element>
             </xs:sequence>
@@ -113,8 +135,9 @@
   <xs:element name="NewDataSet" msdata:IsDataSet="true" msdata:UseCurrentLocale="true">
     <xs:complexType>
       <xs:choice minOccurs="0" maxOccurs="unbounded">
-        <xs:element ref="name" />
-        <xs:element ref="project" />
+        <xs:element ref="sciname:properties" />
+        <xs:element ref="sciname:name" />
+        <xs:element ref="sciname:project" />
       </xs:choice>
     </xs:complexType>
   </xs:element>
