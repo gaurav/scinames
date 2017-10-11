@@ -140,6 +140,12 @@ public class RenamesFromIdsInData implements ChangeGenerator {
 						partiallyOverlappingCircumscriptions.get(from).contains(to)
 					) continue;
 					
+					// We also don't care if we already know about this in the opposite direction.
+					if(
+						partiallyOverlappingCircumscriptions.containsKey(to) &&
+						partiallyOverlappingCircumscriptions.get(to).contains(from)
+					) continue;
+					
 					// Have we already reported this synonym in the opposite direction?
 					if(
 						newSynonyms.containsKey(to) && 
