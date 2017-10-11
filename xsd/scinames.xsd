@@ -12,9 +12,27 @@
   </xs:annotation>
 
   <xs:element name="properties">
+
+    <xs:annotation>
+      <xs:documentation xml:lang="en">
+        A list of properties associated a project, dataset or change.
+      </xs:documentation>
+    </xs:annotation>
+
     <xs:complexType>
       <xs:sequence>
         <xs:element name="property" nillable="true" minOccurs="0" maxOccurs="unbounded">
+
+          <xs:annotation>
+            <xs:documentation xml:lang="en">
+              A key-value pair that acts as a "property" in a list of properties.
+              The key is stored in the attribute 'name', while the value is simply
+              the content of the element. 
+              
+              The 'note' property is used to store a general comment.
+            </xs:documentation>
+          </xs:annotation>
+
           <xs:complexType>
             <xs:simpleContent msdata:ColumnName="property_Text" msdata:Ordinal="1">
               <xs:extension base="xs:string">
@@ -27,6 +45,17 @@
     </xs:complexType>
   </xs:element>
   <xs:element name="name" nillable="true">
+
+    <xs:annotation>
+      <xs:documentation xml:lang="en">
+        A scientific name. The element content is the verbatim scientific
+        name, while parsed components are stored in the attributes. These
+        include the 'genus', 'specificEpithet' and 'infraspecificEpithets'.
+        Infraspecific epithets are stored as a string concatenated from
+        spaces.
+      </xs:documentation>
+    </xs:annotation>
+
     <xs:complexType>
       <xs:simpleContent msdata:ColumnName="name_Text" msdata:Ordinal="2">
         <xs:extension base="xs:string">
@@ -38,30 +67,123 @@
     </xs:complexType>
   </xs:element>
   <xs:element name="project">
-    <xs:complexType>
-      <xs:sequence>
-        <xs:element ref="properties" minOccurs="0" maxOccurs="unbounded" />
-        <xs:element name="filters" minOccurs="0" maxOccurs="unbounded">
+
+    <xs:annotation>
+      <xs:documentation xml:lang="en">
+        A project collecting an ordered list of datasets. May contain
+        properties, filters and dataset.
+      </xs:documentation>
+    </xs:annotation>
+
+	<xs:complexType>
+      <xs:all>
+        <xs:element ref="properties" minOccurs="0" maxOccurs="1" />
+        <xs:element name="filters" minOccurs="0" maxOccurs="1">
+
+          <xs:annotation>
+            <xs:documentation xml:lang="en">
+              Filters allows changes to be filtered on a per-project basis.
+              They is generally used to eliminate invalid changes from
+              analyses, but could be extended towards any goal.
+            </xs:documentation>
+          </xs:annotation>
+
           <xs:complexType>
             <xs:sequence>
               <xs:element name="filter" minOccurs="0" maxOccurs="unbounded">
+
+                <xs:annotation>
+                  <xs:documentation xml:lang="en">
+                    A filter is specified by its 'name', and the 'active'
+                    attribute is used to specify whether that filter should
+                    be activated ('yes') or deactivated ('no').
+
+                    Some filters require a year as a parameter; the 'year'
+                    attribute can be used to provide that.
+                  </xs:documentation>
+                </xs:annotation>
+
                 <xs:complexType>
-                  <xs:attribute name="active" type="xs:string" />
                   <xs:attribute name="name" type="xs:string" />
+                  <xs:attribute name="active" type="xs:string" />
                   <xs:attribute name="year" type="xs:string" />
                 </xs:complexType>
               </xs:element>
             </xs:sequence>
           </xs:complexType>
         </xs:element>
-        <xs:element name="datasets" minOccurs="0" maxOccurs="unbounded">
+        <xs:element name="datasets" minOccurs="0" maxOccurs="1">
+
+          <xs:annotation>
+            <xs:documentation xml:lang="en">
+              An ordered list of datasets in this project. Each dataset
+              may contain properties, dataset rows, or changes.
+            </xs:documentation>
+          </xs:annotation>
+
           <xs:complexType>
             <xs:sequence>
               <xs:element name="dataset" minOccurs="0" maxOccurs="unbounded">
+
+                <xs:annotation>
+                  <xs:documentation xml:lang="en">
+                    A dataset may contain a set of columns and rows,
+                    a list of changes that took place in this dataset,
+                    or both.
+                  </xs:documentation>
+                </xs:annotation>
+
                 <xs:complexType>
-                  <xs:sequence>
-                    <xs:element ref="properties" minOccurs="0" maxOccurs="unbounded" />
-                    <xs:element name="changes" minOccurs="0" maxOccurs="unbounded">
+                  <xs:all>
+                    <xs:element ref="properties" minOccurs="0" maxOccurs="1">
+                      <xs:annotation>
+                        <xs:documentation xml:lang="en">
+                          
+                        </xs:documentation>
+                      </xs:annotation>
+                    </xs:element>
+
+                    <xs:element name="columns" minOccurs="0" maxOccurs="1">
+                      <xs:complexType>
+                        <xs:sequence>
+                          <xs:element name="column" minOccurs="0" maxOccurs="unbounded">
+                            <xs:complexType>
+                              <xs:attribute name="name" type="xs:string" />
+                            </xs:complexType>
+                          </xs:element>
+                        </xs:sequence>
+                      </xs:complexType>
+                    </xs:element>
+
+                    <xs:element name="rows" minOccurs="0" maxOccurs="1">
+                      <xs:complexType>
+                        <xs:sequence>
+                          <xs:element name="row" minOccurs="0" maxOccurs="unbounded">
+                            <xs:complexType>
+                              <xs:sequence>
+                                <xs:element name="key" nillable="true" minOccurs="0" maxOccurs="unbounded">
+                                  <xs:complexType>
+                                    <xs:simpleContent msdata:ColumnName="key_Text" msdata:Ordinal="1">
+                                      <xs:extension base="xs:string">
+                                        <xs:attribute name="name" type="xs:string" />
+                                      </xs:extension>
+                                    </xs:simpleContent>
+                                  </xs:complexType>
+                                </xs:element>
+                              </xs:sequence>
+                            </xs:complexType>
+                          </xs:element>
+                        </xs:sequence>
+                      </xs:complexType>
+                    </xs:element>
+ 
+                    <xs:element name="changes" minOccurs="0" maxOccurs="1">
+                      <xs:annotation>
+                        <xs:documentation xml:lang="en">
+                          
+                        </xs:documentation>
+                      </xs:annotation>
+ 
                       <xs:complexType>
                         <xs:sequence>
                           <xs:element name="change" minOccurs="0" maxOccurs="unbounded">
@@ -89,52 +211,73 @@
                         </xs:sequence>
                       </xs:complexType>
                     </xs:element>
-                    <xs:element name="columns" minOccurs="0" maxOccurs="unbounded">
-                      <xs:complexType>
-                        <xs:sequence>
-                          <xs:element name="column" minOccurs="0" maxOccurs="unbounded">
-                            <xs:complexType>
-                              <xs:attribute name="name" type="xs:string" />
-                            </xs:complexType>
-                          </xs:element>
-                        </xs:sequence>
-                      </xs:complexType>
-                    </xs:element>
-                    <xs:element name="rows" minOccurs="0" maxOccurs="unbounded">
-                      <xs:complexType>
-                        <xs:sequence>
-                          <xs:element name="row" minOccurs="0" maxOccurs="unbounded">
-                            <xs:complexType>
-                              <xs:sequence>
-                                <xs:element name="key" nillable="true" minOccurs="0" maxOccurs="unbounded">
-                                  <xs:complexType>
-                                    <xs:simpleContent msdata:ColumnName="key_Text" msdata:Ordinal="1">
-                                      <xs:extension base="xs:string">
-                                        <xs:attribute name="name" type="xs:string" />
-                                      </xs:extension>
-                                    </xs:simpleContent>
-                                  </xs:complexType>
-                                </xs:element>
-                              </xs:sequence>
-                            </xs:complexType>
-                          </xs:element>
-                        </xs:sequence>
-                      </xs:complexType>
-                    </xs:element>
-                  </xs:sequence>
-                  <xs:attribute name="name" type="xs:string" />
-                  <xs:attribute name="nameExtractors" type="xs:string" />
-                  <xs:attribute name="type" type="xs:string" />
-                  <xs:attribute name="year" type="xs:short" />
-                  <xs:attribute name="month" type="xs:short" />
-                  <xs:attribute name="day" type="xs:short" />
+				  </xs:all>
+				  <xs:attribute name="name" type="xs:string">
+                    <xs:annotation>
+                      <xs:documentation xml:lang="en">
+                        The optional name of this dataset.
+                      </xs:documentation>
+                    </xs:annotation>
+                  </xs:attribute>
+
+                  <xs:attribute name="nameExtractors" type="xs:string">
+                    <xs:annotation>
+                      <xs:documentation xml:lang="en">
+                      </xs:documentation>
+                    </xs:annotation>
+                  </xs:attribute>
+
+
+                  <xs:attribute name="type" type="xs:string">
+                    <xs:annotation>
+                      <xs:documentation xml:lang="en">
+                        The type of this dataset. Currently, "Checklist"
+                        and "Dataset" are accepted: all datasets are "Dataset",
+                        but may additionally be a "Checklist", which indicates
+                        that the dataset rows contain a comprehensive list of
+                        recognized species at this point of time.
+                      </xs:documentation>
+                    </xs:annotation>
+                  </xs:attribute>
+
+
+                  <xs:attribute name="year" type="xs:short">
+                    <xs:annotation>
+                      <xs:documentation xml:lang="en">
+                        The year in which this dataset was published or prepared.
+                        May be set to '0' to indicate that this unknown.
+                      </xs:documentation>
+                    </xs:annotation>
+                  </xs:attribute>
+
+
+                  <xs:attribute name="month" type="xs:short">
+                    <xs:annotation>
+                      <xs:documentation xml:lang="en">
+                        The month of the year as a number between 1 and 12
+                        inclusive to indicate when this dataset was published.
+                        Can be set to '0' to indicate that the exact month is
+                        unknown.
+                      </xs:documentation>
+                    </xs:annotation>
+                  </xs:attribute>
+
+                  <xs:attribute name="day" type="xs:short">
+                    <xs:annotation>
+                      <xs:documentation xml:lang="en">
+                        The day of the month when this dataset was published.
+                        Can be set to '0' to indicate that the exact date is
+                        unknown.
+                      </xs:documentation>
+                    </xs:annotation>
+                  </xs:attribute>
                 </xs:complexType>
               </xs:element>
             </xs:sequence>
           </xs:complexType>
         </xs:element>
-      </xs:sequence>
-      <xs:attribute name="name" type="xs:string" />
+	  </xs:all>
+	  <xs:attribute name="name" type="xs:string" />
     </xs:complexType>
   </xs:element>
   <xs:element name="NewDataSet" msdata:IsDataSet="true" msdata:UseCurrentLocale="true">
