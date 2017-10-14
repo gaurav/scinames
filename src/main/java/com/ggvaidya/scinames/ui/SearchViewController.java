@@ -360,10 +360,15 @@ public final class SearchViewController implements Initializable {
 	}
 	
 	private void filterSearchResults() {
-		String filter = filterTextField.getText().trim();
+		String filter = filterTextField.getText();
+		
+		// What's the point of writing your own software if you can't
+		// make your own workflow faster?
+		filter = filter.replaceAll("^\\s*\\[\\s*", "");
+		String finalFilter = filter.replaceAll("\\s*\\]\\s*$", "");
 		
 		filteredItems.setAll(
-			searchResults.stream().filter(sr -> sr.matchesString(filter)).collect(Collectors.toList())
+			searchResults.stream().filter(sr -> sr.matchesString(finalFilter)).collect(Collectors.toList())
 		);
 		
 		String filteredPercent = String.valueOf((int)(((double)filteredItems.size())/searchResults.size() * 100));

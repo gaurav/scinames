@@ -229,6 +229,31 @@ public class ProjectView {
 	}
 	
 	/**
+	 * Check if we're running low on memory, and if so pop up a dialog box to warn the user.
+	 */
+	public void reportLowMemory() {
+		// Because why not.
+		System.gc();
+		
+		// Calculate available memory.
+		double freeMem = Runtime.getRuntime().freeMemory();
+		double totalMem = Runtime.getRuntime().totalMemory();
+		double maxMem = Runtime.getRuntime().maxMemory();
+		
+		double percentage = (maxMem - freeMem)/maxMem;
+		long currentlyUsingInMB = Math.round(freeMem/(1024*1024));
+		long maximumInMB = Math.round(maxMem/(1024*1024));
+		
+		// Warn if the project has been modified and there is less than 10% of memory left.
+		if(percentage < 0.10 && getProject().isModified()) {
+			new Alert(AlertType.WARNING, 
+				"SciNames is currently using " + currentlyUsingInMB + "M of memory out of a maximum of " + maximumInMB + 
+				". If memory runs out, SciNames will likely be unable to save your modified project. Please save any changes soon!"
+			).showAndWait();
+		}
+	}
+	
+	/**
 	 * Open a window showing a detailed view on the passed object.
 	 * 
 	 * @param o
@@ -245,6 +270,8 @@ public class ProjectView {
 	}
 	
 	public void openDetailedView(Name n) {
+		reportLowMemory();
+		
 		// some day we will have a proper name view
 		// but for now
 		SearchView view = new SearchView(this);
@@ -253,6 +280,8 @@ public class ProjectView {
 	}
 	
 	public void openDetailedView(Dataset ds) {
+		reportLowMemory();
+		
 		//DatasetView view = new DatasetView(this, ds);
 		//view.getStage().show();
 		DatasetEditorView view = new DatasetEditorView(this, ds);
@@ -260,6 +289,8 @@ public class ProjectView {
 	}
 	
 	public void openDetailedView(Change ch) {
+		reportLowMemory();
+		
 		DatasetChangesView view = new DatasetChangesView(this, ch);
 		view.getStage().show();
 	}
