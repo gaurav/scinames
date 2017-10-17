@@ -98,14 +98,14 @@ public class DatasetValidator implements Validator {
 			//		Note that it's fine if the same name is added and deleted, as in a split.
 			for(Name n: to) {
 				if(!addedNames.contains(n) && !from.contains(n))
-					errors.add(new ValidationError<Change>(Level.SEVERE, this, p, "Name '" + n + "' added unnecessarily in dataset " + ds + " in change " + ch, ch));
+					errors.add(new ValidationError<Change>(Level.SEVERE, this, p, "Name '" + n + "' added but already recognized in dataset " + ds + " in change " + ch, ch));
 			}
 			
 			//	- 	Changes deleting names that don't need to be deleted.
 			// 		Note that it's fine if the same name is added and deleted, as in a lump.
 			for(Name n: from) {
 				if(!deletedNames.contains(n) && !to.contains(n))
-					errors.add(new ValidationError<Change>(Level.SEVERE, this, p, "Name '" + n + "' deleted unnecessarily in dataset " + ds + " in change " + ch, ch));
+					errors.add(new ValidationError<Change>(Level.SEVERE, this, p, "Name '" + n + "' deleted but already recognized in dataset " + ds + " in change " + ch, ch));
 			}
 			
 			return errors.stream();
