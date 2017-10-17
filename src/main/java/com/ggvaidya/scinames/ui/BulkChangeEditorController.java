@@ -163,7 +163,7 @@ public class BulkChangeEditorController {
 		new RenamesFromIdsInChanges(),
 		new RenamesFromIdsInData(),
 		new SynonymsFromColumnChangeGenerator(),
-		new GenusChangesFromComposition(),
+		// new GenusChangesFromComposition(),
 		new GenusReorganizationFromRenames()
 	));
 	

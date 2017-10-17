@@ -54,20 +54,17 @@ public class DatasetValidator implements Validator {
 		List<ValidationError> errors = new LinkedList<>();
 		
 		errors.addAll(reportContradictoryChangesInTheSameDataset(p).collect(Collectors.toList()));
-		errors.addAll(reportUnnecessaryChanges(p).collect(Collectors.toList()));
+		errors.addAll(reportChangesThatHaveNoEffectInDataset(p).collect(Collectors.toList()));
 		errors.addAll(reportUnmappedRows(p).collect(Collectors.toList()));
-		
-		// - This results in lots of spurious errors, so we're ignoring this for now.
-		// errors.addAll(identifyNameClustersWithMultipleBinomials(p).collect(Collectors.toList()));
 		
 		return errors.stream();
 	}
 	
-	private Stream<ValidationError<Change>> reportUnnecessaryChanges(Project p) {
-		return p.getDatasets().stream().flatMap(ds -> reportUnnecessaryChangesInDataset(p, ds));
+	private Stream<ValidationError<Change>> reportChangesThatHaveNoEffectInDataset(Project p) {
+		return p.getDatasets().stream().flatMap(ds -> reportChangesThatHaveNoEffectInDataset(p, ds));
 	}
 	
-	private Stream<ValidationError<Change>> reportUnnecessaryChangesInDataset(Project p, Dataset ds) {
+	private Stream<ValidationError<Change>> reportChangesThatHaveNoEffectInDataset(Project p, Dataset ds) {
 		Optional<Dataset> optPrevDataset = ds.getPreviousDataset();
 		if(!optPrevDataset.isPresent()) {
 			LOGGER.info("Skipping dataset '" + ds + "' as it has no previous dataset.");
@@ -175,7 +172,10 @@ public class DatasetValidator implements Validator {
 		
 		for(Dataset ds: p.getDatasets()) {
 			Set<DatasetRow> allRows = new HashSet<>(ds.rowsProperty());
-			Set<DatasetRow> rowsWithNames = ds.getNamesByRow().keySet();
+			Map<DatasetRow, Set<Name>> namesByRow = ds.getNamesByRow();
+			Set<DatasetRow> rowsWithNames = namesByRow.keySet().stream()
+				.filter(row -> !namesByRow.get(row).isEmpty())
+				.collect(Collectors.toSet());
 			
 			Set<DatasetRow> rowsWithNamesButNotInDS = rowsWithNames.stream().filter(r -> !allRows.contains(r)).collect(Collectors.toSet());
 			if(rowsWithNamesButNotInDS.size() != 0)
@@ -184,7 +184,15 @@ public class DatasetValidator implements Validator {
 			Set<DatasetRow> rowsWithoutNames = allRows.stream().filter(r -> !rowsWithNames.contains(r)).collect(Collectors.toSet());
 			LOGGER.info("Rows without names in dataset " + ds + ": " + rowsWithoutNames);
 			rowsWithoutNames.stream()
-				.forEach(row -> errors.add(new ValidationError<Dataset>(Level.SEVERE, this, p, "No scientific name found for row; it will be excluded from analyses: " + row, ds)));
+				.forEach(row -> errors.add(new ValidationError<Dataset>(Level.WARNING, this, p, "No scientific name found for row; it will be excluded from analyses: " + row, ds)));
+			
+			/*
+			if(ds.getDate().getYear() == 2011) {
+				LOGGER.severe("2011 dataset: " + allRows.size() + " rows, " + rowsWithNames.size() + " rows with names");
+				LOGGER.severe("2011 dataset, rows without names: " + rowsWithoutNames);
+				return Stream.empty();
+			}
+			*/
 		}
 		
 		return errors.stream();
