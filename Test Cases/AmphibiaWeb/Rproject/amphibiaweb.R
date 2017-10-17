@@ -399,6 +399,7 @@ nrow(amphibiaweb_scinames)
 summary(amphibiaweb_scinames$first_added_dataset)
 163/164
 amphibiaweb_scinames[which(is.na(amphibiaweb_scinames$uri.guid)),]
+# 
 
 # Compare to Reptile Database
 reptiledb <- read.csv("../Reptile Database/CSVs/reptile_checklist_2016_12.csv")
