@@ -34,6 +34,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import com.ggvaidya.scinames.model.Change;
+import com.ggvaidya.scinames.model.ChangeType;
 import com.ggvaidya.scinames.model.Dataset;
 import com.ggvaidya.scinames.model.DatasetRow;
 import com.ggvaidya.scinames.model.Name;
@@ -55,7 +56,78 @@ public class DatasetValidator implements Validator {
 		
 		errors.addAll(reportContradictoryChangesInTheSameDataset(p).collect(Collectors.toList()));
 		errors.addAll(reportChangesThatHaveNoEffectInDataset(p).collect(Collectors.toList()));
+		errors.addAll(reportRenamesThatShouldBeLumps(p).collect(Collectors.toList()));
+		errors.addAll(reportRenamesThatShouldBeSplits(p).collect(Collectors.toList()));
 		errors.addAll(reportUnmappedRows(p).collect(Collectors.toList()));
+		
+		return errors.stream();
+	}
+	
+	private Stream<ValidationError<Change>> reportRenamesThatShouldBeLumps(Project p) {
+		return p.getDatasets().stream().flatMap(ds -> reportRenamesThatShouldBeLumps(p, ds));
+	}
+	
+	private Stream<ValidationError<Change>> reportRenamesThatShouldBeLumps(Project p, Dataset ds) {
+		// A rename should be treated as a lump if either:
+		//	(1) A source name is at a species rank while a resulting name is at a subspecies rank.
+		//	(2) A resulting name is previously recognized. 
+		Dataset prevDataset = ds.getPreviousDataset().orElse(null);
+		
+		Set<Name> prevRecognizedNames;
+		if(prevDataset != null)
+			prevRecognizedNames = p.getRecognizedNames(prevDataset);
+		else
+			prevRecognizedNames = new HashSet<>();
+		
+		List<ValidationError<Change>> errors = new LinkedList<>();
+		for(Change ch: ds.getChanges(p).collect(Collectors.toList())) {
+			if(ch.getType().equals(ChangeType.RENAME)) {
+				// Any subspecies in source?
+				boolean speciesInFrom = ch.getFromStream().anyMatch(n -> !n.hasSubspecificEpithet());
+				boolean infraspecificsInTo = ch.getToStream().anyMatch(n -> n.hasSubspecificEpithet());
+				
+				if(speciesInFrom && infraspecificsInTo) {
+					errors.add(new ValidationError<Change>(Level.WARNING, this, p, "Change '" + ch + "' might be a lump, as it is a species renamed to an subspecies", ch));
+				}
+				
+				// Is the resulting name previously recognized?
+				boolean resultingNamePrevRecog = ch.getToStream().anyMatch(n -> prevRecognizedNames.contains(n));
+				if(resultingNamePrevRecog) {
+					errors.add(new ValidationError<Change>(Level.WARNING, this, p, "Change '" + ch + "' might be a lump, as a resulting name was previously recognized", ch));
+				}
+			}
+		}
+		
+		return errors.stream();
+	}
+	
+	private Stream<ValidationError<Change>> reportRenamesThatShouldBeSplits(Project p) {
+		return p.getDatasets().stream().flatMap(ds -> reportRenamesThatShouldBeSplits(p, ds));
+	}
+	
+	private Stream<ValidationError<Change>> reportRenamesThatShouldBeSplits(Project p, Dataset ds) {
+		// A rename should be treated as a split if:
+		//	(1) A resulting name is at a species rank while a source name is at a subspecies rank.
+		Dataset prevDataset = ds.getPreviousDataset().orElse(null);
+		
+		Set<Name> prevRecognizedBinomials;
+		if(prevDataset != null)
+			prevRecognizedBinomials = p.getRecognizedNames(prevDataset).stream().flatMap(n -> n.asBinomial()).collect(Collectors.toSet());
+		else
+			prevRecognizedBinomials = null;
+		
+		List<ValidationError<Change>> errors = new LinkedList<>();
+		for(Change ch: ds.getChanges(p).collect(Collectors.toList())) {
+			if(ch.getType().equals(ChangeType.RENAME)) {
+				// Any subspecies in source?
+				boolean infraspecificsInFrom = ch.getFromStream().anyMatch(n -> n.hasSubspecificEpithet());
+				boolean speciesInTo = ch.getToStream().anyMatch(n -> !n.hasSubspecificEpithet());
+				
+				if(infraspecificsInFrom && speciesInTo) {
+					errors.add(new ValidationError<Change>(Level.WARNING, this, p, "Change '" + ch + "' might be a split, as it involves a subspecies being renamed to a species", ch));
+				}
+			}
+		}
 		
 		return errors.stream();
 	}
