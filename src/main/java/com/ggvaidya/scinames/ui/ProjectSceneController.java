@@ -367,28 +367,33 @@ public class ProjectSceneController {
 		timepointTable.setRowFactory(table -> {
 			TableRow<Dataset> row = new TableRow<>();
 			
+			row.setOnContextMenuRequested(event -> {
+				if(row.isEmpty()) return;
+				Dataset dataset = row.getItem();
+				
+				ContextMenu contextMenu = new ContextMenu();
+				
+				Project project = projectView.getProject();
+				contextMenu.getItems().add(menuItemThat("Display dataset", evt -> new DatasetEditorView(projectView, dataset).getStage().show()));
+				contextMenu.getItems().add(menuItemThat("Display changes", evt -> new DatasetChangesView(projectView, dataset).getStage().show()));
+				// contextMenu.getItems().add(menuItemThat("Display binomial changes", evt -> new BinomialChangesView(projectView, dataset).getStage().show()));
+				
+				Optional<Dataset> datasetFirst = project.getFirstDataset();
+				if(datasetFirst.isPresent())
+					contextMenu.getItems().add(menuItemThat("Diff with first", evt -> new DatasetDiffView(projectView, datasetFirst.get(), dataset).getStage().show()));
+				
+				Optional<Dataset> datasetLast = project.getLastDataset();
+				if(datasetLast.isPresent())
+					contextMenu.getItems().add(menuItemThat("Diff with last", evt -> new DatasetDiffView(projectView, dataset, datasetLast.get()).getStage().show()));
+				
+				contextMenu.show(projectView.getScene().getWindow(), event.getScreenX(), event.getScreenY());
+			});
+			
 			row.setOnMouseClicked(event -> {
 				if(row.isEmpty()) return;
 				Dataset dataset = row.getItem();
 				
-				if(event.getClickCount() == 1 && event.isPopupTrigger()) {
-					ContextMenu contextMenu = new ContextMenu();
-					
-					Project project = projectView.getProject();
-					contextMenu.getItems().add(menuItemThat("Display dataset", evt -> new DatasetEditorView(projectView, dataset).getStage().show()));
-					contextMenu.getItems().add(menuItemThat("Display changes", evt -> new DatasetChangesView(projectView, dataset).getStage().show()));
-					// contextMenu.getItems().add(menuItemThat("Display binomial changes", evt -> new BinomialChangesView(projectView, dataset).getStage().show()));
-					
-					Optional<Dataset> datasetFirst = project.getFirstDataset();
-					if(datasetFirst.isPresent())
-						contextMenu.getItems().add(menuItemThat("Diff with first", evt -> new DatasetDiffView(projectView, datasetFirst.get(), dataset).getStage().show()));
-					
-					Optional<Dataset> datasetLast = project.getLastDataset();
-					if(datasetLast.isPresent())
-						contextMenu.getItems().add(menuItemThat("Diff with last", evt -> new DatasetDiffView(projectView, dataset, datasetLast.get()).getStage().show()));
-					
-					contextMenu.show(projectView.getScene().getWindow(), event.getScreenX(), event.getScreenY());
-				} else if(event.getClickCount() == 2) {
+				if(event.getClickCount() == 2) {
 					// So much easier.
 					projectView.openDetailedView(dataset);
 				}

@@ -347,67 +347,66 @@ public class BinomialChangesSceneController {
 		changesTableView.setRowFactory(table -> {
 			TableRow<PotentialChange> row = new TableRow<>();
 			
-			row.setOnMouseClicked(event -> {
+			row.setOnContextMenuRequested(event -> {
 				if(row.isEmpty()) return;
 				
 				// We don't currently use the clicked change, since currently all options
 				// change *all* the selected changes, but this may change in the future.
 				PotentialChange change = row.getItem();
+			
+				ContextMenu changeMenu = new ContextMenu();
 				
-				if(event.getClickCount() == 1 && event.isPopupTrigger()) {
-					ContextMenu changeMenu = new ContextMenu();
-					
-					Menu lookupChange = new Menu("Look up change");
-					lookupChange.getItems().addAll(
-						changesByPotentialChange.getOrDefault(change, new HashSet<>())
-							.stream()
-							.map(ch -> createMenuItem(ch.toString() + " in " + ch.getDataset().toString(), action -> {
-								binomialChangesView.getProjectView().openDetailedView(ch);
-							}))
-							.collect(Collectors.toList())
-					);
-					changeMenu.getItems().add(lookupChange);
-					
-					changeMenu.getItems().add(new SeparatorMenuItem());
-					
-					Menu searchForName = new Menu("Search for name");
-					searchForName.getItems().addAll(
-						change.getAllNames().stream().sorted()
-							.map(n -> createMenuItem(n.getFullName(), action -> {
-								binomialChangesView.getProjectView().openDetailedView(n);
-							}))
-							.collect(Collectors.toList())
-					);
-					changeMenu.getItems().add(searchForName);
-					
-					changeMenu.getItems().add(new SeparatorMenuItem());
-					
-					// Create a submenu for tags and urls.
-					String note = change.noteProperty().get();
-					
-					Menu removeTags = new Menu("Tags");
-					removeTags.getItems().addAll(
-						change.getTags().stream().sorted()
-							.map(tag -> new MenuItem(tag.getName()))
-							.collect(Collectors.toList())
-					);
-					
-					Menu lookupURLs = new Menu("Lookup URL");
-					change.getURIs().stream().sorted().map(
-						uri -> {
-							return createMenuItem(uri.toString(), evt -> {
-								try {
-									Desktop.getDesktop().browse(uri);
-								} catch(IOException ex) {
-									LOGGER.warning("Could not open URL '" + uri + "': " + ex);
-								}
-							});
-						}
-					).forEach(mi -> lookupURLs.getItems().add(mi));
-					changeMenu.getItems().add(lookupURLs);
-					
-					changeMenu.show(binomialChangesView.getScene().getWindow(), event.getScreenX(), event.getScreenY());
-				}
+				Menu lookupChange = new Menu("Look up change");
+				lookupChange.getItems().addAll(
+					changesByPotentialChange.getOrDefault(change, new HashSet<>())
+						.stream()
+						.map(ch -> createMenuItem(ch.toString() + " in " + ch.getDataset().toString(), action -> {
+							binomialChangesView.getProjectView().openDetailedView(ch);
+						}))
+						.collect(Collectors.toList())
+				);
+				changeMenu.getItems().add(lookupChange);
+				
+				changeMenu.getItems().add(new SeparatorMenuItem());
+				
+				Menu searchForName = new Menu("Search for name");
+				searchForName.getItems().addAll(
+					change.getAllNames().stream().sorted()
+						.map(n -> createMenuItem(n.getFullName(), action -> {
+							binomialChangesView.getProjectView().openDetailedView(n);
+						}))
+						.collect(Collectors.toList())
+				);
+				changeMenu.getItems().add(searchForName);
+				
+				changeMenu.getItems().add(new SeparatorMenuItem());
+				
+				// Create a submenu for tags and urls.
+				String note = change.noteProperty().get();
+				
+				Menu removeTags = new Menu("Tags");
+				removeTags.getItems().addAll(
+					change.getTags().stream().sorted()
+						.map(tag -> new MenuItem(tag.getName()))
+						.collect(Collectors.toList())
+				);
+				
+				Menu lookupURLs = new Menu("Lookup URL");
+				change.getURIs().stream().sorted().map(
+					uri -> {
+						return createMenuItem(uri.toString(), evt -> {
+							try {
+								Desktop.getDesktop().browse(uri);
+							} catch(IOException ex) {
+								LOGGER.warning("Could not open URL '" + uri + "': " + ex);
+							}
+						});
+					}
+				).forEach(mi -> lookupURLs.getItems().add(mi));
+				changeMenu.getItems().add(lookupURLs);
+				
+				changeMenu.show(binomialChangesView.getScene().getWindow(), event.getScreenX(), event.getScreenY());
+				
 			});
 			
 			return row;

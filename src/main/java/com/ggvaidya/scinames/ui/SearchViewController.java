@@ -184,19 +184,23 @@ public final class SearchViewController implements Initializable {
 		resultsTableView.setRowFactory(table -> {
 			TableRow<Object> row = new TableRow<>();
 			
+			row.setOnContextMenuRequested(event -> {
+				if(row.isEmpty()) return;
+				Object item = row.getItem();
+				
+				ContextMenu contextMenu = new ContextMenu();
+				
+				// Someday.
+				
+				contextMenu.show(searchView.getScene().getWindow(), event.getScreenX(), event.getScreenY());
+				event.consume();
+			});
+			
 			row.setOnMouseClicked(event -> {
 				if(row.isEmpty()) return;
 				Object item = row.getItem();
 				
-				if(event.getClickCount() == 1 && event.isPopupTrigger()) {
-					ContextMenu contextMenu = new ContextMenu();
-					
-					// Someday.
-					
-					contextMenu.show(searchView.getScene().getWindow(), event.getScreenX(), event.getScreenY());
-					event.consume();
-					
-				} else if(event.getClickCount() == 2) {
+				if(event.getClickCount() == 2) {
 					// So much easier.
 					// But causes the entire application to crash, so I'm commenting out for now.
 					searchView.getProjectView().openDetailedView(item);

@@ -277,105 +277,104 @@ public class DatasetSceneController {
 		changesTableView.setRowFactory(table -> {
 			TableRow<Change> row = new TableRow<>();
 			
-			row.setOnMouseClicked(event -> {
+			row.setOnContextMenuRequested(event -> {
 				if(row.isEmpty()) return;
 				
 				// We don't currently use the clicked change, since currently all options
 				// change *all* the selected changes, but this may change in the future.
 				Change change = row.getItem();
 				
-				if(event.getClickCount() == 1 && event.isPopupTrigger()) {
-					ContextMenu changeMenu = new ContextMenu();
+				ContextMenu changeMenu = new ContextMenu();
+				
+				Menu searchForName = new Menu("Search for name");
+				searchForName.getItems().addAll(
+					change.getAllNames().stream().sorted()
+						.map(n -> createMenuItem(n.getFullName(), action -> {
+							datasetView.getProjectView().openDetailedView(n);
+						}))
+						.collect(Collectors.toList())
+				);
+				changeMenu.getItems().add(searchForName);
+				changeMenu.getItems().add(new SeparatorMenuItem());
+				
+				changeMenu.getItems().add(createMenuItem("Edit note", action -> {
+					List<Change> changes = new ArrayList<>(changesTableView.getSelectionModel().getSelectedItems());
 					
-					Menu searchForName = new Menu("Search for name");
-					searchForName.getItems().addAll(
-						change.getAllNames().stream().sorted()
-							.map(n -> createMenuItem(n.getFullName(), action -> {
-								datasetView.getProjectView().openDetailedView(n);
-							}))
-							.collect(Collectors.toList())
-					);
-					changeMenu.getItems().add(searchForName);
-					changeMenu.getItems().add(new SeparatorMenuItem());
+					String combinedNotes = changes.stream()
+							.map(ch -> ch.getNote().orElse("").trim())
+							.distinct()
+							.collect(Collectors.joining("\n"))
+							.trim();
 					
-					changeMenu.getItems().add(createMenuItem("Edit note", action -> {
-						List<Change> changes = new ArrayList<>(changesTableView.getSelectionModel().getSelectedItems());
-						
-						String combinedNotes = changes.stream()
-								.map(ch -> ch.getNote().orElse("").trim())
-								.distinct()
-								.collect(Collectors.joining("\n"))
-								.trim();
-						
-						Optional<String> result = askUserForTextArea("Modify the note for these " + changes.size() + " changes:", combinedNotes);
-						
-						if(result.isPresent()) {
-							String note = result.get().trim();
-							LOGGER.info("Using 'Edit note' to set note to '" + note + "' on changes " + changes);
-							changes.forEach(ch -> ch.noteProperty().set(note));
-						}
-					}));
-					changeMenu.getItems().add(new SeparatorMenuItem());
+					Optional<String> result = askUserForTextArea("Modify the note for these " + changes.size() + " changes:", combinedNotes);
 					
-					// Create a submenu for tags and urls.
-					String note = change.noteProperty().get();
+					if(result.isPresent()) {
+						String note = result.get().trim();
+						LOGGER.info("Using 'Edit note' to set note to '" + note + "' on changes " + changes);
+						changes.forEach(ch -> ch.noteProperty().set(note));
+					}
+				}));
+				changeMenu.getItems().add(new SeparatorMenuItem());
+				
+				// Create a submenu for tags and urls.
+				String note = change.noteProperty().get();
+				
+				Menu removeTags = new Menu("Tags");
+				removeTags.getItems().addAll(
+					change.getTags().stream().sorted()
+						.map(tag -> new MenuItem(tag.getName()))
+						.collect(Collectors.toList())
+				);
+				
+				Menu lookupURLs = new Menu("Lookup URL");
+				change.getURIs().stream().sorted().map(
+					uri -> {
+						return createMenuItem(uri.toString(), evt -> {
+							try {
+								Desktop.getDesktop().browse(uri);
+							} catch(IOException ex) {
+								LOGGER.warning("Could not open URL '" + uri + "': " + ex);
+							}
+						});
+					}
+				).forEach(mi -> lookupURLs.getItems().add(mi));
+				changeMenu.getItems().add(lookupURLs);
+				
+				changeMenu.getItems().add(new SeparatorMenuItem());
+				changeMenu.getItems().add(createMenuItem("Prepend text to all notes", action -> {
+					List<Change> changes = new ArrayList<>(changesTableView.getSelectionModel().getSelectedItems());
 					
-					Menu removeTags = new Menu("Tags");
-					removeTags.getItems().addAll(
-						change.getTags().stream().sorted()
-							.map(tag -> new MenuItem(tag.getName()))
-							.collect(Collectors.toList())
-					);
+					Optional<String> result = askUserForTextField("Enter tags to prepend to notes in " + changes.size() + " changes:");
 					
-					Menu lookupURLs = new Menu("Lookup URL");
-					change.getURIs().stream().sorted().map(
-						uri -> {
-							return createMenuItem(uri.toString(), evt -> {
-								try {
-									Desktop.getDesktop().browse(uri);
-								} catch(IOException ex) {
-									LOGGER.warning("Could not open URL '" + uri + "': " + ex);
-								}
-							});
-						}
-					).forEach(mi -> lookupURLs.getItems().add(mi));
-					changeMenu.getItems().add(lookupURLs);
+					if(result.isPresent()) {
+						String tags = result.get().trim();
+						changes.forEach(ch -> {
+							String prevValue = change.getNote().orElse("").trim();
+							
+							LOGGER.info("Prepending tags '" + tags + "' to previous value '" + prevValue + "' for change " + ch);
+							
+							ch.noteProperty().set((tags + " " + prevValue).trim());
+						});
+					}
+				}));
+				changeMenu.getItems().add(createMenuItem("Append text to all notes", action -> {
+					List<Change> changes = new ArrayList<>(changesTableView.getSelectionModel().getSelectedItems());
+					Optional<String> result = askUserForTextField("Enter tags to append to notes in " + changes.size() + " changes:");
 					
-					changeMenu.getItems().add(new SeparatorMenuItem());
-					changeMenu.getItems().add(createMenuItem("Prepend text to all notes", action -> {
-						List<Change> changes = new ArrayList<>(changesTableView.getSelectionModel().getSelectedItems());
-						
-						Optional<String> result = askUserForTextField("Enter tags to prepend to notes in " + changes.size() + " changes:");
-						
-						if(result.isPresent()) {
-							String tags = result.get().trim();
-							changes.forEach(ch -> {
-								String prevValue = change.getNote().orElse("").trim();
-								
-								LOGGER.info("Prepending tags '" + tags + "' to previous value '" + prevValue + "' for change " + ch);
-								
-								ch.noteProperty().set((tags + " " + prevValue).trim());
-							});
-						}
-					}));
-					changeMenu.getItems().add(createMenuItem("Append text to all notes", action -> {
-						List<Change> changes = new ArrayList<>(changesTableView.getSelectionModel().getSelectedItems());
-						Optional<String> result = askUserForTextField("Enter tags to append to notes in " + changes.size() + " changes:");
-						
-						if(result.isPresent()) {
-							String tags = result.get().trim();
-							changes.forEach(ch -> {
-								String prevValue = ch.getNote().orElse("").trim();
-								
-								LOGGER.info("Appending tags '" + tags + "' to previous value '" + prevValue + "' for change " + ch);
-								
-								ch.noteProperty().setValue((prevValue + " " + tags).trim());
-							});
-						}
-					}));
-					
-					changeMenu.show(datasetView.getScene().getWindow(), event.getScreenX(), event.getScreenY());
-				}
+					if(result.isPresent()) {
+						String tags = result.get().trim();
+						changes.forEach(ch -> {
+							String prevValue = ch.getNote().orElse("").trim();
+							
+							LOGGER.info("Appending tags '" + tags + "' to previous value '" + prevValue + "' for change " + ch);
+							
+							ch.noteProperty().setValue((prevValue + " " + tags).trim());
+						});
+					}
+				}));
+				
+				changeMenu.show(datasetView.getScene().getWindow(), event.getScreenX(), event.getScreenY());
+			
 			});
 			
 			return row;
