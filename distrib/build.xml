@@ -1,5 +1,14 @@
 <project name="SciNames">
 <target name="bundle">
+    <copy file="../target/SciNames-0.1.jar" todir="SciNames" />
+
+    <taskdef name="launch4j"
+        classname="net.sf.launch4j.ant.Launch4jTask"
+        classpath="launch4j/launch4j.jar:launch4j/lib/xstream.jar"
+    />
+    
+    <launch4j configFile="launch4j.xml" />
+
 <!-- 
         classpath="/Users/vaidyagi/code/appbundler/appbundler/bin/appbundler-1.0ea.jar"
         -->
@@ -9,7 +18,7 @@
     />
     <bundleapp
         jvmrequired="1.8"
-        outputdirectory="app"
+        outputdirectory="SciNames"
         name="SciNames"
         displayname="SciNames"
         executableName="SciNames"
@@ -19,7 +28,7 @@
         mainclassname="com.ggvaidya.scinames.SciNames"
         copyright="2017 (c) Gaurav Vaidya"
     >
-        <classpath file="SciNames-0.1.jar" />
+        <classpath file="SciNames/SciNames-0.1.jar" />
     </bundleapp>
 </target>
 </project>

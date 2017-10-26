@@ -2,8 +2,8 @@
 <launch4jConfig>
   <dontWrapJar>false</dontWrapJar>
   <headerType>gui</headerType>
-  <jar>C:\Users\Gaurav\workspace\SciNames\target\SciNames-0.1.jar</jar>
-  <outfile>C:\Users\Gaurav\workspace\SciNames\distrib\SciNames-0.1.exe</outfile>
+  <jar>SciNames\SciNames-0.1.jar</jar>
+  <outfile>SciNames\SciNames-0.1.exe</outfile>
   <errTitle></errTitle>
   <cmdLine></cmdLine>
   <chdir>.</chdir>
@@ -22,5 +22,6 @@
     <maxVersion></maxVersion>
     <jdkPreference>preferJre</jdkPreference>
     <runtimeBits>64/32</runtimeBits>
+    <maxHeapSize>6144</maxHeapSize>
   </jre>
 </launch4jConfig>
