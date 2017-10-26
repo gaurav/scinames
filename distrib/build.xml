@@ -1,5 +1,5 @@
 <project name="SciNames">
-<target name="bundle">
+<target name="bundleexe">
     <copy file="../target/SciNames-0.1.jar" todir="SciNames" />
 
     <taskdef name="launch4j"
@@ -12,6 +12,11 @@
 <!-- 
         classpath="/Users/vaidyagi/code/appbundler/appbundler/bin/appbundler-1.0ea.jar"
         -->
+</target>
+
+<target name="bundleapp">
+    <copy file="../target/SciNames-0.1.jar" todir="SciNames" />
+
     <taskdef name="bundleapp"
         classpath="appbundler-1.0ea.jar"
         classname="com.oracle.appbundler.AppBundlerTask"
