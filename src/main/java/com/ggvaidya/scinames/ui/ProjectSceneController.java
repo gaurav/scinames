@@ -248,7 +248,7 @@ public class ProjectSceneController {
 			String memoryReport = String.format("Currently using %dM out of %dM (%.2f%%)\nMaximum memory available: %dM",
 				(int)((totalMem - freeMem)/(1024*1024)),
 				(int)(totalMem/(1024*1024)),
-				(double)(totalMem - freeMem)/totalMem,
+				(double)(totalMem - freeMem)/totalMem*100,
 				(int)(maxMem/(1024*1024))
 			);
 			

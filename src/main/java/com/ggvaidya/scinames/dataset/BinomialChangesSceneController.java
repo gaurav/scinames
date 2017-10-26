@@ -791,17 +791,9 @@ public class BinomialChangesSceneController {
 	private void refreshChanges(ActionEvent evt) {
 		fillTableWithBinomialChanges();
 	}
-		
-	/* Some buttons are magic. */
-	@FXML private Button combineChangesButton;
-	@FXML private Button divideChangeButton;
-	@FXML private Button deleteExplicitChangeButton;
 	
 	private void setupMagicButtons() {
 		// Disable everything to begin with.
-		combineChangesButton.disableProperty().set(true);
-		divideChangeButton.disableProperty().set(true);
-		deleteExplicitChangeButton.disableProperty().set(true);
 
 		/*
 		// Switch them on and off based on the selection.

@@ -49,7 +49,7 @@ public class BinomialChangesView {
 		try {
 			ap = (AnchorPane) loader.load();
 		} catch(IOException e) {
-			throw new RuntimeException("Could not load internal file 'DatasetScene.fxml': " + e);
+			throw new RuntimeException("Could not load internal file 'BinomialChangesView.fxml': " + e);
 		}
 		scene = new Scene(ap);
 		controller = loader.getController();
