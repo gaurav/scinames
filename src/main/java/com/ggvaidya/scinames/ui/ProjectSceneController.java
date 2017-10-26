@@ -22,6 +22,7 @@ import java.time.format.DateTimeParseException;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Consumer;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
@@ -58,6 +59,7 @@ import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.scene.Node;
 import javafx.scene.control.Alert;
+import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.ContextMenu;
 import javafx.scene.control.Menu;
 import javafx.scene.control.MenuBar;
@@ -232,9 +234,31 @@ public class ProjectSceneController {
 		configMenu.getItems().add(configFilters);
 
 		Menu helpMenu = new Menu("Help");
-		helpMenu.getItems().addAll(
-			new MenuItem("About")
-		);
+		MenuItem helpAbout = new MenuItem("About");
+		
+		helpAbout.onActionProperty().set((ActionEvent e) -> {
+			// Because why not.
+			System.gc();
+			
+			// Calculate available memory.
+			double freeMem = Runtime.getRuntime().freeMemory();
+			long totalMem = Runtime.getRuntime().totalMemory();
+			long maxMem = Runtime.getRuntime().maxMemory();
+			
+			String memoryReport = String.format("Currently using %dM out of %dM (%.2f%%)\nMaximum memory available: %dM",
+				(int)((totalMem - freeMem)/(1024*1024)),
+				(int)(totalMem/(1024*1024)),
+				(double)(totalMem - freeMem)/totalMem,
+				(int)(maxMem/(1024*1024))
+			);
+			
+			new Alert(AlertType.INFORMATION,
+				"SciNames/" + SciNames.VERSION + "\n\n" + memoryReport
+			).showAndWait();
+		});
+		
+		helpMenu.getItems().addAll(helpAbout);
+		mb.getMenus().add(helpMenu);
 		
 		// Final setups
 		mb.setUseSystemMenuBar(true);
