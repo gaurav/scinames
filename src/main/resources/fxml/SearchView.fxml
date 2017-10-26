@@ -33,9 +33,9 @@
                       <TableColumn prefWidth="75.0" text="C2" />
                     </columns>
                   </TableView>
-                  <Button layoutX="624.0" layoutY="671.0" mnemonicParsing="false" onAction="#exportToCSV" prefHeight="27.0" prefWidth="89.0" text="Export to CSV" AnchorPane.bottomAnchor="0.0" AnchorPane.rightAnchor="0.0" />
-                  <Button layoutX="511.0" layoutY="671.0" mnemonicParsing="false" onAction="#copyToClipboard" prefHeight="27.0" prefWidth="113.0" text="Copy to Clipboard" AnchorPane.bottomAnchor="0.0" AnchorPane.rightAnchor="89.0" />
-                  <TextField fx:id="statusTextField" editable="false" layoutY="671.0" prefHeight="27.0" prefWidth="511.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="202.0" />
+                  <Button layoutX="624.0" layoutY="671.0" mnemonicParsing="false" onAction="#exportToCSV" prefHeight="27.0" prefWidth="104.0" text="Export to CSV" AnchorPane.bottomAnchor="0.0" AnchorPane.rightAnchor="0.0" />
+                  <Button layoutX="216.0" layoutY="439.0" mnemonicParsing="false" onAction="#copyToClipboard" prefHeight="27.0" prefWidth="133.0" text="Copy to Clipboard" AnchorPane.bottomAnchor="0.0" AnchorPane.rightAnchor="104.0" />
+                  <TextField fx:id="statusTextField" editable="false" layoutY="671.0" prefHeight="27.0" prefWidth="216.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="237.0" />
                </children>
             </AnchorPane>
          </items>

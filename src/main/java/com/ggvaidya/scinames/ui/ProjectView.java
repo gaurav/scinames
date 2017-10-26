@@ -186,6 +186,9 @@ public class ProjectView {
 
 		Platform.runLater(() -> {
 			// If we have a PROP_OPENONSTART in properties, try to load it back up.
+			// On second thought, this is surprising behavior and shouldn't remain
+			// in the application.
+			/*
 			if(SciNames.getProperties().containsKey(SciNames.PROPNAME_OPEN_ON_START)) {
 				File f = new File(SciNames.getProperties().get(SciNames.PROPNAME_OPEN_ON_START));
 
@@ -204,6 +207,7 @@ public class ProjectView {
 						setProject(p);
 				}
 			}
+			*/
 		});
 	}
 

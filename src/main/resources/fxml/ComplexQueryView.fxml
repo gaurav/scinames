@@ -16,13 +16,13 @@
           <TableColumn prefWidth="75.0" text="C2" />
         </columns>
       </TableView>
-      <Button layoutX="113.0" layoutY="673.0" mnemonicParsing="false" onAction="#exportToCSV" prefHeight="27.0" prefWidth="89.0" text="Export to CSV" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="113.0" />
-      <Button layoutY="675.0" mnemonicParsing="false" onAction="#copyToClipboard" prefHeight="27.0" prefWidth="113.0" text="Copy to Clipboard" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" />
-      <TextField fx:id="statusTextField" editable="false" layoutX="202.0" layoutY="228.0" prefHeight="27.0" prefWidth="698.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="202.0" AnchorPane.rightAnchor="0.0" />
+      <Button layoutX="145.0" layoutY="673.0" mnemonicParsing="false" onAction="#exportToCSV" prefHeight="27.0" prefWidth="119.0" text="Export to CSV" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="145.0" />
+      <Button layoutY="675.0" mnemonicParsing="false" onAction="#copyToClipboard" prefHeight="27.0" prefWidth="145.0" text="Copy to Clipboard" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" />
+      <TextField fx:id="statusTextField" editable="false" layoutX="264.0" layoutY="228.0" prefHeight="27.0" prefWidth="636.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="264.0" AnchorPane.rightAnchor="0.0" />
       <TextArea fx:id="queryTextArea" prefHeight="102.0" prefWidth="314.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="27.0" />
-      <TextField fx:id="queryStatusTextField" editable="false" layoutY="129.0" prefHeight="27.0" prefWidth="802.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="98.0" AnchorPane.topAnchor="129.0" />
-      <Button layoutX="541.0" layoutY="129.0" mnemonicParsing="false" onAction="#executeQuery" text="Execute" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="129.0" />
+      <TextField fx:id="queryStatusTextField" editable="false" layoutY="129.0" prefHeight="27.0" prefWidth="730.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="170.0" AnchorPane.topAnchor="129.0" />
+      <Button layoutX="541.0" layoutY="129.0" mnemonicParsing="false" onAction="#executeQuery" prefHeight="25.0" prefWidth="98.0" text="Execute" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="129.0" />
       <ComboBox fx:id="prerecordedQueries" layoutY="1.0" prefHeight="27.0" prefWidth="314.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
-      <Button layoutX="802.0" layoutY="129.0" mnemonicParsing="false" onAction="#displayQueryHelp" text="Help" AnchorPane.leftAnchor="802.0" AnchorPane.topAnchor="129.0" />
+      <Button layoutX="730.0" layoutY="129.0" mnemonicParsing="false" onAction="#displayQueryHelp" prefHeight="25.0" prefWidth="73.0" text="Help" AnchorPane.leftAnchor="730.0" AnchorPane.topAnchor="129.0" />
    </children>
 </AnchorPane>

@@ -626,6 +626,11 @@ public class BinomialChangesSceneController {
 			
 			for(Name n: namesChanged) {
 				Set<Change> allChangesAssociatedWithName = changesByBinomialName.get(n);
+				
+				// TODO: am I sure this is being handled correctly?
+				if(allChangesAssociatedWithName == null)
+					continue;
+				
 				Set<Change> changes = allChangesAssociatedWithName.stream()
 					// Don't summarize the same change into multiple changes
 					// (e.g. if A + B -> C, we don't want this to turn up three times,

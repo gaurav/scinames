@@ -97,7 +97,7 @@ public class SynonymsFromColumnChangeGenerator implements ChangeGenerator {
 						Optional<Name> synonym = Name.getFromFullName(synonymStr);
 						
 						if(!synonym.isPresent()) {
-							LOGGER.warning("Synonym '" + synonym + "' could not be parsed!");
+							LOGGER.warning("Synonym '" + synonymStr + "' could not be parsed!");
 							return Stream.empty();
 						} else
 							return Stream.of(new Synonymy(synonym.get(), name, ds));

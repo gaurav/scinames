@@ -10,12 +10,12 @@
 
 <AnchorPane id="AnchorPane" minHeight="400.0" minWidth="800.0" prefHeight="600.0" prefWidth="1000.0" xmlns="http://javafx.com/javafx/8.0.111" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.ggvaidya.scinames.dataset.BinomialChangesSceneController">
    <children>
-      <Button layoutX="559.0" mnemonicParsing="false" onAction="#exportChangesToCSV" prefHeight="25.0" prefWidth="136.0" text="Export changes to CSV" AnchorPane.leftAnchor="559.0" AnchorPane.topAnchor="0.0" />
+      <Button mnemonicParsing="false" onAction="#exportChangesToCSV" prefHeight="25.0" prefWidth="186.0" text="Export changes to CSV" AnchorPane.leftAnchor="0.0" AnchorPane.topAnchor="0.0" />
       <SplitPane dividerPositions="0.7005253940455342" focusTraversable="true" orientation="VERTICAL" prefHeight="200.0" prefWidth="160.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="25.0">
         <items>
           <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="400.0" prefWidth="160.0">
                <children>
-                  <TableView fx:id="changesTableView" layoutX="163.0" layoutY="20.0" prefHeight="398.0" prefWidth="998.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                  <TableView fx:id="changesTableView" layoutY="-1.0" prefHeight="398.0" prefWidth="998.0" AnchorPane.bottomAnchor="1.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="-1.0">
                     <columns>
                       <TableColumn prefWidth="75.0" text="C1" />
                       <TableColumn prefWidth="75.0" text="C2" />
@@ -37,9 +37,5 @@
             </AnchorPane>
         </items>
       </SplitPane>
-      <Button fx:id="combineChangesButton" layoutX="80.0" mnemonicParsing="false" text="Combine changes" AnchorPane.leftAnchor="80.0" AnchorPane.topAnchor="0.0" />
-      <Button fx:id="divideChangeButton" layoutX="191.0" mnemonicParsing="false" text="Divide change" AnchorPane.leftAnchor="191.0" AnchorPane.topAnchor="0.0" />
-      <Button layoutX="424.0" mnemonicParsing="false" onAction="#refreshChanges" text="Refresh" AnchorPane.leftAnchor="424.0" AnchorPane.topAnchor="0.0" />
-      <Button fx:id="deleteExplicitChangeButton" layoutX="283.0" mnemonicParsing="false" text="Delete explicit change" AnchorPane.leftAnchor="283.0" AnchorPane.topAnchor="0.0" />
    </children>
 </AnchorPane>

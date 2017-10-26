@@ -16,20 +16,20 @@
           <TableColumn prefWidth="75.0" text="C2" />
         </columns>
       </TableView>
-      <TextField fx:id="statusTextField" editable="false" layoutX="121.0" layoutY="424.0" prefHeight="25.0" prefWidth="296.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="121.0" AnchorPane.rightAnchor="83.0" />
+      <TextField fx:id="statusTextField" editable="false" layoutX="146.0" layoutY="424.0" prefHeight="25.0" prefWidth="246.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="146.0" AnchorPane.rightAnchor="108.0" />
       <Label layoutX="2.0" layoutY="32.0" text="Dataset name:" AnchorPane.leftAnchor="2.0" />
-      <TextField fx:id="datasetNameTextField" layoutX="80.0" layoutY="28.0" prefHeight="25.0" prefWidth="420.0" AnchorPane.leftAnchor="92.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="28.0" />
+      <TextField fx:id="datasetNameTextField" layoutX="80.0" layoutY="28.0" prefHeight="25.0" prefWidth="420.0" AnchorPane.leftAnchor="105.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="28.0" />
       <Label layoutX="2.0" layoutY="60.0" text="Date:" AnchorPane.leftAnchor="2.0" />
-      <TextField fx:id="datasetDateTextField" layoutX="80.0" layoutY="56.0" prefHeight="25.0" prefWidth="420.0" AnchorPane.leftAnchor="92.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="56.0" />
+      <TextField fx:id="datasetDateTextField" layoutX="80.0" layoutY="56.0" prefHeight="25.0" prefWidth="420.0" AnchorPane.leftAnchor="105.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="56.0" />
       <Label layoutX="2.0" layoutY="6.0" text="Type:" />
-      <ComboBox fx:id="datasetTypeComboBox" layoutX="80.0" layoutY="1.0" prefHeight="25.0" prefWidth="420.0" AnchorPane.leftAnchor="92.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="1.0" />
+      <ComboBox fx:id="datasetTypeComboBox" layoutX="80.0" layoutY="1.0" prefHeight="25.0" prefWidth="420.0" AnchorPane.leftAnchor="105.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="1.0" />
       <Label layoutX="3.0" layoutY="86.0" text="Modify column:" />
-      <ComboBox fx:id="columnComboBox" layoutX="92.0" layoutY="82.0" prefHeight="25.0" prefWidth="296.0" AnchorPane.leftAnchor="92.0" AnchorPane.rightAnchor="112.0" AnchorPane.topAnchor="82.0" />
-      <Button layoutX="389.0" layoutY="82.0" mnemonicParsing="false" onAction="#renameColumn" text="Rename" AnchorPane.rightAnchor="52.0" AnchorPane.topAnchor="82.0" />
-      <Button layoutX="449.0" layoutY="82.0" mnemonicParsing="false" onAction="#deleteColumn" text="Delete" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="82.0" />
+      <ComboBox fx:id="columnComboBox" disable="true" layoutX="92.0" layoutY="82.0" prefHeight="25.0" prefWidth="296.0" AnchorPane.leftAnchor="105.0" AnchorPane.rightAnchor="112.0" AnchorPane.topAnchor="82.0" />
+      <Button disable="true" layoutX="389.0" layoutY="82.0" mnemonicParsing="false" onAction="#renameColumn" text="Rename" AnchorPane.rightAnchor="52.0" AnchorPane.topAnchor="82.0" />
+      <Button disable="true" layoutX="449.0" layoutY="82.0" mnemonicParsing="false" onAction="#deleteColumn" text="Delete" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="82.0" />
       <Label layoutX="2.0" layoutY="111.0" text="Name extractor:" />
-      <ComboBox fx:id="nameExtractorComboBox" editable="true" layoutX="92.0" layoutY="108.0" prefHeight="25.0" prefWidth="408.0" AnchorPane.leftAnchor="92.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="108.0" />
-      <Button layoutX="449.0" layoutY="424.0" mnemonicParsing="false" onAction="#editChanges" prefHeight="25.0" prefWidth="84.0" text="Edit changes" AnchorPane.bottomAnchor="0.0" AnchorPane.rightAnchor="0.0" />
-      <Button layoutY="425.0" mnemonicParsing="false" onAction="#displayDataByBinomialName" text="Display by binomial" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" />
+      <ComboBox fx:id="nameExtractorComboBox" editable="true" layoutX="92.0" layoutY="108.0" prefHeight="25.0" prefWidth="408.0" AnchorPane.leftAnchor="105.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="108.0" />
+      <Button layoutX="449.0" layoutY="424.0" mnemonicParsing="false" onAction="#editChanges" prefHeight="25.0" prefWidth="108.0" text="Edit changes" AnchorPane.bottomAnchor="0.0" AnchorPane.rightAnchor="0.0" />
+      <Button layoutY="425.0" mnemonicParsing="false" onAction="#displayDataByBinomialName" prefHeight="25.0" prefWidth="146.0" text="Display by binomial" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" />
    </children>
 </AnchorPane>

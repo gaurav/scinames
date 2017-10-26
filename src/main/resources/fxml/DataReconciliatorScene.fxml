@@ -18,14 +18,14 @@
             <content>
               <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="121.0" prefWidth="600.0">
                      <children>
-                        <Label layoutX="1.0" layoutY="35.0" text="Use names from:" AnchorPane.leftAnchor="1.0" />
-                        <ComboBox fx:id="useNamesFromComboBox" layoutX="103.0" layoutY="31.0" prefHeight="27.0" prefWidth="494.0" AnchorPane.leftAnchor="103.0" AnchorPane.rightAnchor="1.0" AnchorPane.topAnchor="31.0" />
-                        <Label layoutX="1.0" layoutY="64.0" text="Include data from:" AnchorPane.leftAnchor="1.0" AnchorPane.topAnchor="64.0" />
-                        <ComboBox fx:id="includeDataFromComboBox" layoutX="103.0" layoutY="60.0" prefHeight="27.0" prefWidth="494.0" AnchorPane.leftAnchor="103.0" AnchorPane.rightAnchor="1.0" AnchorPane.topAnchor="60.0" />
-                        <Label layoutX="1.0" layoutY="93.0" text="Reconcile using:" AnchorPane.leftAnchor="1.0" />
-                        <ComboBox fx:id="reconcileUsingComboBox" layoutX="103.0" layoutY="89.0" prefHeight="27.0" prefWidth="494.0" AnchorPane.leftAnchor="103.0" AnchorPane.rightAnchor="1.0" />
-                        <Label layoutX="1.0" layoutY="6.0" text="Names to use:" AnchorPane.leftAnchor="1.0" AnchorPane.topAnchor="6.0" />
-                        <ComboBox fx:id="namesToUseComboBox" layoutX="103.0" layoutY="2.0" prefHeight="27.0" prefWidth="497.0" AnchorPane.leftAnchor="103.0" AnchorPane.rightAnchor="1.0" AnchorPane.topAnchor="2.0" />
+                        <Label layoutX="3.0" layoutY="35.0" text="Use names from:" AnchorPane.leftAnchor="3.0" />
+                        <ComboBox fx:id="useNamesFromComboBox" layoutX="103.0" layoutY="31.0" prefHeight="27.0" prefWidth="494.0" AnchorPane.leftAnchor="110.0" AnchorPane.rightAnchor="1.0" AnchorPane.topAnchor="31.0" />
+                        <Label layoutX="3.0" layoutY="64.0" text="Include data from:" AnchorPane.leftAnchor="3.0" AnchorPane.topAnchor="64.0" />
+                        <ComboBox fx:id="includeDataFromComboBox" layoutX="103.0" layoutY="60.0" prefHeight="27.0" prefWidth="494.0" AnchorPane.leftAnchor="110.0" AnchorPane.rightAnchor="1.0" AnchorPane.topAnchor="60.0" />
+                        <Label layoutX="3.0" layoutY="93.0" text="Reconcile using:" AnchorPane.leftAnchor="3.0" />
+                        <ComboBox fx:id="reconcileUsingComboBox" layoutX="103.0" layoutY="89.0" prefHeight="27.0" prefWidth="494.0" AnchorPane.leftAnchor="110.0" AnchorPane.rightAnchor="1.0" />
+                        <Label layoutX="3.0" layoutY="6.0" text="Names to use:" AnchorPane.leftAnchor="3.0" AnchorPane.topAnchor="6.0" />
+                        <ComboBox fx:id="namesToUseComboBox" layoutX="103.0" layoutY="2.0" prefHeight="27.0" prefWidth="497.0" AnchorPane.leftAnchor="110.0" AnchorPane.rightAnchor="1.0" AnchorPane.topAnchor="2.0" />
                      </children>
                   </AnchorPane>
             </content>
@@ -43,9 +43,9 @@
           <TableColumn prefWidth="75.0" text="C2" />
         </columns>
       </TableView>
-      <Button mnemonicParsing="false" onAction="#copyToClipboard" prefHeight="27.0" prefWidth="132.0" text="Copy to Clipboard" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" />
-      <Button mnemonicParsing="false" onAction="#exportToCSV" prefHeight="27.0" prefWidth="103.0" text="Export to CSV" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="130.0" />
+      <Button mnemonicParsing="false" onAction="#copyToClipboard" prefHeight="27.0" prefWidth="145.0" text="Copy to Clipboard" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" />
+      <Button layoutX="145.0" layoutY="373.0" mnemonicParsing="false" onAction="#exportToCSV" prefHeight="27.0" prefWidth="119.0" text="Export to CSV" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="145.0" />
       <Button layoutX="267.0" layoutY="147.0" mnemonicParsing="false" onAction="#reconcileData" prefHeight="27.0" text="Reconcile" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="147.0" />
-      <TextField fx:id="statusTextField" editable="false" prefHeight="27.0" prefWidth="365.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="233.0" AnchorPane.rightAnchor="0.0" />
+      <TextField fx:id="statusTextField" editable="false" layoutX="264.0" prefHeight="27.0" prefWidth="336.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="264.0" AnchorPane.rightAnchor="0.0" />
    </children>
 </AnchorPane>
