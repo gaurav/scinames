@@ -19,6 +19,7 @@ package com.ggvaidya.scinames.ui;
 import java.io.File;
 import java.io.IOException;
 import java.time.format.DateTimeParseException;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Consumer;
@@ -184,6 +185,18 @@ public class ProjectSceneController {
 		MenuItem namesStability = new MenuItem("Name stability over time");
 		namesStability.onActionProperty().set(e -> displayNameStability(e));
 		namesMenu.getItems().add(namesStability);
+		
+		// Names -> Name stability
+		MenuItem namesCircumStability = new MenuItem("Name and circumscriptional stability over time");
+		namesCircumStability.onActionProperty().set(e -> {
+			NameStabilityView nameStabilityView = new NameStabilityView(projectView, 
+				NameStabilityView.NAME_SIMILARITY |
+				NameStabilityView.CLUSTER_SIMILARITY |
+				NameStabilityView.CIRCUMSCRIPTIONAL_SIMILARITY
+			);
+			nameStabilityView.getStage().show();
+		});
+		namesMenu.getItems().add(namesCircumStability);
 		
 		// Names -> By higher taxa
 		MenuItem namesHigherStability = new MenuItem("Higher taxon name stability over time");
