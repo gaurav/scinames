@@ -1,6 +1,6 @@
 <project name="SciNames">
 <target name="bundleexe">
-    <copy file="../target/SciNames-0.1.jar" todir="SciNames" />
+    <copy file="../target/SciNames-0.2.jar" todir="SciNames" />
 
     <taskdef name="launch4j"
         classname="net.sf.launch4j.ant.Launch4jTask"
@@ -15,7 +15,7 @@
 </target>
 
 <target name="bundleapp">
-    <copy file="../target/SciNames-0.1.jar" todir="SciNames" />
+    <copy file="../target/SciNames-0.2.jar" todir="SciNames" />
 
     <taskdef name="bundleapp"
         classpath="appbundler-1.0ea.jar"
@@ -28,12 +28,12 @@
         displayname="SciNames"
         executableName="SciNames"
         identifier="com.ggvaidya.scinames"
-        shortversion="0.1"
-        version="0.1"
+        shortversion="0.2"
+        version="0.2"
         mainclassname="com.ggvaidya.scinames.SciNames"
         copyright="2017 (c) Gaurav Vaidya"
     >
-        <classpath file="SciNames/SciNames-0.1.jar" />
+        <classpath file="SciNames/SciNames-0.2.jar" />
     </bundleapp>
 </target>
 </project>
