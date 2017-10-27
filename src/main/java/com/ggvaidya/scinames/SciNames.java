@@ -45,7 +45,7 @@ public class SciNames extends Application {
 	
 	/* Application-level constants */
 	public static final String APPNAME = "SciNames";
-	public static final String VERSION = "0.1";
+	public static final String VERSION = "0.2";
 	
 	public static final String PROPNAME_OPEN_ON_START = "project_openOnStart";
 	
