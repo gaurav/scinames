@@ -169,13 +169,31 @@ public class ProjectView {
 			
 			if(db.hasFiles()) {
 				for(File f: db.getFiles()) {
-					LOGGER.info("Dragged file '" + f + "' to be loaded.");
-					try {
-						addFile(f);
-					} catch(IOException e) {
-						new Alert(Alert.AlertType.ERROR, "Could not load dragged file '" + f + "': " + e).showAndWait();
+					if(f.getName().toLowerCase().endsWith(".xml.gz")) {
+						LOGGER.info("Dragged file '" + f + "' to be opened as a new project.");
 						
-						result = false;
+						// A project! Open it as a project.
+						try {
+							Project project = Project.loadFromFile(f);
+							closeCurrentProject();
+							setProject(project);
+							
+						} catch(IOException ex) {
+							new Alert(AlertType.ERROR, "Could not open '" + f + "' as a project: " + ex)
+								.showAndWait();
+							
+							result = false;
+						}
+						
+					} else {
+						LOGGER.info("Dragged file '" + f + "' to be added to current project.");
+						try {
+							addFile(f);
+						} catch(IOException e) {
+							new Alert(Alert.AlertType.ERROR, "Could not load dragged file '" + f + "': " + e).showAndWait();
+							
+							result = false;
+						}
 					}
 				}
 			}
@@ -186,6 +204,9 @@ public class ProjectView {
 
 		Platform.runLater(() -> {
 			// If we have a PROP_OPENONSTART in properties, try to load it back up.
+			// On second thought, this is surprising behavior and shouldn't remain
+			// in the application.
+			/*
 			if(SciNames.getProperties().containsKey(SciNames.PROPNAME_OPEN_ON_START)) {
 				File f = new File(SciNames.getProperties().get(SciNames.PROPNAME_OPEN_ON_START));
 
@@ -204,6 +225,7 @@ public class ProjectView {
 						setProject(p);
 				}
 			}
+			*/
 		});
 	}
 

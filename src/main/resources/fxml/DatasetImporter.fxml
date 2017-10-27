@@ -17,20 +17,20 @@
           <TableColumn prefWidth="75.0" text="C2" />
         </columns>
       </TableView>
-      <Button mnemonicParsing="false" onAction="#importDataset" prefHeight="27.0" text="Import dataset" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" />
-      <Button mnemonicParsing="false" onAction="#cancelImport" prefHeight="27.0" text="Cancel import" AnchorPane.bottomAnchor="0.0" AnchorPane.rightAnchor="0.0" />
-      <TextField fx:id="statusTextField" editable="false" prefHeight="27.0" prefWidth="715.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="94.0" AnchorPane.rightAnchor="89.0" />
-      <Label layoutX="2.0" layoutY="125.0" text="File format:" AnchorPane.leftAnchor="2.0" AnchorPane.topAnchor="125.0" />
-      <ComboBox fx:id="fileFormatComboBox" layoutX="112.0" layoutY="119.0" prefHeight="25.0" prefWidth="338.0" AnchorPane.leftAnchor="112.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="119.0" />
-      <Label layoutX="2.0" layoutY="5.0" text="File to load:" />
-      <TextField fx:id="filePathTextField" layoutX="110.0" layoutY="1.0" prefHeight="25.0" prefWidth="254.0" promptText="Enter filename or choose file" AnchorPane.leftAnchor="112.0" AnchorPane.rightAnchor="86.0" />
+      <Button mnemonicParsing="false" onAction="#importDataset" prefHeight="27.0" prefWidth="115.0" text="Import dataset" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" />
+      <Button mnemonicParsing="false" onAction="#cancelImport" prefHeight="27.0" prefWidth="115.0" text="Cancel import" AnchorPane.bottomAnchor="0.0" AnchorPane.rightAnchor="0.0" />
+      <TextField fx:id="statusTextField" editable="false" layoutX="115.0" prefHeight="27.0" prefWidth="270.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="115.0" AnchorPane.rightAnchor="115.0" />
+      <Label layoutX="4.0" layoutY="125.0" text="File format:" AnchorPane.leftAnchor="4.0" AnchorPane.topAnchor="125.0" />
+      <ComboBox fx:id="fileFormatComboBox" layoutX="112.0" layoutY="119.0" prefHeight="25.0" prefWidth="338.0" AnchorPane.leftAnchor="125.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="119.0" />
+      <Label layoutX="4.0" layoutY="5.0" text="File to load:" />
+      <TextField fx:id="filePathTextField" layoutX="110.0" layoutY="1.0" prefHeight="25.0" prefWidth="254.0" promptText="Enter filename or choose file" AnchorPane.leftAnchor="125.0" AnchorPane.rightAnchor="86.0" />
       <Button layoutX="364.0" layoutY="1.0" mnemonicParsing="false" onAction="#chooseFile" text="Choose file ..." AnchorPane.rightAnchor="0.0" />
-      <Label layoutX="2.0" layoutY="29.0" text="File preview:" />
-      <TextArea fx:id="filePreviewTextArea" editable="false" layoutX="112.0" layoutY="27.0" prefHeight="91.0" prefWidth="338.0" AnchorPane.leftAnchor="112.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="27.0" />
-      <Label layoutX="1.0" layoutY="206.0" text="Date of publication:" AnchorPane.leftAnchor="1.0" AnchorPane.topAnchor="206.0" />
-      <Label layoutX="1.0" layoutY="180.0" text="Dataset name:" AnchorPane.leftAnchor="1.0" AnchorPane.topAnchor="180.0" />
-      <TextField fx:id="datasetNameTextField" layoutX="111.0" layoutY="175.0" prefHeight="25.0" prefWidth="338.0" AnchorPane.leftAnchor="111.0" AnchorPane.rightAnchor="1.0" AnchorPane.topAnchor="175.0" />
+      <Label layoutX="4.0" layoutY="29.0" text="File preview:" />
+      <TextArea fx:id="filePreviewTextArea" editable="false" layoutX="112.0" layoutY="27.0" prefHeight="91.0" prefWidth="338.0" AnchorPane.leftAnchor="125.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="27.0" />
+      <Label layoutX="3.0" layoutY="206.0" text="Date of publication:" AnchorPane.leftAnchor="3.0" AnchorPane.topAnchor="206.0" />
+      <Label layoutX="3.0" layoutY="180.0" text="Dataset name:" AnchorPane.leftAnchor="3.0" AnchorPane.topAnchor="180.0" />
+      <TextField fx:id="datasetNameTextField" layoutX="111.0" layoutY="175.0" prefHeight="25.0" prefWidth="338.0" AnchorPane.leftAnchor="125.0" AnchorPane.rightAnchor="1.0" AnchorPane.topAnchor="175.0" />
       <Button layoutY="147.0" mnemonicParsing="false" onAction="#loadFromFile" text="Load data from file" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="147.0" />
-      <TextField fx:id="dateTextField" layoutX="111.0" layoutY="202.0" prefHeight="25.0" prefWidth="338.0" AnchorPane.leftAnchor="112.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="202.0" />
+      <TextField fx:id="dateTextField" layoutX="111.0" layoutY="202.0" prefHeight="25.0" prefWidth="338.0" AnchorPane.leftAnchor="125.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="202.0" />
    </children>
 </AnchorPane>

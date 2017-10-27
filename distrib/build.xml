@@ -1,0 +1,41 @@
+<project name="SciNames">
+<target name="bundleexe">
+    <copy file="../target/SciNames-0.2.jar" todir="SciNames" />
+
+    <taskdef name="launch4j"
+        classname="net.sf.launch4j.ant.Launch4jTask"
+        classpath="launch4j/launch4j.jar:launch4j/lib/xstream.jar"
+    />
+    
+    <launch4j configFile="launch4j.xml" />
+
+<!-- 
+        classpath="/Users/vaidyagi/code/appbundler/appbundler/bin/appbundler-1.0ea.jar"
+        -->
+</target>
+
+<target name="bundleapp">
+    <copy file="../target/SciNames-0.2.jar" todir="SciNames" />
+
+    <taskdef name="bundleapp"
+        classpath="appbundler-1.0ea.jar"
+        classname="com.oracle.appbundler.AppBundlerTask"
+    />
+    <bundleapp
+        jvmrequired="1.8"
+        outputdirectory="SciNames"
+        name="SciNames"
+        displayname="SciNames"
+        executableName="SciNames"
+        identifier="com.ggvaidya.scinames"
+        shortversion="0.2"
+        version="0.2"
+        mainclassname="com.ggvaidya.scinames.SciNames"
+        copyright="2017 (c) Gaurav Vaidya"
+    >
+        <classpath file="SciNames/SciNames-0.2.jar" />
+        <option value="-Xmx6G" name="Xmx" />
+
+    </bundleapp>
+</target>
+</project>

@@ -15,8 +15,8 @@
         </columns>
       </TableView>
       <TextField fx:id="headerTextField" layoutY="1.0" prefHeight="27.0" prefWidth="600.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
-      <Button layoutY="360.0" mnemonicParsing="false" onAction="#copyToClipboard" prefHeight="27.0" text="Copy to Clipboard" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" />
-      <Button layoutX="113.0" layoutY="360.0" mnemonicParsing="false" onAction="#exportToCSV" prefHeight="27.0" text="Export to CSV" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="113.0" />
-      <TextField fx:id="statusTextField" editable="false" layoutX="202.0" layoutY="360.0" prefHeight="27.0" prefWidth="398.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="202.0" AnchorPane.rightAnchor="0.0" />
+      <Button layoutY="360.0" mnemonicParsing="false" onAction="#copyToClipboard" prefHeight="27.0" prefWidth="139.0" text="Copy to Clipboard" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" />
+      <Button layoutX="139.0" layoutY="360.0" mnemonicParsing="false" onAction="#exportToCSV" prefHeight="27.0" prefWidth="113.0" text="Export to CSV" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="139.0" />
+      <TextField fx:id="statusTextField" editable="false" layoutX="252.0" layoutY="360.0" prefHeight="27.0" prefWidth="348.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="252.0" AnchorPane.rightAnchor="0.0" />
    </children>
 </AnchorPane>

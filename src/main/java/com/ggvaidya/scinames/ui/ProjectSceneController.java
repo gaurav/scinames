@@ -19,9 +19,11 @@ package com.ggvaidya.scinames.ui;
 import java.io.File;
 import java.io.IOException;
 import java.time.format.DateTimeParseException;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Consumer;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
@@ -58,6 +60,7 @@ import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.scene.Node;
 import javafx.scene.control.Alert;
+import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.ContextMenu;
 import javafx.scene.control.Menu;
 import javafx.scene.control.MenuBar;
@@ -183,6 +186,18 @@ public class ProjectSceneController {
 		namesStability.onActionProperty().set(e -> displayNameStability(e));
 		namesMenu.getItems().add(namesStability);
 		
+		// Names -> Name stability
+		MenuItem namesCircumStability = new MenuItem("Name and circumscriptional stability over time");
+		namesCircumStability.onActionProperty().set(e -> {
+			NameStabilityView nameStabilityView = new NameStabilityView(projectView, 
+				NameStabilityView.NAME_SIMILARITY |
+				NameStabilityView.CLUSTER_SIMILARITY |
+				NameStabilityView.CIRCUMSCRIPTIONAL_SIMILARITY
+			);
+			nameStabilityView.getStage().show();
+		});
+		namesMenu.getItems().add(namesCircumStability);
+		
 		// Names -> By higher taxa
 		MenuItem namesHigherStability = new MenuItem("Higher taxon name stability over time");
 		namesHigherStability.onActionProperty().set(e -> displayHigherStability(e));
@@ -232,9 +247,31 @@ public class ProjectSceneController {
 		configMenu.getItems().add(configFilters);
 
 		Menu helpMenu = new Menu("Help");
-		helpMenu.getItems().addAll(
-			new MenuItem("About")
-		);
+		MenuItem helpAbout = new MenuItem("About");
+		
+		helpAbout.onActionProperty().set((ActionEvent e) -> {
+			// Because why not.
+			System.gc();
+			
+			// Calculate available memory.
+			double freeMem = Runtime.getRuntime().freeMemory();
+			long totalMem = Runtime.getRuntime().totalMemory();
+			long maxMem = Runtime.getRuntime().maxMemory();
+			
+			String memoryReport = String.format("Currently using %dM out of %dM (%.2f%%)\nMaximum memory available: %dM",
+				(int)((totalMem - freeMem)/(1024*1024)),
+				(int)(totalMem/(1024*1024)),
+				(double)(totalMem - freeMem)/totalMem*100,
+				(int)(maxMem/(1024*1024))
+			);
+			
+			new Alert(AlertType.INFORMATION,
+				"SciNames/" + SciNames.VERSION + "\n\n" + memoryReport
+			).showAndWait();
+		});
+		
+		helpMenu.getItems().addAll(helpAbout);
+		mb.getMenus().add(helpMenu);
 		
 		// Final setups
 		mb.setUseSystemMenuBar(true);
@@ -367,28 +404,33 @@ public class ProjectSceneController {
 		timepointTable.setRowFactory(table -> {
 			TableRow<Dataset> row = new TableRow<>();
 			
+			row.setOnContextMenuRequested(event -> {
+				if(row.isEmpty()) return;
+				Dataset dataset = row.getItem();
+				
+				ContextMenu contextMenu = new ContextMenu();
+				
+				Project project = projectView.getProject();
+				contextMenu.getItems().add(menuItemThat("Display dataset", evt -> new DatasetEditorView(projectView, dataset).getStage().show()));
+				contextMenu.getItems().add(menuItemThat("Display changes", evt -> new DatasetChangesView(projectView, dataset).getStage().show()));
+				// contextMenu.getItems().add(menuItemThat("Display binomial changes", evt -> new BinomialChangesView(projectView, dataset).getStage().show()));
+				
+				Optional<Dataset> datasetFirst = project.getFirstDataset();
+				if(datasetFirst.isPresent())
+					contextMenu.getItems().add(menuItemThat("Diff with first", evt -> new DatasetDiffView(projectView, datasetFirst.get(), dataset).getStage().show()));
+				
+				Optional<Dataset> datasetLast = project.getLastDataset();
+				if(datasetLast.isPresent())
+					contextMenu.getItems().add(menuItemThat("Diff with last", evt -> new DatasetDiffView(projectView, dataset, datasetLast.get()).getStage().show()));
+				
+				contextMenu.show(projectView.getScene().getWindow(), event.getScreenX(), event.getScreenY());
+			});
+			
 			row.setOnMouseClicked(event -> {
 				if(row.isEmpty()) return;
 				Dataset dataset = row.getItem();
 				
-				if(event.getClickCount() == 1 && event.isPopupTrigger()) {
-					ContextMenu contextMenu = new ContextMenu();
-					
-					Project project = projectView.getProject();
-					contextMenu.getItems().add(menuItemThat("Display dataset", evt -> new DatasetEditorView(projectView, dataset).getStage().show()));
-					contextMenu.getItems().add(menuItemThat("Display changes", evt -> new DatasetChangesView(projectView, dataset).getStage().show()));
-					// contextMenu.getItems().add(menuItemThat("Display binomial changes", evt -> new BinomialChangesView(projectView, dataset).getStage().show()));
-					
-					Optional<Dataset> datasetFirst = project.getFirstDataset();
-					if(datasetFirst.isPresent())
-						contextMenu.getItems().add(menuItemThat("Diff with first", evt -> new DatasetDiffView(projectView, datasetFirst.get(), dataset).getStage().show()));
-					
-					Optional<Dataset> datasetLast = project.getLastDataset();
-					if(datasetLast.isPresent())
-						contextMenu.getItems().add(menuItemThat("Diff with last", evt -> new DatasetDiffView(projectView, dataset, datasetLast.get()).getStage().show()));
-					
-					contextMenu.show(projectView.getScene().getWindow(), event.getScreenX(), event.getScreenY());
-				} else if(event.getClickCount() == 2) {
+				if(event.getClickCount() == 2) {
 					// So much easier.
 					projectView.openDetailedView(dataset);
 				}
