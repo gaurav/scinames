@@ -49,6 +49,15 @@
 		<artifactId>poi-ooxml</artifactId>
 		<version>3.16</version>
 	</dependency>
+	
+	<!-- OWL export  -->
+	<!-- https://mvnrepository.com/artifact/net.sourceforge.owlapi/owlapi-distribution -->
+	<dependency>
+	    <groupId>net.sourceforge.owlapi</groupId>
+	    <artifactId>owlapi-distribution</artifactId>
+	    <version>5.1.2</version>
+	</dependency>
+	
   </dependencies>
   <properties>
   	<mainClass>com.ggvaidya.scinames.SciNames</mainClass>
