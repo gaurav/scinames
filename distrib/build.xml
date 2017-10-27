@@ -34,6 +34,8 @@
         copyright="2017 (c) Gaurav Vaidya"
     >
         <classpath file="SciNames/SciNames-0.2.jar" />
+        <option value="-Xmx6G" name="Xmx" />
+
     </bundleapp>
 </target>
 </project>
