@@ -207,7 +207,7 @@ public class Change {
 		Set<URI> uris = new HashSet<>();
 		
 		// I used (?<!\\S) to match the end of the URL, I wonder why?
-		Matcher urlMatcher = Pattern.compile("\\b(https?://.*|doi:.*)\\s*").matcher(note);
+		Matcher urlMatcher = Pattern.compile("\\b(https?://.*|doi:.*)[\\b\\s;]").matcher(note);
 		while(urlMatcher.find()) {
 			String uri = urlMatcher.group(1);
 			
